@@ -2,7 +2,7 @@
 
 Race engineering for small teams. Drop in lap times or logger telemetry and Pacely cleans them up, splits stints, measures tyre wear, tells you when to pit, finds your ideal qualifying lap and explains every channel of a lap.
 
-The whole app is one file, `index.html`. Sessions are saved in the browser on your device and are never uploaded.
+The whole app is one file, `index.html`. Sessions are saved in the browser on your device. They only leave it when you choose Share with team inside the Claude viewer.
 
 ## Features
 
@@ -15,6 +15,7 @@ The whole app is one file, `index.html`. Sessions are saved in the browser on yo
 - **Compare:** two sessions side by side, with a telemetry overlay and where the time is won or lost corner by corner.
 - **AI engineer:** on the Race call, Qualifying and Telemetry tabs. A one-click debrief and plain-English answers based only on the numbers on that page.
 - **Units:** speeds in km/h or mph (Settings on the Files tab). The choice is remembered on this device.
+- **Team sessions:** inside the Claude artifact viewer, "Share with team" (or "Share whole event") on the Files tab puts a copy of a session, telemetry included, in the page's shared store. Everyone who can open the page sees it under Team sessions and can open it on their own device. Contributors and above can share and remove; viewers can only open. The Netlify site has no shared store, so this is viewer-only.
 - **Export:** save any report as PDF, download a session as CSV.
 
 ## Running it
