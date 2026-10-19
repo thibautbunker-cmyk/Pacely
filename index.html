@@ -460,7 +460,7 @@ let mins=[];for(let i=6;i<NB-6;i++){let isMin=true;for(let k=i-6;k<=i+6;k++)if(s
 let lm=0,rm=0;for(let k=i;k>=Math.max(0,i-80);k--)lm=Math.max(lm,sm[k]);for(let k=i;k<=Math.min(NB-1,i+80);k++)rm=Math.max(rm,sm[k]);if(Math.min(lm,rm)-sm[i]>=10)mins.push(i)}
 const apex=[];for(const i of mins){const l=apex[apex.length-1];if(l!==undefined&&i-l<20){if(sm[i]<sm[l])apex[apex.length-1]=i}else apex.push(i)}
 let cr=[],note='';
-if(apex.length){const hasG=map.latG>=0,hasS=map.steer>=0,hasB=map.brake>=0;let thrB=0;
+if(apex.length){const hasG=map.latG>=0,hasS=map.steer>=0,hasB=map.brake>=0&&250/3.6*dtM<=6;let thrB=0;
 if(hasB){const all=[];profs.forEach(p=>{for(let j=0;j<NB;j+=2)if(fin(p.b[j]))all.push(p.b[j])});all.sort((a,b)=>a-b);thrB=.15*(all[Math.floor(all.length*.95)]||0)}
 kept.forEach((g,gi)=>{const P=profs[gi];apex.forEach((ai,ci)=>{const lo=Math.max(0,ai-12),hi=Math.min(NB-1,ai+12);let mv=1e9,pg=0,ps=0;
 for(let j=lo;j<=hi;j++){if(P.v[j]<mv)mv=P.v[j];if(hasG&&P.g[j]>pg)pg=P.g[j];if(hasS&&P.s[j]>ps)ps=P.s[j]}
@@ -470,7 +470,7 @@ if(jj>=0){while(jj-1>=0&&g.rel[jj-1]*sc>=pa-700&&B[g.i0+jj-1]>thrB)jj--;let pos=
 if(jj>0){const b0=B[g.i0+jj-1],b1=B[g.i0+jj],p0=g.rel[jj-1]*sc;if(fin(b0)&&b1>b0)pos=p0+(thrB-b0)/(b1-b0)*(g.rel[jj]*sc-p0)}
 bm=pa-pos}}
 cr.push({lap:g.lap,corner:'T'+(ci+1),v:mv,b:bm,st:hasS?ps:null,g:hasG?pg:null})})});
-note=`Found ${apex.length} corner${apex.length==1?'':'s'} automatically from the fastest lap and measured each one on all ${kept.length} laps.`}
+note=`Found ${apex.length} corner${apex.length==1?'':'s'} automatically from the fastest lap and measured each one on all ${kept.length} laps.`+(map.brake>=0&&!hasB?` Braking points are not measured, because this file records about every ${Math.round(250/3.6*dtM)} m at 250 km/h, too far apart to place them reliably.`:'')}
 else note='No clear corners were found, so Pacely will judge tyre wear from lap times only.';
 const r1=x=>Math.round(x*10)/10,r2=x=>Math.round(x*100)/100,keep=(P,k,f)=>Array.from(P[k],x=>fin(x)?f(x):null);
 const tr={bin:BIN,len:L,nb:NB,apex,ch:{g:map.latG>=0,s:map.steer>=0,b:map.brake>=0,th:map.throttle>=0,gr:map.gear>=0,rpm:map.rpm>=0},laps:{}};
@@ -507,22 +507,24 @@ const lin=reg(x,ct),linSSE=ct.reduce((a,v,i)=>a+(v-(lin.m*x[i]+lin.b))**2,0);
 let q=null,useQuad=false;if(n>=7){q=polyfit(x,ct,2);if(q){const F=(linSSE-q.sse)/(q.sse/(n-3)+1e-12);useQuad=q.co[2]>0&&F>8&&q.co[2]*xl*xl>.15}}
 const f=useQuad?v=>q.co[0]+q.co[1]*v+q.co[2]*v*v:v=>lin.b+lin.m*v,f0=f(0);
 const lossNow=Math.max(f(xl)-f0,0),rateAvg=lin.m,rateNow=useQuad?q.co[1]+2*q.co[2]*xl:lin.m;
-const best=g=>{let C=0,bv=Infinity,bn=1;for(let N=1;N<=250;N++){C+=g(N-1);const v=(thr+C)/N;if(v<bv){bv=v;bn=N}}return bn>=250?Infinity:Math.max(0,bn-(xl+1))};
+const bestN=g=>{let C=0,bv=Infinity,bn=1;for(let N=1;N<=250;N++){C+=g(N-1);const v=(thr+C)/N;if(v<bv){bv=v;bn=N}}return bn>=250?Infinity:bn},best=g=>{const bn=bestN(g);return bn===Infinity?Infinity:Math.max(0,bn-(xl+1))};
 const leftBy=m=>m>.005?best(k=>m*k):Infinity;
 const main=useQuad?best(k=>Math.max(f(k)-f0,0)):leftBy(lin.m),cands=[main,leftBy(lin.m)];
 if(n>=8){const r=Math.min(6,n),rr=reg(x.slice(-r),ct.slice(-r));cands.push(leftBy(rr.m))}
 const low=Math.min(...cands),high=Math.max(...cands);
 const resid=sd(ct.map((v,i)=>v-f(x[i])));
 const conf=n>=10&&(lin.r2>=.6||lin.m<=.005)?'High':n>=7&&(lin.r2>=.35||lin.m<=.005)?'Medium':'Low';
-const extra=rem?Math.max(f(xl+rem)-f(xl),0):0;
-const a={s,run,st,n,x,ct,lt,lin,q,useQuad,f,lossNow,rateAvg,rateNow,left:{low,high,main},conf,resid,fuel,thr,rem,extra,F:[],table:[]};
+const extra=rem>0?Math.max(f(xl+rem)-f(xl),0):0,optLen=useQuad?bestN(k=>Math.max(f(k)-f0,0)):lin.m>.005?bestN(k=>lin.m*k):Infinity;
+const a={s,run,st,n,x,ct,lt,lin,q,useQuad,f,lossNow,rateAvg,rateNow,left:{low,high,main},conf,resid,fuel,thr,rem,extra,optLen,F:[],table:[]};
 const F=a.F,temp=parseFloat(s.meta.trackTemp);
 const rate=Math.max(rateAvg,rateNow),sev=rate>.1?'high':rate>.04?'med':'ok';
 F.push({sev,t:rateAvg>.005?`Tyres are losing about ${rateAvg.toFixed(2)} s every lap`:'Lap time is steady, tyres are holding',
 ev:`Over ${n} clean laps, fuel-corrected lap time is getting slower by ${Math.max(rateAvg,0).toFixed(2)} s per lap. About ${lossNow.toFixed(2)} s lost so far (fit quality ${lin.r2.toFixed(2)} out of 1).`,
-ac:low===Infinity?'No pit pressure from tyre wear on this data.':low<=0?`The tyres have lost enough time that a stop now pays for itself. Pit as soon as the strategy allows.`:`A stop pays for itself in about ${fmtL(low,high)} laps. Plan it inside that window.`});
-if(useQuad)F.push({sev:rateNow>.1?'high':'med',t:'Tyre wear is speeding up',ev:`The wear rate has grown from about ${Math.max(q.co[1],0).toFixed(2)} s per lap at the start of the stint to about ${Math.max(rateNow,0).toFixed(2)} s per lap now. Tyres often drop off quickly once this starts.`,ac:'Do not rely on the average rate. The laps estimate above already allows for the faster wear, so plan the stop at the early end of the range.'});
-if(rem){const lo=low,hi=high;let t,sv,ac;
+ac:low===Infinity?'No pit pressure from tyre wear on this data.':rem===0?'The race is over, so no stop is needed.'+(isFinite(optLen)?` On tyre wear alone, the best stint on this set would have been about ${optLen} laps.`:''):low<=0?(rem==null?'On tyre wear alone, a stop would already pay for itself. Enter laps to go to check whether the tyres can make it to the flag.':'The tyres have lost enough time that a stop now pays for itself. Pit as soon as the strategy allows.'):`A stop pays for itself in about ${fmtL(low,high)} laps. Plan it inside that window.`+(rem==null?' Enter laps to go to check the finish.':'')});
+if(useQuad)F.push({sev:rateNow>.1?'high':'med',t:'Tyre wear is speeding up',ev:`The wear rate has grown from about ${Math.max(q.co[1],0).toFixed(2)} s per lap at the start of the stint to about ${Math.max(rateNow,0).toFixed(2)} s per lap now. Tyres often drop off quickly once this starts.`,ac:rem===0?'The race is over. Note the drop-off for the next race: an earlier stop or a harder tyre may be quicker overall.':'Do not rely on the average rate. The laps estimate above already allows for the faster wear, so plan the stop at the early end of the range.'});
+if(rem===0){F.forEach(f=>{if(f.sev==='high')f.sev='med'});}
+if(rem===0)F.push({sev:'ok',t:'Race finished on these tyres',ev:`This stint ran ${n} clean laps to the flag and lost about ${lossNow.toFixed(1)} s to tyre wear.`,ac:isFinite(optLen)?`For the next race: on tyre wear alone, a stint of about ${optLen} laps on this set gives the lowest total time (stop cost ${thr.toFixed(0)} s). This one ran ${xl+1}.`:'The tyres held up, so no stop was needed for wear.'});
+if(rem>0){const lo=low,hi=high;let t,sv,ac;
 if(rem<=lo){sv='ok';t='Tyres should last to the flag';ac=`No stop is needed for tyre wear. If you stay out, the last lap will be about ${extra.toFixed(1)} s slower than now. Check the race situation too.`}
 else if(isFinite(hi)&&rem>hi){sv='high';t='A stop is needed: the tyres will not last to the flag';ac=`Pit within about ${lo} laps, and no later than about ${hi}. Staying out would make the last lap about ${extra.toFixed(1)} s slower than now.`}
 else{sv='med';t='Borderline: the tyres may not last to the flag';ac=`Pit if you can do it cheaply, for example under a safety car or with a big gap. The stop window is about ${lo} to ${isFinite(hi)?hi:'more than '+lo} laps from now.`}
@@ -547,28 +549,32 @@ if(Bk.length>=5){const bs=sd(Bk.map(r=>r.b));bS=bs>5?'high':bs>3?'med':'';nums.p
 st=(uS==='high'||bS==='high')?'high':(uS||bS)?'med':'ok';
 a.table.push({c,st,dt:dt.length?dt.join('. '):(nums.length?'No problems found':'No data to judge this corner'),nums:nums.join(' · ')})}}
 function call(a){const{low,high}=a.left,rem=a.rem,thr=a.thr;let sev,head,why;
-if(rem){if(rem<=low){sev='ok';head='Tyres should last to the flag'}else if(isFinite(high)&&rem>high){sev='high';head=low<=0?'Pit as soon as you can':`Stop needed: pit within about ${low} lap${low==1?'':'s'}`}else{sev='med';head='Borderline: tyres may not last to the flag'}
+if(rem===0){return{sev:'ok',head:'Race finished on these tyres',why:`This stint ran ${a.n} clean laps to the flag and lost about ${a.lossNow.toFixed(1)} s to tyre wear (${Math.max(a.rateAvg,0).toFixed(2)} s per lap).`+(isFinite(a.optLen)?` On tyre wear alone, the best stint on this set would have been about ${a.optLen} laps.`:'')}}
+if(rem>0){if(rem<=low){sev='ok';head='Tyres should last to the flag'}else if(isFinite(high)&&rem>high){sev='high';head=low<=0?'Pit as soon as you can':`Stop needed: pit within about ${low} lap${low==1?'':'s'}`}else{sev='med';head='Borderline: tyres may not last to the flag'}
 why=`${rem} laps to go. A stop starts to pay for itself in about ${fmtL(low,high)} laps (stop cost ${thr.toFixed(0)} s).`+(a.extra>.05?` Staying out makes the last lap about ${a.extra.toFixed(1)} s slower than now.`:'')}
-else{if(low===Infinity){sev='ok';head='Tyres are holding'}else if(low<=0){sev='high';head='Pit as soon as you can'}else if(low<=4){sev='high';head=`Pit within about ${low} lap${low==1?'':'s'}`}else if(low<=8){sev='med';head=`Plan your stop in the next ${low} laps`}else{sev='ok';head=`About ${low} laps of tyre life left`}
-why=low===Infinity?'No meaningful tyre wear in this data.':`Losing about ${Math.max(a.rateAvg,0).toFixed(2)} s per lap, ${a.lossNow.toFixed(1)} s so far.`+(isFinite(high)&&high>low?` A stop pays for itself in about ${fmtL(low,high)} laps (stop cost ${thr.toFixed(0)} s).`:'')}
+else{if(low===Infinity){sev='ok';head='Tyres are holding'}else if(low<=0){sev='high';head='A stop would already pay for itself'}else if(low<=4){sev='high';head=`Pit within about ${low} lap${low==1?'':'s'}`}else if(low<=8){sev='med';head=`Plan your stop in the next ${low} laps`}else{sev='ok';head=`About ${low} laps of tyre life left`}
+why=low===Infinity?'No meaningful tyre wear in this data.':`Losing about ${Math.max(a.rateAvg,0).toFixed(2)} s per lap, ${a.lossNow.toFixed(1)} s so far.`+(isFinite(high)&&high>low?` A stop pays for itself in about ${fmtL(low,high)} laps (stop cost ${thr.toFixed(0)} s).`:'')+(low!==Infinity?' Enter laps to go to check whether the tyres last to the flag.':'')}
 return{sev,head,why:why+' Based on tyre wear only, so check traffic and the race situation too.'}}
 const LAB={high:'▲ Act now',med:'◆ Watch',ok:'✓ OK'},CL={high:'▲ Problem',med:'◆ Watch',ok:'✓ Fine'};
 
 /* ---------- state ---------- */
 let sessions=[],tab='call',cmpSt={A:null,B:null},cmpOv={A:null,B:null},OV=null,printing=false,view='single',cur=0,A=0,B=1,lastMsg='',msgs=[],imp=null,queue=[],armed=false;
 const fuel=()=>+$('#fuel').value||0,thr=n=>{const v=+$('#thr').value;return v>0?v:25};
-const remOf=s=>{const v=parseInt(s.meta.remaining,10);return v>0?v:0};
-function analyse(s,over){const r=runLaps(s,over);return analyseStint(s,r,fuel(),thr(r.st.n),remOf(s))}
+const remOf=s=>{const t=String(s.meta.remaining??'').trim();if(t==='')return null;const v=parseInt(t,10);return v>=0?v:null};
+const FUELP={club:['Club or touring car',.02],gt:['GT car',.035],f1:['Formula 1',.06]};
+function fuelFor(s){const p=s.meta.fuelPreset;if(p&&FUELP[p])return{v:FUELP[p][1],src:FUELP[p][0]+' rate'};if(p==='set')return{v:fuel(),src:'from Settings'};
+const top=s.tr?Math.max(...Object.values(s.tr.laps).map(l=>Math.max(...l.v.filter(fin)))):0;return top>=295?{v:FUELP.f1[1],src:`Formula 1 rate, chosen because the car reaches ${Math.round(top)} km/h`}:{v:fuel(),src:'from Settings'}}
+function analyse(s,over){const r=runLaps(s,over),fu=fuelFor(s),a=analyseStint(s,r,fu.v,thr(r.st.n),remOf(s));a.fuelSrc=fu.src;return a}
 
 /* ---------- charts ---------- */
 function chartS(a){const W=600,H=240,p=42,st=a.st,fuelG=a.fuel,{low,high}=a.left,rem=a.rem;
-const ph=Math.max(2,rem?Math.min(rem,30):Math.min(25,(isFinite(high)?high:isFinite(low)?low+4:8)+2));
+const ph=Math.max(2,rem>0?Math.min(rem,30):rem===0?0:Math.min(25,(isFinite(high)?high:isFinite(low)?low+4:8)+2));
 const x0=st.first,x1=st.last+ph,raw=lap=>a.f(lap-st.first)-fuelG*lap,curve=[];for(let l=x0;l<=x1;l++)curve.push([l,raw(l)]);
 const ys=[...a.lt,...curve.map(c=>c[1])],mn=Math.min(...ys)-.3,mx=Math.max(...ys)+.3,X=l=>p+(l-x0)/(x1-x0)*(W-p-12),Y=v=>H-28-(v-mn)/(mx-mn)*(H-46);
 const poly=arr=>arr.map(c=>X(c[0]).toFixed(1)+','+Y(c[1]).toFixed(1)).join(' ');
 const done=curve.filter(c=>c[0]<=st.last),fut=curve.filter(c=>c[0]>=st.last);
-let band='';if(isFinite(low)){const b0=st.last+low,b1=Math.min(isFinite(high)?st.last+high:x1,x1);if(b0<=x1)band=`<rect class="band" x="${X(b0)}" y="12" width="${Math.max(X(b1)-X(b0),3)}" height="${H-40}"/><text class="t" x="${X(b0)+4}" y="26">Pit window</text>`}
-const flag=rem&&st.last+rem<=x1?`<line class="flag" x1="${X(st.last+rem)}" x2="${X(st.last+rem)}" y1="12" y2="${H-28}"/><text class="t" x="${X(st.last+rem)-30}" y="26">Flag</text>`:'';
+let band='';if(isFinite(low)&&rem!==0){const b0=st.last+low,b1=Math.min(isFinite(high)?st.last+high:x1,x1);if(b0<=x1)band=`<rect class="band" x="${X(b0)}" y="12" width="${Math.max(X(b1)-X(b0),3)}" height="${H-40}"/><text class="t" x="${X(b0)+4}" y="26">Pit window</text>`}
+const flag=rem!=null&&st.last+rem<=x1?`<line class="flag" x1="${X(st.last+rem)}" x2="${X(st.last+rem)}" y1="12" y2="${H-28}"/><text class="t" x="${X(st.last+rem)-30}" y="26">Flag</text>`:'';
 return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lap times for this stint with the fitted trend and the pit window. Higher means slower."><line class="axis" x1="${p}" x2="${W-12}" y1="${H-28}" y2="${H-28}"/><line class="axis" x1="${p}" x2="${p}" y1="12" y2="${H-28}"/>
 ${[.25,.5,.75].map(k=>`<line class="grid" x1="${p}" x2="${W-12}" y1="${12+k*(H-40)}" y2="${12+k*(H-40)}"/>`).join('')}${band}${flag}
 <text class="t" x="2" y="20">${mx.toFixed(1)}s</text><text class="t" x="2" y="${H-32}">${mn.toFixed(1)}s</text><text class="t" x="${p}" y="${H-8}">Lap ${x0}</text><text class="t" x="${X(st.last)-20}" y="${H-8}">Lap ${st.last}</text>
@@ -595,7 +601,8 @@ ${ig.length?`<p class="ign">Left out: ${ig.map(x=>`lap ${x.lap} (${x.why})`).joi
 function fieldsBlock(s){return`<div class="grid2"><label class="fld">Name<input type="text" id="sname" value="${esc(s.name)}"></label>
 <label class="fld">Tyre compound${sel('id="cmpd"',[['','Not set'],['Soft','Soft'],['Medium','Medium'],['Hard','Hard'],['Wet','Wet'],['Other','Other']],s.meta.compound)}</label>
 <label class="fld">Track temperature (°C)<input type="number" id="ttemp" value="${esc(s.meta.trackTemp)}" step="1"></label>
-<label class="fld">Air temperature (°C)<input type="number" id="atemp" value="${esc(s.meta.airTemp)}" step="1"></label></div>`}
+<label class="fld">Air temperature (°C)<input type="number" id="atemp" value="${esc(s.meta.airTemp)}" step="1"></label>
+<label class="fld">Fuel effect${sel('id="fuelp"',[['','Automatic'],['club','Club or touring car (0.02 s per lap)'],['gt','GT car (0.035 s per lap)'],['f1','Formula 1 (0.06 s per lap)'],['set','Use the Settings value']],s.meta.fuelPreset||'')}</label></div>`}
 function detailsBlock(s,open){return`<details class="set noprint"${open?' open':''}><summary>Session details</summary>${fieldsBlock(s)}</details>`}
 function condText(s){const m=s.meta,p=[];if(m.compound)p.push(m.compound+' tyres');if(m.trackTemp!=='')p.push('track '+m.trackTemp+' °C');if(m.airTemp!=='')p.push('air '+m.airTemp+' °C');return p.join(', ')}
 function single(a){const s=sessions[cur],o={high:0,med:1,ok:2},c=call(a);a.F.sort((x,y)=>o[x.sev]-o[y.sev]);
@@ -603,15 +610,15 @@ const top=a.F.filter(f=>f.sev!='ok').slice(0,2).map(f=>f.t);
 lastMsg=`Pacely (${s.name}): ${c.head}.`+(top.length?' '+top.join('. ')+'.':' No other problems found.');
 const cons=a.resid<.15?['Good','ok']:a.resid<.3?['Fair','med']:['Poor','high'];
 const ph=`<div class="printhead"><h1>Pacely report</h1><p><b>${esc(s.name)}</b> · ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}${condText(s)?' · '+esc(condText(s)):''}</p><p>Stint laps ${a.st.first}–${a.st.last} · fuel gain ${a.fuel} s/lap · pit stop cost ${a.thr.toFixed(0)} s</p></div>`,
-hero=`<section class="call ${c.sev}" aria-live="polite"><div class="k">${esc(s.name)}</div><div class="big">${esc(c.head)}</div><p class="why">${esc(c.why)}</p><p class="conf">Confidence: ${a.conf}</p>
-<div class="row noprint"><div class="inl"><label for="rem">Laps to go</label><input type="number" id="rem" min="0" step="1" value="${esc(s.meta.remaining)}" placeholder="optional"></div><button id="copy">Copy message for the pit wall</button></div></section>
+hero=`<section class="call ${c.sev}" aria-live="polite"><div class="k">${esc(s.name)}</div><div class="big">${esc(c.head)}</div><p class="why">${esc(c.why)}</p><p class="conf">Confidence: ${a.conf} · fuel effect ${a.fuel} s per lap (${esc(a.fuelSrc||'from Settings')})</p>
+<div class="row noprint"><div class="inl"><label for="rem">Laps to go</label><input type="number" id="rem" min="0" step="1" value="${esc(s.meta.remaining??'')}" placeholder="0 = finished"></div><button id="copy">Copy message for the pit wall</button></div></section>
 <div class="tiles"><div class="tile"><div class="n">${Math.max(a.rateAvg,0).toFixed(2)}<small> s</small></div><div class="l">Tyre loss per lap</div></div>
-<div class="tile"><div class="n">${a.left.low===Infinity?'–':fmtL(a.left.low,a.left.high)}<small> laps</small></div><div class="l">Before you should pit</div></div>
+${a.rem===0?`<div class="tile"><div class="n">${isFinite(a.optLen)?a.optLen:'–'}<small> laps</small></div><div class="l">Best stint on this set (on wear alone)</div></div>`:`<div class="tile"><div class="n">${a.left.low===Infinity?'–':fmtL(a.left.low,a.left.high)}<small> laps</small></div><div class="l">Before you should pit</div></div>`}
 <div class="tile"><div class="n"><span class="tag ${cons[1]}">${cons[0]}</span></div><div class="l">Lap consistency (±${a.resid.toFixed(2)} s)</div></div></div>`,
 fi=f=>`<article class="f ${f.sev}"><span class="tag">${LAB[f.sev]}</span><h3>${esc(f.t)}</h3><p class="do">${esc(f.ac)}</p><details class="why"${printing?' open':''}><summary>Why?</summary><p>${esc(f.ev)}</p></details></article>`,
 shown=printing?a.F:a.F.slice(0,3),more=printing?[]:a.F.slice(3),
 finds=`<h2>What to do</h2><div class="fgrid">${shown.map(fi).join('')}</div>${more.length?`<details class="set noprint"><summary>Show ${more.length} more</summary><div class="fgrid">${more.map(fi).join('')}</div></details>`:''}`,
-chart=`<h2>Lap times and pit window</h2><div class="card">${chartS(a)}<p class="hint" style="margin-top:6px">Each dot is a lap. The line is the trend. The shaded band is when to pit.${a.rem?' The vertical line is the flag.':''}</p></div>`,
+chart=`<h2>${a.rem===0?"Lap times":"Lap times and pit window"}</h2><div class="card">${chartS(a)}<p class="hint" style="margin-top:6px">Each dot is a lap. The line is the trend.${a.rem===0?'':' The shaded band is when to pit.'}${a.rem!=null?' The vertical line is the flag.':''}</p></div>`,
 corners=a.table.length?`<h2>Corners</h2><div class="cor">${a.table.map(r=>`<div class="cr"><span class="nm">${esc(r.c)}</span><span class="tag ${r.st}">${CL[r.st]}</span><span class="dt">${esc(r.dt)}</span></div>`).join('')}</div>`:'',
 readn=(()=>{const q=SRC.get(s.id);if(!q||!q.map)return'';const nm=q.shape==='laps'&&q.map.lapTime>=0?` from the column "${esc(q.names[q.map.lapTime])}"`:'';return`<p class="readn noprint">Read ${s.laps.length} laps${nm}. <button class="link" id="fixcols">Not right? Fix columns</button></p>`})(),
 fine=`<details class="set noprint"><summary>Fine-tune stints and laps</summary>${stintBlock(s,a)}</details>`,
@@ -907,7 +914,7 @@ const c=$('#cmp');if(c)c.onclick=()=>{view=view=='compare'?'single':'compare';ms
 const cl=$('#clr');if(cl)cl.onclick=()=>{if(armed!=='clr'){armed='clr';render();return}DB.clear();sessions=[];cmpSt={A:null,B:null};tab='call';view='single';cur=0;A=0;B=1;msgs=[];armed=false;render()};
 const sA=$('#selA'),sB=$('#selB');if(sA){sA.onchange=()=>{A=+sA.value;cmpSt.A=null;cmpOv.A=null;render()};sB.onchange=()=>{B=+sB.value;cmpSt.B=null;cmpOv.B=null;render()};const tA=$('#stA'),tB=$('#stB');if(tA)tA.onchange=()=>{cmpSt.A=+tA.value;render()};if(tB)tB.onchange=()=>{cmpSt.B=+tB.value;render()}}
 const s=sessions[cur],bind=(id,fn)=>{const e=$('#'+id);if(e)e.onchange=()=>{fn(e.value.trim?e.value.trim():e.value);save(s);render()}};
-if(s&&view==='single'){bind('rem',v=>s.meta.remaining=v);bind('ign',v=>{s.meta.ignore=v;s.meta.stint=null});bind('spl',v=>{s.meta.splits=v;s.meta.stint=null});bind('sname',v=>s.name=v||s.name);bind('cmpd',v=>s.meta.compound=v);bind('ttemp',v=>s.meta.trackTemp=v);bind('atemp',v=>s.meta.airTemp=v)}
+if(s&&view==='single'){bind('rem',v=>s.meta.remaining=v);bind('fuelp',v=>s.meta.fuelPreset=v);bind('ign',v=>{s.meta.ignore=v;s.meta.stint=null});bind('spl',v=>{s.meta.splits=v;s.meta.stint=null});bind('sname',v=>s.name=v||s.name);bind('cmpd',v=>s.meta.compound=v);bind('ttemp',v=>s.meta.trackTemp=v);bind('atemp',v=>s.meta.airTemp=v)}
 const pr=$('#print');if(pr)pr.onclick=printReport;
 const oA=$('#ovA'),oB=$('#ovB');if(oA){oA.onchange=()=>{cmpOv.A=+oA.value;render()};oB.onchange=()=>{cmpOv.B=+oB.value;render()}}
 wireXH();const tl=$('#tlap');if(tl)tl.onchange=()=>{teleSel[sessions[cur].id]=+tl.value;render()};
@@ -994,7 +1001,7 @@ function handleText(text,name){msgs=[];armed=false;try{queue.push(prepare(name||
 const aiState={};
 const AI_SYSTEM="You are the assistant inside Pacely, a race-data app for club and mid-tier motorsport teams. Answer using ONLY the session facts provided. Never invent numbers, laps, corners or causes that are not in the facts. If the facts do not answer the question, say so and say what extra data would help. Use plain, direct English that a driver or team boss understands. No markdown, no bullet symbols, no emojis. Keep answers under 110 words unless asked for more. Give advice as suggestions to confirm with the driver and the race situation, not as certainties.";
 const inf=v=>v===Infinity?'no limit':v;
-function aiContext(a,s){const m=s.meta;return JSON.stringify({session:s.name,conditions:{compound:m.compound||null,trackTempC:m.trackTemp||null,airTempC:m.airTemp||null,lapsToGo:a.rem||null},settings:{pitStopCostSeconds:a.thr,fuelGainSecondsPerLap:a.fuel},
+function aiContext(a,s){const m=s.meta;return JSON.stringify({session:s.name,conditions:{compound:m.compound||null,trackTempC:m.trackTemp||null,airTempC:m.airTemp||null,lapsToGo:a.rem,raceFinished:a.rem===0},settings:{pitStopCostSeconds:a.thr,fuelGainSecondsPerLap:a.fuel,fuelEffectSource:a.fuelSrc||null},
 stint:{firstLap:a.st.first,lastLap:a.st.last,cleanLaps:a.n,leftOutLaps:a.run.ignored.map(x=>x.lap+' ('+x.why+')')},raceCall:call(a),
 numbers:{tyreLossPerLapAverage:+a.rateAvg.toFixed(3),tyreLossPerLapNow:+a.rateNow.toFixed(3),lostSoFarSeconds:+a.lossNow.toFixed(2),lapsUntilStopPaysOff:{low:inf(a.left.low),high:inf(a.left.high)},lapTimeScatterSeconds:+a.resid.toFixed(3),confidence:a.conf,wearAccelerating:a.useQuad},
 findings:a.F.map(f=>({severity:f.sev,title:f.t,whatWeSee:f.ev,whatToDo:f.ac})),corners:a.table.map(r=>({corner:r.c,status:r.st,note:r.dt,numbers:r.nums})),cleanLapTimes:a.st.laps.map(l=>[l.lap,+l.t.toFixed(3)])})}
