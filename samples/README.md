@@ -35,6 +35,23 @@ Load both files, then open Telemetry for one driver or Compare for Hamilton agai
 
 This 2020 session's recording has car numbers but no driver names; the names come from the 2020 Mercedes line-up.
 
+## Race telemetry
+
+Full-race car telemetry for the winner and runner-up of four Grands Prix. Same columns as the practice files above. These work on every tab: Race call reads the real lap times (tyre wear, stints, pit window), Telemetry explains any lap, and Compare puts the two drivers side by side.
+
+| File | Race | Car | Laps | Fastest lap |
+|---|---|---|---|---|
+| `f1-2020-belgium-race-44-hamilton-telemetry.csv` | 2020 Belgian GP, 1st | #44 Hamilton, Mercedes | 44 | 1:47.758 (lap 28) |
+| `f1-2020-belgium-race-77-bottas-telemetry.csv` | 2020 Belgian GP, 2nd | #77 Bottas, Mercedes | 44 | 1:47.983 (lap 27) |
+| `f1-2020-italy-race-10-gasly-telemetry.csv` | 2020 Italian GP, 1st | #10 Gasly, AlphaTauri | 53 | 1:24.037 (lap 34) |
+| `f1-2020-italy-race-55-sainz-telemetry.csv` | 2020 Italian GP, 2nd | #55 Sainz, McLaren | 53 | 1:23.882 (lap 40) |
+| `f1-2021-saudi-arabia-race-44-hamilton-telemetry.csv` | 2021 Saudi Arabian GP, 1st | #44 Hamilton, Mercedes | 50 | 1:30.734 (lap 47) |
+| `f1-2021-saudi-arabia-race-33-verstappen-telemetry.csv` | 2021 Saudi Arabian GP, 2nd | #33 Verstappen, Red Bull | 50 | 1:31.488 (lap 35) |
+| `f1-2022-bahrain-race-16-leclerc-telemetry.csv` | 2022 Bahrain GP, 1st | #16 Leclerc, Ferrari | 57 | 1:34.570 (lap 51) |
+| `f1-2022-bahrain-race-55-sainz-telemetry.csv` | 2022 Bahrain GP, 2nd | #55 Sainz, Ferrari | 57 | 1:35.740 (lap 52) |
+
+Safety cars, red flags (Monza 2020 and Jeddah 2021) and pit stops are all in the data. Pacely leaves out the slow laps and finds pit stops where the car stands still, so stints split at each stop. Load one race (two files) at a time.
+
 ## Source
 
 Official Formula 1 live timing and car data, as recorded in the open-source FastF1 project's test data (github.com/theOehrly/fastf1-test-data) and processed with FastF1. Timing and telemetry data © Formula One World Championship Limited. Included here for testing Pacely only.

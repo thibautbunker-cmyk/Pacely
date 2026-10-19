@@ -449,7 +449,8 @@ gr.forEach((g,k)=>{const nx=gr[k+1];g.dur=nx&&nx.lap===g.lap+1&&T[nx.i0]-T[g.i1]
 const ml=med(gr.map(g=>g.len).filter(v=>v>0)),md=med(gr.map(g=>g.dur));
 const kept=gr.filter(g=>g.len>=.9*ml&&g.len<=1.15*ml&&g.dur>=.5*md);
 if(kept.length<5)throw new Error(`Found ${kept.length} complete lap${kept.length==1?'':'s'}. Pacely needs at least 5. Check the lap number or distance column.`);
-const laps=kept.map(g=>({lap:g.lap,t:g.dur})),L=ml,BIN=5,NB=Math.floor(L/BIN);
+const firstLap=gr.length?gr[0].lap:null,stopped=g=>{if(g.lap===firstLap)return false;let run=0;for(let i=g.i0+1;i<=g.i1;i++){if(V[i]<5){run+=T[i]-T[i-1];if(run>=1)return true}else run=0}return false};
+const laps=kept.map(g=>stopped(g)?{lap:g.lap,t:g.dur,pit:true}:{lap:g.lap,t:g.dur}),L=ml,BIN=5,NB=Math.floor(L/BIN);
 {const tv=TH.filter(fin).sort((a,b)=>a-b),hi=tv.length?tv[Math.floor(tv.length*.98)]:0;if(hi>0&&hi<=1.05)for(let i=0;i<TH.length;i++)TH[i]*=100}
 const prof=g=>{const sc=L/g.len,P={v:new Float32Array(NB),g:new Float32Array(NB),s:new Float32Array(NB),b:new Float32Array(NB),th:new Float32Array(NB),gr:new Float32Array(NB),rpm:new Float32Array(NB),la:new Float64Array(NB),lo:new Float64Array(NB),px:new Float64Array(NB),py:new Float64Array(NB)};let k=0;
 for(let j=0;j<NB;j++){const pos=(j+.5)*BIN;while(k+1<g.rel.length&&g.rel[k+1]*sc<=pos)k++;const i=g.i0+k;P.v[j]=V[i];P.g[j]=G[i];P.s[j]=S[i];P.b[j]=B[i];P.th[j]=TH[i];P.gr[j]=GR[i];P.rpm[j]=RP[i];P.la[j]=LA[i];P.lo[j]=LO[i];P.px[j]=PX[i];P.py[j]=PY[i]}return P};
@@ -491,9 +492,10 @@ const gap=i>0&&l.lap-laps[i-1].lap>1;let sp=false;spl.forEach(x=>{if(x>prevIncl&
 if((run>=2||gap||sp)&&cur.length){st.push(cur);cur=[]}cur.push(l);prevIncl=l.lap;run=0});
 if(cur.length)st.push(cur);return st.map((ls,i)=>({i,laps:ls,first:ls[0].lap,last:ls[ls.length-1].lap,n:ls.length}))}
 function pickStint(stints,sel){if(sel!=null&&stints[sel])return sel;let k=-1;stints.forEach((s,i)=>{if(s.n>=5)k=i});if(k>=0)return k;let b=0;stints.forEach((s,i)=>{if(s.n>stints[b].n)b=i});return b}
-function runLaps(s,over){const laps=[...s.laps].sort((a,b)=>a.lap-b.lap),flags=flagLaps(laps),ign=parseLapList(s.meta.ignore),spl=parseLapList(s.meta.splits),stints=buildStints(laps,flags,ign,spl);
+function runLaps(s,over){const laps=[...s.laps].sort((a,b)=>a.lap-b.lap),flags=flagLaps(laps),ign=parseLapList(s.meta.ignore),spl=parseLapList(s.meta.splits);
+laps.forEach((l,i)=>{if(l.pit){flags[i]='pit';if(i+1<laps.length)flags[i+1]='pit';spl.add(l.lap+2)}});const stints=buildStints(laps,flags,ign,spl);
 if(!stints.length)throw new Error('No laps are left after ignoring laps. Clear the "Ignore laps" box.');
-const idx=pickStint(stints,over!=null?over:s.meta.stint),ignored=laps.map((l,i)=>({lap:l.lap,why:ign.has(l.lap)?'ignored by you':flags[i]==='slow'?'slow lap':flags[i]==='fast'?'unusually fast lap':null})).filter(x=>x.why);
+const idx=pickStint(stints,over!=null?over:s.meta.stint),ignored=laps.map((l,i)=>({lap:l.lap,why:ign.has(l.lap)?'ignored by you':flags[i]==='pit'?'pit stop':flags[i]==='slow'?'slow lap':flags[i]==='fast'?'unusually fast lap':null})).filter(x=>x.why);
 return{laps,flags,stints,idx,st:stints[idx],ignored}}
 
 /* ---------- analysis ---------- */
