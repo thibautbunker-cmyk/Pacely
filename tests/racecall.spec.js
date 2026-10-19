@@ -77,3 +77,32 @@ test('tyre compounds in qualifying files label each run', async ({ page }) => {
   const runs = page.locator('h2:has-text("Runs") + .card');
   await expect(runs).toContainText('Soft');
 });
+
+test('race picture: positions, gaps, pit rejoin and undercuts from a multi-car timing file', async ({ page }) => {
+  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  await openApp(page);
+  await loadFile(page, sample('f1-2022-bahrain-race-timing.csv'));
+  await pick(page, 'Leclerc'); await tab(page, 'call');
+  const card = page.locator('h2:has-text("Race picture") + .card');
+  await expect(card).toContainText('P1');
+  await page.fill('#asof', '30'); await page.locator('#asof').dispatchEvent('change');
+  await expect(card).toContainText('Position after lap 30');
+  await expect(card).toContainText('Ahead of Max Verstappen');
+  await expect(card).toContainText('If you pit on lap 30, you rejoin about P4');
+  await expect(card).toContainText('measured from');
+  const rows = card.locator('table tr', { hasText: 'Max Verstappen' });
+  await expect(rows.first()).toContainText('Lap 14 (earlier)');
+  await expect(rows.first()).toContainText('Lost 2.9 s');
+  const f = await page.evaluate(() => racePicFacts(sessions[cur], analyse(sessions[cur])));
+  expect(f.position).toBe(1); expect(f.carBehind).toBe('Max Verstappen'); expect(f.gapBehindS).toBeCloseTo(6.4, 1);
+  expect(f.pitStopLossS).toBeGreaterThan(18); expect(f.pitStopLossS).toBeLessThan(30);
+  await pick(page, 'Verstappen');
+  await page.fill('#asof', '30'); await page.locator('#asof').dispatchEvent('change');
+  await expect(page.locator('h2:has-text("Race picture") + .card')).toContainText('Behind Charles Leclerc');
+  expect(errs).toEqual([]);
+});
+
+test('single-car files show no race picture', async ({ page }) => {
+  await openApp(page); await openSamples(page); await pick(page, '6 Race'); await tab(page, 'call');
+  await expect(page.locator('h2', { hasText: 'Race picture' })).toHaveCount(0);
+});

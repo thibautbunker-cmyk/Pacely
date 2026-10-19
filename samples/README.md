@@ -24,7 +24,7 @@ Load one event at a time (or use **Clear all sessions** on the Files tab first),
 
 `f1-2022-bahrain-race-timing.csv` is the full lap chart of the 2022 Bahrain Grand Prix: 1,125 laps from all 20 cars. Columns: `Number`, `Driver`, `Team`, `Lap`, `Lap Time`, `S1`, `S2`, `S3`, `Compound`, `Tyre Life`, `Position`, `Race Time (s)` (time since the start at the end of the lap) and `Pit` (`In` or `Out`).
 
-Load it with **Tick all shown**, pick a driver and open **Race call**. Stints split where the tyres change, and the **Stints and tyres** table compares wear and pace on each compound. Leclerc (winner) ran Soft, Soft, Medium and a used Soft after the late safety car.
+Load it with **Tick all shown**, pick a driver and open **Race call**. Stints split where the tyres change, and the **Stints and tyres** table compares wear and pace on each compound. Leclerc (winner) ran Soft, Soft, Medium and a used Soft after the late safety car. Because every car is in the file, the **Race picture** shows gaps, the lap chart, where a stop would rejoin, and how Verstappen's two undercut attempts on laps 14 and 30 played out.
 
 ## Telemetry
 

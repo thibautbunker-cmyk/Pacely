@@ -322,7 +322,7 @@ const SAMPLES=[
 const DB={db:null,ok:false,
 open(){return new Promise(res=>{try{const r=indexedDB.open('pacely',1);r.onupgradeneeded=()=>r.result.createObjectStore('sessions',{keyPath:'id'});r.onsuccess=()=>{this.db=r.result;this.ok=true;res(true)};r.onerror=()=>res(false);r.onblocked=()=>res(false)}catch(e){res(false)}})},
 all(){return new Promise(res=>{if(!this.ok)return res([]);try{const q=this.db.transaction('sessions').objectStore('sessions').getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([])}catch(e){res([])}})},
-put(s){if(!this.ok)return;try{this.db.transaction('sessions','readwrite').objectStore('sessions').put(JSON.parse(JSON.stringify(s)))}catch(e){}},
+put(s){if(!this.ok)return;try{this.db.transaction('sessions','readwrite').objectStore('sessions').put(JSON.parse(JSON.stringify(s,(k,v)=>k[0]==='_'?undefined:v)))}catch(e){}},
 del(id){if(!this.ok)return;try{this.db.transaction('sessions','readwrite').objectStore('sessions').delete(id)}catch(e){}},
 clear(){if(!this.ok)return;try{this.db.transaction('sessions','readwrite').objectStore('sessions').clear()}catch(e){}}};
 const save=s=>{if(s&&!s.sample)DB.put(s)};
@@ -389,12 +389,12 @@ return{shape:'table',map:m,units:{lapTime:'s',speed:'kmh',g:'g',time:'s',dist:'m
 const m={lap:find(/^(lap|lap ?no|lap ?num(ber)?|lap ?#|lapnum|lap count|laps?|runde|rundennummer|tours?|n tour|vuelta|giro|volta|ronde|kolo)$/),lapTime:find(/^lap ?time$/,/lap ?time/,/^laptime/,/rundenzeit|zeit pro runde|temps au tour|temps tour|tiempo( por)? vuelta|tempo( sul)? giro|tempo( por)? volta|rondetijd/,/^(time|tijd|zeit|temps|tiempo|tempo)$/),corner:find(/^(corner|turn|corner ?(name|id|no|number)|turn ?(no|number))$/,/corner|turn/),
 time:find(/^time( s| ms| sec| seconds)?$/,/^elapsed/,/^session time/,/^timestamp/),dist:find(/^distance/,/^dist/,/distance/,/odometer/),speed:find(/^(gps |ground |car |vehicle )?speed/,/speed/,/velocity/,/^vcar/),
 latG:find(/lat.*acc/,/lat.* g$/,/^g ?lat/,/^glat/,/lateral/,/acc.*lat/),steer:find(/steer/),brake:find(/brake.*(press|pos)/,/brake/),posX:find(/^(pos(ition)? )?x( m)?$/,/^x ?pos(ition)?( m)?$/),posY:find(/^(pos(ition)? )?y( m)?$/,/^y ?pos(ition)?( m)?$/),lat:find(/^(gps ?)?lat(itude)?( deg)?$/,/latitude/),lon:find(/^(gps ?)?lon(g|gitude)?( deg)?$/,/longitude/),gear:find(/^gear$/,/^gear ?(pos|position|no|number|engaged)?$/,/^n ?gear$/,/^gear/),rpm:find(/\brpm\b/,/^engine ?(speed|rpm)/,/^n ?(mot|eng)\b/,/^nmot/,/^revs?$/),throttle:find(/throttle/,/^tps\b/,/accel(erator)? ?pedal/,/gas ?pedal/,/^(aps|ath|pps)\b/,/pedal ?pos/)};
-m.compound=find(/^(tyre|tire|tyres|tires)( compound| type| spec)?$/,/^compound$/,/compound/);m.tyreLife=find(/^(tyre|tire) ?(life|age|laps)$/,/(tyre|tire) ?(life|age)/,/laps on (tyre|tire|set)/);m.pit=find(/^pit( ?(stop|in out|in|lane|flag))?$/);
+m.compound=find(/^(tyre|tire|tyres|tires)( compound| type| spec)?$/,/^compound$/,/compound/);m.tyreLife=find(/^(tyre|tire) ?(life|age|laps)$/,/(tyre|tire) ?(life|age)/,/laps on (tyre|tire|set)/);m.pit=find(/^pit( ?(stop|in out|in|lane|flag))?$/);m.pos=find(/^(pos|position|place|rank|running position|p)$/);m.raceTime=find(/^(race|total|elapsed|cumulative|running) ?time/,/^(total|elapsed)$/,/^time of day$/);
 m.minSpeed=find(/^min.*speed/,/^apex.*speed/);m.brakeM=find(/brake.*(point|dist|m$)/);m.steerDeg=m.steer;
 const uniq=i=>{const v=data.slice(0,3000).map(r=>String(r[i]==null?'':r[i]).trim()).filter(Boolean);return v.length?new Set(v).size/v.length:1};
 const secI=[];L.forEach((s,i)=>{const x=s.match(/^(?:s|sec|sector|sektor|secteur|settore|split) ?([1-9])(?: time| tijd| zeit)?$/);if(x&&!secI.some(z=>z[0]===+x[1]))secI.push([+x[1],i])});secI.sort((a,b)=>a[0]-b[0]);
 SECK.forEach((k,j)=>{m[k]=secI[j]&&secI[j][0]===j+1?secI[j][1]:-1});
-if(m.lapTime<0){let best=-1,bs=1e9;const used=new Set(['lap','time','speed','dist','latG','steer','brake','throttle','gear','rpm','lat','lon','posX','posY','tyreLife'].map(k=>m[k]).filter(i=>i>=0));names.forEach((n,i)=>{if(used.has(i)||secI.some(z=>z[1]===i))return;const v=data.slice(0,400).map(r=>parseLapTime(r[i],'auto',dec)).filter(x=>fin(x));if(v.length<Math.max(5,data.slice(0,400).length*.8))return;const mu=mean(v);if(!(mu>15&&mu<900))return;const sd=Math.sqrt(mean(v.map(x=>(x-mu)*(x-mu))));const cv=sd/mu;if(cv<.25&&cv<bs){bs=cv;best=i}});if(best>=0)m.lapTime=best}
+if(m.lapTime<0){let best=-1,bs=1e9;const used=new Set(['lap','time','speed','dist','latG','steer','brake','throttle','gear','rpm','lat','lon','posX','posY','tyreLife','pos','raceTime'].map(k=>m[k]).filter(i=>i>=0));names.forEach((n,i)=>{if(used.has(i)||secI.some(z=>z[1]===i))return;const v=data.slice(0,400).map(r=>parseLapTime(r[i],'auto',dec)).filter(x=>fin(x));if(v.length<Math.max(5,data.slice(0,400).length*.8))return;const mu=mean(v);if(!(mu>15&&mu<900))return;const sd=Math.sqrt(mean(v.map(x=>(x-mu)*(x-mu))));const cv=sd/mu;if(cv<.25&&cv<bs){bs=cv;best=i}});if(best>=0)m.lapTime=best}
 if(m.lap<0){names.forEach((n,i)=>{if(m.lap>=0||i===m.lapTime||i===m.time)return;const v=data.slice(0,300).map(r=>num(r[i],dec));if(v.length>=5&&v.every(fin)&&v.every((x,k)=>k===0||x===v[k-1]+1)&&v[0]<=2)m.lap=i})}
 let shape;if(m.corner>=0&&m.lap>=0&&m.lapTime>=0)shape='table';else if(m.time>=0&&m.speed>=0&&(m.lapTime<0||(data.length>500&&uniq(m.lapTime)<.2)))shape='series';else shape='laps';
 if(shape==='laps'&&m.lapTime<0&&m.time>=0&&m.sec1<0)m.lapTime=m.time;
@@ -406,7 +406,7 @@ const gc=col(shape==='table'?m.latG:m.latG);if(/m\/s|ms2|m s/.test(gT)||(gc.leng
 const dc=col(m.dist);if(/\bkm\b|\(km\)|\[km\]/.test(dT)||(dc.length&&Math.max(...dc.map(Math.abs))<60))u.dist='km';
 const tc=col(m.time);if(tc.length>2){const dts=[];for(let i=1;i<Math.min(tc.length,2000);i++){const d=tc[i]-tc[i-1];if(d>0)dts.push(d)}if(med(dts)>=2)u.time='ms'}
 return{shape,map:m,units:u,exact:false}}
-const FIELDS={laps:[['lap','Lap number',0,'If your file has no lap column, laps are numbered 1, 2, 3 in order'],['lapTime','Lap time',1,'Or leave it as none to add up the sector times'],['sec1','Sector 1',0,'Sector times give you an ideal lap in Qualifying'],['sec2','Sector 2',0],['sec3','Sector 3',0],['sec4','Sector 4',0],['compound','Tyre compound',0,'Labels each stint and starts a new one when the tyres change'],['tyreLife','Tyre age (laps)',0],['pit','Pit in or out',0,'Marks pit laps, for example In and Out']],
+const FIELDS={laps:[['lap','Lap number',0,'If your file has no lap column, laps are numbered 1, 2, 3 in order'],['lapTime','Lap time',1,'Or leave it as none to add up the sector times'],['sec1','Sector 1',0,'Sector times give you an ideal lap in Qualifying'],['sec2','Sector 2',0],['sec3','Sector 3',0],['sec4','Sector 4',0],['compound','Tyre compound',0,'Labels each stint and starts a new one when the tyres change'],['tyreLife','Tyre age (laps)',0],['pit','Pit in or out',0,'Marks pit laps, for example In and Out'],['pos','Position',0,'With race time, shows the race picture for files with many cars'],['raceTime','Race time at the end of the lap',0,'Total time since the start']],
 table:[['lap','Lap number',1],['corner','Corner name',1],['lapTime','Lap time',1],['minSpeed','Minimum speed',0],['brakeM','Braking point (metres)',0],['steerDeg','Steering angle',0],['latG','Lateral g',0]],
 series:[['time','Time',1],['lap','Lap number',0,'Or use distance below if it resets every lap'],['dist','Distance',0],['speed','Speed',1],['latG','Lateral acceleration',0],['steer','Steering angle',0],['brake','Brake pressure or position',0],['throttle','Throttle position',0],['gear','Gear',0],['rpm','Engine speed (RPM)',0],['lat','GPS latitude',0,'With longitude, draws the track map'],['lon','GPS longitude',0],['posX','Position X (metres)',0,'Or use X and Y track coordinates for the map'],['posY','Position Y (metres)',0]]};
 const SHAPES={laps:'Lap times only',table:'Lap and corner table',series:'Telemetry over time'};
@@ -420,11 +420,12 @@ function build(imp){const{data,map,units,shape,dec}=imp,name=imp.name.replace(/\
 const need=(k,label)=>{if(!(map[k]>=0))throw new Error(`Choose a column for "${label}".`)};
 const cell=(r,k)=>map[k]>=0?num(r[map[k]],dec):NaN,txt=(r,k)=>map[k]>=0&&r[map[k]]!=null?String(r[map[k]]).trim():'';
 if(shape==='laps'){const SK=SECK.filter(k=>map[k]>=0);if(!SK.length)need('lapTime','Lap time');const laps=[];let n=0,off=0,both=0;
-const lu=map.lapTime>=0?resolveLT(data,map.lapTime,units.lapTime,dec):null,su=SK.map(k=>resolveLT(data,map[k],units.lapTime,dec));
+const ru=map.raceTime>=0?(data.slice(0,50).some(r=>/^\d+:\d/.test(String(r[map.raceTime]??'').trim()))?'mmss':'s'):null,lu=map.lapTime>=0?resolveLT(data,map.lapTime,units.lapTime,dec):null,su=SK.map(k=>resolveLT(data,map[k],units.lapTime,dec));
 for(const r of data){const sv=SK.map((k,j)=>parseLapTime(r[map[k]],su[j],dec)),sOk=SK.length>0&&sv.every(v=>fin(v)&&v>0),sum=sOk?sv.reduce((a,b)=>a+b,0):NaN;
 const t=lu?parseLapTime(r[map.lapTime],lu,dec):sum;if(!fin(t)||t<=0)continue;n++;const lap=map.lap>=0?num(r[map.lap],dec):n;if(!fin(lap))continue;
-const o={lap:Math.round(lap),t},cs=txt(r,'compound'),age=cell(r,'tyreLife'),pf=txt(r,'pit');if(cs)o.c=normCmp(cs);if(fin(age))o.age=age;if(/^(in|y|yes|1|true|pit|p|box|pit ?in)$/i.test(pf))o.pit=true;else if(/^(out|pit ?out)$/i.test(pf))o.pout=true;if(sOk){o.s=sv;if(lu){both++;if(Math.abs(sum-t)>Math.max(.05,t*.002))off++}}laps.push(o)}
-if(laps.length<3)throw new Error(`Found only ${laps.length} usable lap times. Pacely needs at least 3.`);const s=mk(name,laps,[]);
+const o={lap:Math.round(lap),t},cs=txt(r,'compound'),age=cell(r,'tyreLife'),pf=txt(r,'pit');if(cs)o.c=normCmp(cs);if(fin(age))o.age=age;const ps=cell(r,'pos'),rt=ru?parseLapTime(r[map.raceTime],ru,dec):NaN;if(fin(ps)&&ps>0)o.pos=Math.round(ps);if(fin(rt)&&rt>0)o.rt=rt;if(/^(in|y|yes|1|true|pit|p|box|pit ?in)$/i.test(pf))o.pit=true;else if(/^(out|pit ?out)$/i.test(pf))o.pout=true;if(sOk){o.s=sv;if(lu){both++;if(Math.abs(sum-t)>Math.max(.05,t*.002))off++}}laps.push(o)}
+if(laps.length<3)throw new Error(`Found only ${laps.length} usable lap times. Pacely needs at least 3.`);
+{const R=laps.filter(l=>fin(l.rt));if(R.length&&Math.max(...R.map(l=>l.rt))>100*laps.reduce((a,l)=>a+l.t,0))R.forEach(l=>l.rt/=1000)}const s=mk(name,laps,[]);
 if(both&&off>both*.3){s.laps.forEach(l=>delete l.s);s.note=`The sector times do not add up to the lap time on ${off} of ${both} laps, so Pacely ignored them. Check which columns hold the sector times and load the file again.`}return s}
 if(shape==='table'){need('lap','Lap number');need('corner','Corner name');need('lapTime','Lap time');const lu=resolveLT(data,map.lapTime,units.lapTime,dec),sf=SPF[units.speed]||1,gf=units.g==='ms2'?1/9.80665:1,rows=[];
 for(const r of data){const lap=cell(r,'lap'),t=parseLapTime(r[map.lapTime],lu,dec),c=String(r[map.corner]==null?'':r[map.corner]).trim();if(!fin(lap)||!fin(t)||!c)continue;
@@ -616,6 +617,57 @@ function fieldsBlock(s){return`<div class="grid2"><label class="fld">Name<input 
 function detailsBlock(s,open){return`<details class="set noprint"${open?' open':''}><summary>Session details</summary>${fieldsBlock(s)}</details>`}
 const lapCmps=s=>[...new Set(s.laps.map(l=>l.c).filter(Boolean))];
 function condText(s,c){const m=s.meta,p=[],cc=c||m.compound||lapCmps(s).join(' and ');if(cc)p.push(cc+' tyres');if(m.trackTemp!=='')p.push('track '+m.trackTemp+' °C');if(m.airTemp!=='')p.push('air '+m.airTemp+' °C');return p.join(', ')}
+/* ---- race picture: every car loaded from the same timing file ---- */
+const evPeers=s=>s.ev?sessions.filter(x=>x.ev===s.ev):[],drvOf=x=>x.drv||x.name;
+function rtOf(x){const L=[...x.laps].sort((a,b)=>a.lap-b.lap),m=new Map();if(L.some(l=>fin(l.rt)))L.forEach(l=>{if(fin(l.rt))m.set(l.lap,l.rt)});else if(L.length&&L[0].lap===1&&L.every((l,i)=>l.lap===i+1)){let c=0;L.forEach(l=>{c+=l.t;m.set(l.lap,c)})}return m}
+function stopsOf(x){const L=[...x.laps].sort((a,b)=>a.lap-b.lap);if(L.some(l=>l.pit))return L.filter(l=>l.pit).map(l=>l.lap);
+return L.filter((l,i)=>{const n=L[i+1];return n&&n.lap===l.lap+1&&((l.c&&n.c&&l.c!==n.c)||(fin(l.age)&&fin(n.age)&&n.age<l.age))}).map(l=>l.lap)}
+function pitLossOf(P){const v=[];P.forEach(x=>{const T=new Map(x.laps.map(l=>[l.lap,l.t]));stopsOf(x).forEach(p=>{const ref=[p-3,p-2,p-1,p+2,p+3,p+4].map(k=>T.get(k)).filter(fin);if(!T.has(p)||!T.has(p+1)||ref.length<3)return;const d=T.get(p)+T.get(p+1)-2*med(ref);if(d>8&&d<80)v.push(d)})});return v.length?{v:med(v),n:v.length}:null}
+function racePic(s,a){const P=evPeers(s);if(P.length<2)return null;const RT=new Map(P.map(x=>[x,rtOf(x)])),me=RT.get(s);if(me.size<3)return null;
+const last=Math.max(...me.keys()),asOf=Math.max(Math.min(...me.keys()),Math.min(last,+s.meta.asOf||last)),rt=(x,k)=>RT.get(x).get(k);
+const order=k=>P.filter(x=>RT.get(x).has(k)).sort((x,y)=>rt(x,k)-rt(y,k)),posAt=(x,k)=>{const l=x.laps.find(l=>l.lap===k);if(l&&fin(l.pos))return l.pos;const i=order(k).indexOf(x);return i<0?null:i+1};
+const o=order(asOf),i=o.indexOf(s),A=o[i-1]||null,B=o[i+1]||null,pos=posAt(s,asOf);
+const gapTo=(x,k)=>rt(x,k)!=null&&rt(s,k)!=null?rt(s,k)-rt(x,k):null,k5=Math.max(Math.min(...me.keys()),asOf-5);
+const trend=x=>{if(!x||k5>=asOf)return null;const g0=gapTo(x,k5),g1=gapTo(x,asOf);return g0==null||g1==null?null:(g1-g0)/(asOf-k5)};
+const pl=pitLossOf(P),loss=pl?pl.v:a.thr,lossSrc=pl?`measured from ${pl.n} stop${pl.n==1?'':'s'} in this race`:'from Settings';
+const mine=rt(s,asOf)+loss,others=o.filter(x=>x!==s),inF=others.filter(x=>rt(x,asOf)<mine),outB=others.filter(x=>rt(x,asOf)>=mine);
+const rj={pos:inF.length+1,ahead:inF.length?inF[inF.length-1]:null,behind:outB[0]||null};rj.ga=rj.ahead?mine-rt(rj.ahead,asOf):null;rj.gb=rj.behind?rt(rj.behind,asOf)-mine:null;
+const lq=s.laps.find(l=>l.lap===asOf),sts=a.run.stints,stN=sts.find(t=>t.first<=asOf&&t.last>=asOf)||sts.filter(t=>t.first<=asOf).pop()||a.st;
+const age=lq&&fin(lq.age)?lq.age:(stN.age0||0)+asOf-stN.first+1,sa=stN===a.st?a:(()=>{try{return analyse(s,stN.i)}catch(e){return a}})(),rate=Math.max(sa.rateAvg,0),fresh=rate*age;
+const stops=stopsOf(s).flatMap(p=>P.filter(x=>x!==s).flatMap(x=>stopsOf(x).filter(q=>Math.abs(q-p)<=3).map(q=>{const b=Math.min(p,q)-1,e=Math.max(p,q)+2,d0=gapTo(x,b),d1=gapTo(x,e);if(d0==null||d1==null||Math.abs(d0)>Math.min(loss,15))return null;return{p,q,x,d0:-d0,d1:-d1,gain:d0-d1}})).filter(Boolean));
+const lapsAll=[...new Set(P.flatMap(x=>[...RT.get(x).keys()]))].sort((a,b)=>a-b);
+return{P,RT,last,asOf,pos,A,B,gA:A?gapTo(A,asOf):null,gB:B?-gapTo(B,asOf):null,tA:trend(A),tB:trend(B),loss,lossSrc,rj,age,rate,fresh,stops,posAt,lapsAll,n:o.length,myStops:stopsOf(s)}}
+function lapChart(s,R){const W=1000,H=300,p=40,top=12,bot=26,N=Math.max(R.n,...R.P.map(x=>Math.max(0,...x.laps.map(l=>l.pos||0)))),L=R.lapsAll,x0=L[0],x1=R.last;
+const X=k=>p+(k-x0)/Math.max(1,x1-x0)*(W-p-100),Y=q=>top+(q-1)/Math.max(1,N-1)*(H-top-bot),f=v=>v.toFixed(1);
+const hi=new Map([[s,'s1'],...(R.A?[[R.A,'s2']]:[]),...(R.B?[[R.B,'s3']]:[])]);
+const line=x=>{let d='';L.filter(k=>k<=R.asOf).forEach(k=>{const q=R.posAt(x,k);if(q!=null)d+=(d?'L':'M')+f(X(k))+','+f(Y(q))});return d};
+const bg=R.P.filter(x=>!hi.has(x)).map(x=>`<path d="${line(x)}" fill="none" stroke="var(--ln)" stroke-width="1.2"/>`).join('');
+const lab=[...hi].map(([x,c])=>{const ks=L.filter(k=>k<=R.asOf&&R.posAt(x,k)!=null),k=ks[ks.length-1];return k==null?null:{x,c,k,y:Y(R.posAt(x,k))}}).filter(Boolean).sort((a,b)=>a.y-b.y);lab.forEach((l,i)=>{l.ty=i?Math.max(l.y,lab[i-1].ty+14):l.y});
+const fg=[...hi].reverse().map(([x,c])=>`<path d="${line(x)}" fill="none" stroke="var(--${c})" stroke-width="${x===s?2.6:2}" stroke-linejoin="round"/>`).join('')+lab.map(l=>`<text x="${f(X(l.k)+8)}" y="${f(l.ty+4)}" font-size="12" font-weight="700" fill="var(--${l.c})">${esc(drvOf(l.x).split(' ').pop())}</text>`).join('');
+const pits=R.myStops.filter(k=>k<=R.asOf).map(k=>{const q=R.posAt(s,k);return q==null?'':`<rect x="${f(X(k)-3.5)}" y="${f(Y(q)-3.5)}" width="7" height="7" fill="var(--sf)" stroke="var(--s1)" stroke-width="2"/>`}).join('');
+const now=R.asOf<x1?`<line x1="${f(X(R.asOf))}" x2="${f(X(R.asOf))}" y1="${top}" y2="${H-bot}" stroke="var(--mu)" stroke-dasharray="3 3"/>`:'';
+const yl=[1,...[5,10,15,20,25,30].filter(q=>q<N),N].map(q=>`<text x="${p-8}" y="${f(Y(q)+4)}" text-anchor="end" font-size="11" fill="var(--mu)">P${q}</text>`).join('');
+return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Position of every car lap by lap, with ${esc(drvOf(s))} highlighted" style="width:100%;height:auto">${yl}${bg}${now}${fg}${pits}<text x="${p}" y="${H-6}" font-size="11" fill="var(--mu)">Lap ${x0}</text><text x="${W-100}" y="${H-6}" text-anchor="end" font-size="11" fill="var(--mu)">Lap ${x1}</text></svg>`}
+function raceCard(s,a){let R;try{R=racePic(s,a)}catch(e){return''}if(!R)return'';
+const nm=x=>esc(drvOf(x)),sg=v=>v.toFixed(1),tr=(t,closing,away)=>t==null||Math.abs(t)<.05?'':` <small style="color:var(--mu)">(${t<0?closing:away} ${Math.abs(t).toFixed(2)} s a lap)</small>`;
+const done=R.asOf===R.last&&a.rem===0,F=[];
+if(!done){F.push({sev:'ok',t:`If you pit on lap ${R.asOf}, you rejoin about P${R.rj.pos}`,m:`${R.rj.ahead?`${sg(R.rj.ga)} s behind ${nm(R.rj.ahead)}`:'In the lead'}${R.rj.behind?` and ${sg(R.rj.gb)} s ahead of ${nm(R.rj.behind)}`:''}. Pit stop loss ${sg(R.loss)} s, ${R.lossSrc}.`});
+if(R.fresh>.2){if(R.B&&R.gB<R.fresh*1.5)F.push({sev:R.gB<R.fresh?'high':'med',t:`Undercut threat from ${nm(R.B)}`,m:`${nm(R.B)} is ${sg(R.gB)} s behind. Your tyres are ${R.age} laps old and getting about ${R.rate.toFixed(2)} s slower every lap, so fresh tyres are worth roughly ${R.fresh.toFixed(1)} s on the first lap. If they stop first, cover it by pitting the lap after.`});
+if(R.A&&R.gA<R.fresh*1.5)F.push({sev:'med',t:`Undercut chance on ${nm(R.A)}`,m:`You are ${sg(R.gA)} s behind ${nm(R.A)}. Fresh tyres are worth roughly ${R.fresh.toFixed(1)} s on the first lap, so stopping before them could get you ahead if they stay out.`})}}
+const tag={ok:'✓ Info',med:'◆ Watch',high:'▲ Act now'};
+const st=R.stops.length?`<h3 style="margin:16px 0 6px;font-size:15px">Stops against nearby cars</h3><div class="tbl"><table class="cmp"><tr><th>Your stop</th><th>Car</th><th>Their stop</th><th>Gap before</th><th>Gap after</th><th>Result</th></tr>${R.stops.map(x=>`<tr><td>Lap ${x.p}</td><td>${nm(x.x)}</td><td>Lap ${x.q}${x.q<x.p?' (earlier)':x.q>x.p?' (later)':' (same lap)'}</td><td>${x.d0>0?sg(x.d0)+' s ahead':sg(-x.d0)+' s behind'}</td><td>${x.d1>0?sg(x.d1)+' s ahead':sg(-x.d1)+' s behind'}</td><td><span class="tag ${x.gain>.3?'ok':x.gain<-.3?'high':'med'}">${x.gain>=0?'Gained':'Lost'} ${Math.abs(x.gain).toFixed(1)} s</span>${Math.sign(x.d0)!==Math.sign(x.d1)?(x.d1>0?' · got ahead':' · lost the place'):''}</td></tr>`).join('')}</table></div>`:'';
+return`<h2>Race picture <small>${R.P.length} cars from ${esc(s.evName||'this file')}</small></h2><div class="card">
+<div class="row noprint" style="margin:0 0 12px"><div class="inl"><label for="asof">As of lap</label><input type="number" id="asof" min="1" max="${R.last}" step="1" value="${R.asOf}"></div></div>
+<div class="tiles" style="margin-top:0"><div class="tile"><div class="n">P${R.pos??'–'}<small> of ${R.n}</small></div><div class="l">Position after lap ${R.asOf}${R.n<R.P.length?` (${R.n} of ${R.P.length} cars still running)`:''}</div></div>
+<div class="tile"><div class="n">${R.A?sg(R.gA)+'<small> s</small>':'–'}</div><div class="l">${R.A?`Behind ${nm(R.A)}${tr(R.tA,'closing','losing')}`:'Leading'}</div></div>
+<div class="tile"><div class="n">${R.B?sg(R.gB)+'<small> s</small>':'–'}</div><div class="l">${R.B?`Ahead of ${nm(R.B)}${tr(R.tB,'pulling away','losing')}`:'Last car running'}</div></div></div>
+${F.map(f=>`<article class="f ${f.sev}" style="margin-top:12px"><span class="tag">${tag[f.sev]}</span><h3>${esc(f.t)}</h3><p>${f.m}</p></article>`).join('')}
+<div style="margin-top:14px">${lapChart(s,R)}</div><p class="hint" style="margin-top:6px"><span style="color:var(--s1);font-weight:700">${nm(s)}</span>${R.A?`, the car ahead <span style="color:var(--s2);font-weight:700">${nm(R.A)}</span>`:''}${R.B?` and the car behind <span style="color:var(--s3);font-weight:700">${nm(R.B)}</span>`:''}. Squares are your pit stops. Grey lines are the other cars.</p>
+${st}</div>`}
+function racePicFacts(s,a){let R;try{R=racePic(s,a)}catch(e){return null}if(!R)return null;const r1=v=>v==null?null:+v.toFixed(1),nm=x=>x?drvOf(x):null;
+return{asOfLap:R.asOf,lastLapInFile:R.last,position:R.pos,carsRunning:R.n,carsInFile:R.P.length,carAhead:nm(R.A),gapAheadS:r1(R.gA),gapAheadChangeSPerLap:R.tA==null?null:+R.tA.toFixed(2),carBehind:nm(R.B),gapBehindS:r1(R.gB),gapBehindChangeSPerLap:R.tB==null?null:+(-R.tB).toFixed(2),
+pitStopLossS:r1(R.loss),pitStopLossSource:R.lossSrc,ifPitNow:{rejoinPosition:R.rj.pos,behind:nm(R.rj.ahead),gapS:r1(R.rj.ga),ahead:nm(R.rj.behind),gapToCarBehindS:r1(R.rj.gb)},tyreAgeLaps:R.age,freshTyreGainFirstLapS:r1(R.fresh),
+stopsAgainstNearbyCars:R.stops.map(x=>({yourStopLap:x.p,car:drvOf(x.x),theirStopLap:x.q,gapBeforeS:r1(x.d0),gapAfterS:r1(x.d1),gainedS:r1(x.gain),note:'positive gap = you were ahead'}))}}
 function stintRows(s,a){return a.run.stints.filter(t=>t.n>=5).map(t=>{try{const x=t.i===a.run.idx?a:analyse(s,t.i);return{t,x,rate:Math.max(x.rateAvg,0),pace:mean(t.laps.map(l=>l.t+x.fuel*(l.lap-a.run.laps[0].lap))),best:Math.min(...x.lt)}}catch(e){return null}}).filter(Boolean)}
 function stintsCard(s,a){const R=stintRows(s,a);if(R.length<2)return'';const cs=[...new Set(R.map(r=>r.t.c).filter(Boolean))];
 let sum='';if(cs.length>=2){const by=cs.map(c=>{const q=R.filter(r=>r.t.c===c);return{c,rate:mean(q.map(r=>r.rate)),pace:mean(q.map(r=>r.pace))}}),lw=by.reduce((x,y)=>y.rate<x.rate?y:x),fp=by.reduce((x,y)=>y.pace<x.pace?y:x);
@@ -642,8 +694,8 @@ ai=aiSection(s,'call'),
 note=s.note?`<p class="foot">${esc(s.note)}</p>`:'',
 disc=`<p class="foot">Pacely uses simple rules to flag trends, not certainties. Always confirm with driver feedback and the race situation.</p>`,
 prt=`<div class="ctl noprint"><button class="alt sm" id="print">Save as PDF</button></div>`;
-if(printing)return ph+hero+`<div class="dash"><div class="colL">${finds}</div><div class="colR">${chart}${corners}</div></div>`+stintsCard(s,a)+note+disc;
-const P={call:ph+readn+hero+`<div class="dash"><div class="colL">${finds}</div><div class="colR">${chart}${corners}</div></div>`+stintsCard(s,a)+fine+ai+prt+disc,
+if(printing)return ph+hero+`<div class="dash"><div class="colL">${finds}</div><div class="colR">${chart}${corners}</div></div>`+stintsCard(s,a)+raceCard(s,a)+note+disc;
+const P={call:ph+readn+hero+`<div class="dash"><div class="colL">${finds}</div><div class="colR">${chart}${corners}</div></div>`+stintsCard(s,a)+raceCard(s,a)+fine+ai+prt+disc,
 files:filesPane(s)};
 return `<div class="tabpane" role="tabpanel">${P[tab]||P.call}</div>`}
 function filesPane(s){const note=s.note?`<p class="foot">${esc(s.note)}</p>`:'',disc=`<p class="foot">Pacely uses simple rules to flag trends, not certainties. Always confirm with driver feedback and the race situation.</p>`;
@@ -948,7 +1000,7 @@ const c=$('#cmp');if(c)c.onclick=()=>{view=view=='compare'?'single':'compare';ms
 const cl=$('#clr');if(cl)cl.onclick=()=>{if(armed!=='clr'){armed='clr';render();return}DB.clear();sessions=[];cmpSt={A:null,B:null};tab='call';view='single';cur=0;A=0;B=1;msgs=[];armed=false;render()};
 const sA=$('#selA'),sB=$('#selB');if(sA){sA.onchange=()=>{A=+sA.value;cmpSt.A=null;cmpOv.A=null;render()};sB.onchange=()=>{B=+sB.value;cmpSt.B=null;cmpOv.B=null;render()};const tA=$('#stA'),tB=$('#stB');if(tA)tA.onchange=()=>{cmpSt.A=+tA.value;render()};if(tB)tB.onchange=()=>{cmpSt.B=+tB.value;render()}}
 const s=sessions[cur],bind=(id,fn)=>{const e=$('#'+id);if(e)e.onchange=()=>{fn(e.value.trim?e.value.trim():e.value);save(s);render()}};
-if(s&&view==='single'){bind('rem',v=>s.meta.remaining=v);bind('fuelp',v=>s.meta.fuelPreset=v);bind('ign',v=>{s.meta.ignore=v;s.meta.stint=null});bind('spl',v=>{s.meta.splits=v;s.meta.stint=null});bind('sname',v=>s.name=v||s.name);bind('cmpd',v=>s.meta.compound=v);bind('ttemp',v=>s.meta.trackTemp=v);bind('atemp',v=>s.meta.airTemp=v)}
+if(s&&view==='single'){bind('rem',v=>s.meta.remaining=v);bind('asof',v=>s.meta.asOf=v);bind('fuelp',v=>s.meta.fuelPreset=v);bind('ign',v=>{s.meta.ignore=v;s.meta.stint=null});bind('spl',v=>{s.meta.splits=v;s.meta.stint=null});bind('sname',v=>s.name=v||s.name);bind('cmpd',v=>s.meta.compound=v);bind('ttemp',v=>s.meta.trackTemp=v);bind('atemp',v=>s.meta.airTemp=v)}
 const pr=$('#print');if(pr)pr.onclick=printReport;
 const oA=$('#ovA'),oB=$('#ovB');if(oA){oA.onchange=()=>{cmpOv.A=+oA.value;render()};oB.onchange=()=>{cmpOv.B=+oB.value;render()}}
 wireXH();const tl=$('#tlap');if(tl)tl.onchange=()=>{teleSel[sessions[cur].id]=+tl.value;render()};
@@ -1014,7 +1066,7 @@ const SRC=new Map();
 function loadQ(q,notes){const gi=q.group===undefined?groupInfo(q):null;
 if(gi){q.gi=gi;if(gi.groups.length>8){gi.groups.forEach(g=>g.sel=false);q.pick=true;return 'pick'}return loadGroups(q,gi.groups,notes)}
 const ss=build(q);addSession(ss);SRC.set(ss.id,q);return 'ok'}
-function loadGroups(q,gs,notes){let n=0,bad=0;for(const g of gs){try{const q2={...q,data:g.rows,nosplit:true,name:gName(q.gi,g),pick:false};const ss=build(q2);ss.name=q2.name;addSession(ss);SRC.set(ss.id,q2);n++}catch(e){bad++}}
+function loadGroups(q,gs,notes){let n=0,bad=0;const ev=Date.now().toString(36)+Math.random().toString(36).slice(2,6);for(const g of gs){try{const q2={...q,data:g.rows,nosplit:true,name:gName(q.gi,g),pick:false};const ss=build(q2);ss.name=q2.name;ss.ev=ev;ss.evName=q.name.replace(/\.[^.]+$/,'');ss.drv=g.drv||(q.gi.isNum&&/^\d+$/.test(g.key)?'#'+g.key:g.key);addSession(ss);SRC.set(ss.id,q2);n++}catch(e){bad++}}
 if(!n)throw new Error('None of the cars in this file had enough laps (at least 5).');notes.push(`Loaded ${n} cars from ${q.name}.`+(bad?` ${bad} skipped (too few laps).`:''));return 'ok'}
 function remember(q){try{localStorage.setItem('pacely-map:'+q.sig,JSON.stringify({shape:q.shape,map:q.map,units:q.units}))}catch(e){}}
 function addSession(s){const n=sessions.filter(x=>x.name===s.name||x.name.startsWith(s.name+' (')).length;if(n)s.name=`${s.name} (${n+1})`;sessions.push(s);cur=sessions.length-1;view='single';tab='call';save(s);return s}
@@ -1035,7 +1087,7 @@ function handleText(text,name){msgs=[];armed=false;try{queue.push(prepare(name||
 const aiState={};
 const AI_SYSTEM="You are the assistant inside Pacely, a race-data app for club and mid-tier motorsport teams. Answer using ONLY the session facts provided. Never invent numbers, laps, corners or causes that are not in the facts. If the facts do not answer the question, say so and say what extra data would help. Use plain, direct English that a driver or team boss understands. No markdown, no bullet symbols, no emojis. Keep answers under 110 words unless asked for more. Give advice as suggestions to confirm with the driver and the race situation, not as certainties.";
 const inf=v=>v===Infinity?'no limit':v;
-function aiContext(a,s){const m=s.meta;return JSON.stringify({session:s.name,conditions:{compound:a.st.c||m.compound||null,tyreAgeWhenFittedLaps:a.st.age0,trackTempC:m.trackTemp||null,airTempC:m.airTemp||null,lapsToGo:a.rem,raceFinished:a.rem===0},stints:stintRows(s,a).map(r=>({stint:r.t.i+1,laps:`${r.t.first}-${r.t.last}`,compound:r.t.c||null,tyreAgeWhenFittedLaps:r.t.age0,tyreLossPerLapS:+r.rate.toFixed(3),fuelCorrectedPaceS:+r.pace.toFixed(3),bestLapS:+r.best.toFixed(3)})),settings:{pitStopCostSeconds:a.thr,fuelGainSecondsPerLap:a.fuel,fuelEffectSource:a.fuelSrc||null},
+function aiContext(a,s){const m=s.meta;return JSON.stringify({session:s.name,conditions:{compound:a.st.c||m.compound||null,tyreAgeWhenFittedLaps:a.st.age0,trackTempC:m.trackTemp||null,airTempC:m.airTemp||null,lapsToGo:a.rem,raceFinished:a.rem===0},racePicture:racePicFacts(s,a),stints:stintRows(s,a).map(r=>({stint:r.t.i+1,laps:`${r.t.first}-${r.t.last}`,compound:r.t.c||null,tyreAgeWhenFittedLaps:r.t.age0,tyreLossPerLapS:+r.rate.toFixed(3),fuelCorrectedPaceS:+r.pace.toFixed(3),bestLapS:+r.best.toFixed(3)})),settings:{pitStopCostSeconds:a.thr,fuelGainSecondsPerLap:a.fuel,fuelEffectSource:a.fuelSrc||null},
 stint:{firstLap:a.st.first,lastLap:a.st.last,cleanLaps:a.n,leftOutLaps:a.run.ignored.map(x=>x.lap+' ('+x.why+')')},raceCall:call(a),
 numbers:{tyreLossPerLapAverage:+a.rateAvg.toFixed(3),tyreLossPerLapNow:+a.rateNow.toFixed(3),lostSoFarSeconds:+a.lossNow.toFixed(2),lapsUntilStopPaysOff:{low:inf(a.left.low),high:inf(a.left.high)},lapTimeScatterSeconds:+a.resid.toFixed(3),confidence:a.conf,wearAccelerating:a.useQuad},
 findings:a.F.map(f=>({severity:f.sev,title:f.t,whatWeSee:f.ev,whatToDo:f.ac})),corners:a.table.map(r=>({corner:r.c,status:r.st,note:r.dt,numbers:r.nums})),cleanLapTimes:a.st.laps.map(l=>[l.lap,+l.t.toFixed(3)])})}
