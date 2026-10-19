@@ -1,0 +1,8 @@
+# Publishes only the app and its icons; tests and sample data stay out of the site.
+[build]
+  command = "rm -rf dist && mkdir dist && cp -r index.html icons dist/"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
