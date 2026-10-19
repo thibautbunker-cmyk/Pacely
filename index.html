@@ -522,7 +522,6 @@ F.push({sev,t:rateAvg>.005?`Tyres are losing about ${rateAvg.toFixed(2)} s every
 ev:`Over ${n} clean laps, fuel-corrected lap time is getting slower by ${Math.max(rateAvg,0).toFixed(2)} s per lap. About ${lossNow.toFixed(2)} s lost so far (fit quality ${lin.r2.toFixed(2)} out of 1).`,
 ac:low===Infinity?'No pit pressure from tyre wear on this data.':rem===0?'The race is over, so no stop is needed.'+(isFinite(optLen)?` On tyre wear alone, the best stint on this set would have been about ${optLen} laps.`:''):low<=0?(rem==null?'On tyre wear alone, a stop would already pay for itself. Enter laps to go to check whether the tyres can make it to the flag.':'The tyres have lost enough time that a stop now pays for itself. Pit as soon as the strategy allows.'):`A stop pays for itself in about ${fmtL(low,high)} laps. Plan it inside that window.`+(rem==null?' Enter laps to go to check the finish.':'')});
 if(useQuad)F.push({sev:rateNow>.1?'high':'med',t:'Tyre wear is speeding up',ev:`The wear rate has grown from about ${Math.max(q.co[1],0).toFixed(2)} s per lap at the start of the stint to about ${Math.max(rateNow,0).toFixed(2)} s per lap now. Tyres often drop off quickly once this starts.`,ac:rem===0?'The race is over. Note the drop-off for the next race: an earlier stop or a harder tyre may be quicker overall.':'Do not rely on the average rate. The laps estimate above already allows for the faster wear, so plan the stop at the early end of the range.'});
-if(rem===0){F.forEach(f=>{if(f.sev==='high')f.sev='med'});}
 if(rem===0)F.push({sev:'ok',t:'Race finished on these tyres',ev:`This stint ran ${n} clean laps to the flag and lost about ${lossNow.toFixed(1)} s to tyre wear.`,ac:isFinite(optLen)?`For the next race: on tyre wear alone, a stint of about ${optLen} laps on this set gives the lowest total time (stop cost ${thr.toFixed(0)} s). This one ran ${xl+1}.`:'The tyres held up, so no stop was needed for wear.'});
 if(rem>0){const lo=low,hi=high;let t,sv,ac;
 if(rem<=lo){sv='ok';t='Tyres should last to the flag';ac=`No stop is needed for tyre wear. If you stay out, the last lap will be about ${extra.toFixed(1)} s slower than now. Check the race situation too.`}
@@ -533,6 +532,7 @@ if(resid>.3)F.push({sev:'med',t:'Lap times are inconsistent',ev:`Laps vary by ab
 cornerAnalysis(s,new Set(LS.map(l=>l.lap)),a,temp);
 if(!a.table.length&&s.cr.length===0){}
 else if(!F.some(f=>/corner problems|front grip|braking point/.test(f.t))&&a.table.length&&a.table.every(r=>r.st==='ok'))F.push({sev:'ok',t:'No corner problems found',ev:'Braking and front grip look stable in every corner.',ac:'Keep the current setup and keep watching tyre wear.'});
+if(rem===0)F.forEach(f=>{if(f.sev==='high')f.sev='med'});
 return a}
 function cornerAnalysis(s,lapSet,a,temp){const F=a.F;
 for(const c of[...new Set(s.cr.map(r=>r.corner))]){const R=s.cr.filter(r=>r.corner===c&&lapSet.has(r.lap)).sort((p,q)=>p.lap-q.lap);
