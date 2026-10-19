@@ -2,280 +2,246 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pacely</title>
-<meta name="theme-color" content="#101316">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#141a1f" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/svg+xml" href="icons/favicon.svg"><link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Pacely">
 <style>
-:root{--bg:#e6e9ec;--sf:#fff;--sf2:#eef1f3;--tx:#14181c;--mu:#59646e;--ln:#d3d9de;--lnb:#b4bdc5;--ac:#d4160c;--acx:#fff;--wn:#a35a00;--wnbg:#fff3de;--bd:#c4120a;--bdbg:#fde8e6;--ok:#16794a;--okbg:#e2f3ea;--bar:#101316;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1013;--sf:#171b1f;--sf2:#1f2429;--tx:#e9edf0;--mu:#8f9ba6;--ln:#2b333a;--lnb:#3c464f;--ac:#e5170d;--acx:#fff;--wn:#f2a71b;--wnbg:#2b2310;--bd:#ff5247;--bdbg:#2f1614;--ok:#38c97f;--okbg:#10271c;--bar:#080a0c;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#0d1013;--sf:#171b1f;--sf2:#1f2429;--tx:#e9edf0;--mu:#8f9ba6;--ln:#2b333a;--lnb:#3c464f;--ac:#e5170d;--acx:#fff;--wn:#f2a71b;--wnbg:#2b2310;--bd:#ff5247;--bdbg:#2f1614;--ok:#38c97f;--okbg:#10271c;--bar:#080a0c;color-scheme:dark}
-*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.5 "Avenir Next","Segoe UI",system-ui,sans-serif}
-main{max-width:760px;margin:0 auto;padding:0 16px 48px}
-.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0 14px;border-bottom:3px solid var(--ac)}
-.mark{display:flex;align-items:center;gap:10px}
-.slashes{display:flex;gap:4px;transform:skewX(-24deg)}.slashes i{display:block;width:9px;height:26px;background:var(--ac)}.slashes i+i{width:4px;opacity:.55}
-h1{font:900 26px/1 "Arial Black","Helvetica Neue",sans-serif;letter-spacing:-.02em;margin:0}
-.tools{display:flex;gap:8px}
-h2{font-size:15px;font-weight:700;margin:30px 0 10px;color:var(--mu)}
-.card{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:16px}
+/* Layout: pit-wall instrument. A quiet app shell (sticky bar + session strip), one content column, data set in a condensed display face and tabular mono. */
+:root{
+--bg:#f2f4f6;--sf:#ffffff;--sf2:#eceff2;--tx:#11151a;--mu:#5a6470;--fa:#8b949e;--ln:#dfe3e8;--lnb:#c3cad2;
+--ac:#d4160c;--acx:#ffffff;
+--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--ref:#98a1ab;
+--ok:#0d7a3b;--okbg:#e2f2e8;--wn:#94570a;--wnbg:#fcf0d9;--bd:#bf2329;--bdbg:#fbe5e5;
+--f-disp:"Barlow Condensed","Arial Narrow","Roboto Condensed",sans-serif;
+--f-body:"Barlow",-apple-system,"Segoe UI",system-ui,sans-serif;
+--f-data:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+--num:var(--f-disp);--r:10px;--r-sm:6px;--shadow:0 1px 2px rgba(17,21,26,.05);
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c0f12;--sf:#141a1f;--sf2:#1b2228;--tx:#e6ebef;--mu:#95a1ad;--fa:#6b7783;--ln:#232b33;--lnb:#35404b;--ac:#ef3a2e;--acx:#ffffff;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--ref:#6b7682;--ok:#45c27a;--okbg:#10291b;--wn:#e8a63a;--wnbg:#2a2110;--bd:#ff6259;--bdbg:#311718;--shadow:none;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0c0f12;--sf:#141a1f;--sf2:#1b2228;--tx:#e6ebef;--mu:#95a1ad;--fa:#6b7783;--ln:#232b33;--lnb:#35404b;--ac:#ef3a2e;--acx:#ffffff;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--ref:#6b7682;--ok:#45c27a;--okbg:#10291b;--wn:#e8a63a;--wnbg:#2a2110;--bd:#ff6259;--bdbg:#311718;--shadow:none;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:400 15px/1.5 var(--f-body);-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--sf)}
+[hidden]{display:none!important}
+h1,h2,h3{text-wrap:balance}
+main{max-width:1240px;margin:0 auto;padding-block:8px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ---- app bar ---- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--sf);border-bottom:1px solid var(--ln)}
+.topin{max-width:1240px;margin:0 auto;min-height:56px;display:flex;align-items:center;gap:28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.mark{display:flex;align-items:center;gap:9px;flex:none}.logo{width:26px;height:26px;color:var(--tx)}
+.mark h1{margin:0;font:700 22px/1 var(--f-disp);letter-spacing:.01em;text-transform:uppercase}
+nav.tabs{display:flex;gap:2px;align-self:stretch}
+.tabs button{position:relative;background:none;border:0;border-radius:0;color:var(--mu);font:600 14px/1 var(--f-disp);letter-spacing:.07em;text-transform:uppercase;padding:0 14px;min-height:56px;cursor:pointer}
+.tabs button:hover{color:var(--tx)}
+.tabs button.on{color:var(--tx)}.tabs button.on::after{content:"";position:absolute;left:14px;right:14px;bottom:-1px;height:2px;background:var(--ac)}
+.tools{margin-left:auto;display:flex;gap:8px}
+.tools button{background:none;border:1px solid var(--ln);color:var(--mu);border-radius:var(--r-sm);min-height:32px;padding:0 10px;font:500 13px var(--f-body);cursor:pointer}
+.tools button:hover{color:var(--tx);border-color:var(--lnb)}
+
+/* ---- type ---- */
+h2{display:flex;align-items:baseline;gap:10px;margin:36px 0 12px;font:600 15px/1.2 var(--f-disp);letter-spacing:.09em;text-transform:uppercase;color:var(--tx)}
+h2 small{font:500 13px var(--f-body);letter-spacing:0;text-transform:none;color:var(--mu)}
+h3{font:600 17px/1.3 var(--f-body);margin:0}
+.hint{color:var(--mu);font-size:14px;margin:10px 0 0;max-width:72ch}
+.foot{color:var(--fa);font-size:12.5px;margin:24px 0 0;max-width:80ch}
+.mu{color:var(--mu)}.err{color:var(--bd);font-weight:600;margin:10px 0 0}
+.k{font:600 12px/1.2 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
+
+/* ---- surfaces ---- */
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow);min-width:0}
+.notice{margin-top:16px;padding:11px 14px;border-radius:var(--r-sm);background:var(--wnbg);color:var(--tx);font-size:14px;border:1px solid transparent}
+.notice.bad{background:var(--bdbg)}
+.empty{margin-top:28px;padding:56px 24px;text-align:center;color:var(--mu);background:var(--sf);border:1px dashed var(--lnb);border-radius:var(--r)}
+.empty svg{display:block;margin:0 auto 14px;width:44px;height:44px;color:var(--tx)}
+.empty b{display:block;font:700 34px/1.05 var(--f-disp);letter-spacing:.01em;text-transform:uppercase;color:var(--tx);margin-bottom:10px}
+
+/* ---- controls ---- */
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-button,label.btn{font:inherit;font-weight:700;background:var(--ac);color:var(--acx);border:0;border-radius:8px;padding:12px 18px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
-button:hover,label.btn:hover{filter:brightness(1.12)}
-button.alt,label.btn{background:var(--sf2);color:var(--tx)}
-button.sm{min-height:40px;padding:8px 12px;font-size:15px}
-button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,label.btn:focus-within{outline:3px solid var(--tx);outline-offset:2px}
-details.set{margin-top:12px;border-top:1px solid var(--ln);padding-top:10px}summary{cursor:pointer;color:var(--mu);font-weight:600;padding:6px 0}
-label.f2{display:flex;flex-direction:column;gap:4px;color:var(--mu);font-size:14px}
-input[type=number],input[type=text],select{font:inherit;font-size:16px;background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:8px;padding:9px 10px;min-height:44px;max-width:100%}
-input[type=number]{width:110px}input[type=text]{width:100%}
-.hint{color:var(--mu);font-size:14px;margin:10px 0 0}
-.empty{margin-top:20px;padding:34px 20px;text-align:center;color:var(--mu);border:2px dashed var(--ln);border-radius:10px}.empty b{display:block;font-size:20px;color:var(--tx);margin-bottom:6px}
-.call{border-radius:12px;padding:20px;border:2px solid var(--ln);background:var(--sf);margin-top:22px}
-.call.high{border-color:var(--bd);background:var(--bdbg)}.call.med{border-color:var(--wn);background:var(--wnbg)}.call.ok{border-color:var(--ok);background:var(--okbg)}
-.call .k{font-size:14px;font-weight:700;color:var(--mu)}
-.call .big{font-size:clamp(28px,8vw,40px);line-height:1.1;font-weight:800;margin:4px 0 6px;letter-spacing:-.01em}
-.call .why{color:var(--tx);opacity:.85;margin:0}.call .conf{color:var(--mu);font-size:14px;margin:6px 0 0}
-.call .row{margin-top:14px}
-.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+button,label.btn{font:600 14px/1 var(--f-body);border-radius:var(--r-sm);min-height:40px;padding:0 16px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;border:1px solid transparent;background:var(--ac);color:var(--acx)}
+button:hover,label.btn:hover{filter:brightness(1.08)}
+button.alt{background:var(--sf);color:var(--tx);border-color:var(--lnb)}
+button.alt:hover{filter:none;background:var(--sf2)}
+button.sm{min-height:34px;padding:0 12px;font-size:13px}
+button[disabled]{opacity:.5;cursor:default}
+button.link{background:none;border:0;padding:0;min-height:0;color:var(--tx);text-decoration:underline;text-underline-offset:3px;font-weight:600}
+:focus-visible{outline:2px solid var(--s1);outline-offset:2px}
+input[type=number],input[type=text],select{font:500 15px var(--f-body);color:var(--tx);background:var(--sf);border:1px solid var(--lnb);border-radius:var(--r-sm);min-height:40px;padding:6px 10px;max-width:100%}
+input[type=number]{width:120px}input[type=text]{width:100%}
+label.f2,.fld{display:flex;flex-direction:column;gap:5px;font:600 12px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}
+label.f2 input,.fld input,.fld select{text-transform:none;letter-spacing:0}
+details>summary{cursor:pointer;color:var(--mu);font-weight:600;font-size:14px;padding:12px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"";display:inline-block;width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);margin:0 10px 2px 2px;transition:transform .15s}
+details[open]>summary::before{transform:rotate(45deg)}
+details>summary:hover{color:var(--tx)}
+details.set{margin-top:18px;border-top:1px solid var(--ln)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{background:var(--sf);color:var(--tx);border:1px solid var(--lnb);border-radius:999px;min-height:34px;padding:0 14px;font:500 13.5px var(--f-body)}
+.chip:hover{filter:none;border-color:var(--tx)}.chip.on{border-color:var(--tx);background:var(--sf2);box-shadow:inset 0 0 0 1px var(--tx)}.chip.dim{opacity:.55}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.inl{display:flex;align-items:center;gap:10px}.inl label{font:600 12px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}
+.grid2{display:grid;grid-template-columns:1fr;gap:14px;margin-top:6px}@media(min-width:620px){.grid2{grid-template-columns:1fr 1fr}}
+.pick{display:grid;grid-template-columns:1fr;gap:14px}@media(min-width:620px){.pick{grid-template-columns:1fr 1fr}}
+.pk{display:grid;gap:12px;align-content:start}
+.pick label{display:flex;flex-direction:column;gap:5px;font:600 12px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}
+.pick select{width:100%}
 
-.tile{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px 14px}
-.tile .n{font-size:26px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}.tile .n small{font-size:14px;font-weight:600}
-.tile .l{font-size:14px;color:var(--mu);margin-top:2px}.tile .w{font-size:14px;font-weight:700;margin-top:4px}
-.tag{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:800;padding:4px 10px;border-radius:99px;background:var(--sf2);color:var(--tx);white-space:nowrap}
-.high>.tag,.tag.high{background:var(--bd);color:#fff}.med>.tag,.tag.med{background:var(--wn);color:#fff}.ok>.tag,.tag.ok{background:var(--ok);color:#fff}
-:root[data-theme="dark"] .med>.tag,:root[data-theme="dark"] .tag.med,:root[data-theme="dark"] .ok>.tag,:root[data-theme="dark"] .tag.ok{color:#111}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .med>.tag,:root:not([data-theme="light"]) .tag.med,:root:not([data-theme="light"]) .ok>.tag,:root:not([data-theme="light"]) .tag.ok{color:#111}}
-.f{margin:10px 0;padding:16px;background:var(--sf);border:1px solid var(--ln);border-left:6px solid var(--ln);border-radius:10px}
-.f.high{border-left-color:var(--bd)}.f.med{border-left-color:var(--wn)}.f.ok{border-left-color:var(--ok)}
-.f h3{font-size:19px;line-height:1.25;margin:8px 0 10px}
-.f dl{margin:0;display:grid;gap:8px}.f dt{font-size:13px;font-weight:700;color:var(--mu)}.f dd{margin:0}
-.cor{display:grid;gap:8px}
-.cr{display:grid;grid-template-columns:56px auto 1fr;gap:6px 12px;align-items:center;background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px 14px}
-.cr .nm{font-size:20px;font-weight:800}.cr .dt{color:var(--mu);font-size:15px}
-.cr .nums{grid-column:1/-1;color:var(--mu);font-size:13px;font-variant-numeric:tabular-nums}
-svg{width:100%;height:auto;display:block}.axis{stroke:var(--ln)}.grid{stroke:var(--ln);stroke-dasharray:3 5}
-.trace{fill:none;stroke:var(--ac);stroke-width:2.5;stroke-linejoin:round}.dot{fill:var(--sf);stroke:var(--ac);stroke-width:2.5}
-.fitc{fill:none;stroke:var(--tx);stroke-width:2;opacity:.8}.fitp{fill:none;stroke:var(--tx);stroke-width:2;stroke-dasharray:5 4;opacity:.8}
-.band{fill:var(--wn);opacity:.2}.flag{stroke:var(--tx);stroke-width:2}
-.t{fill:var(--mu);font-size:12px}
-.foot{color:var(--mu);font-size:13px;margin-top:26px}
-.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;font-size:15px;max-width:92vw}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
-.chip{background:var(--sf);color:var(--tx);border:2px solid var(--ln);border-radius:99px;padding:8px 14px;min-height:40px;font-size:15px}
-.chip.on{border-color:var(--ac);background:var(--sf2)}.chip.dim{opacity:.6}
-.ctl{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
-.pick{display:grid;grid-template-columns:1fr;gap:10px}@media(min-width:620px){.pick{grid-template-columns:1fr 1fr}}
-.pk{display:grid;gap:10px;align-content:start}.pick label,.fld{display:flex;flex-direction:column;gap:4px;color:var(--mu);font-size:14px;font-weight:700}
-.lg{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;margin-bottom:8px}.lg span{display:inline-flex;align-items:center;gap:6px}
-.sw{display:inline-block;width:22px;height:0;border-top:3px solid var(--ac)}.sw.b{border-top:3px dashed var(--tx)}
-.traceB{fill:none;stroke:var(--tx);stroke-width:2.5;stroke-dasharray:6 4;stroke-linejoin:round}.mkB{fill:var(--sf);stroke:var(--tx);stroke-width:2.5}
-table.cmp{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-.cmp th{font-size:13px;color:var(--mu);text-align:right;padding:8px 6px;border-bottom:1px solid var(--ln)}.cmp td{text-align:right;padding:11px 6px;border-bottom:1px solid var(--ln);font-size:16px}
-.cmp th:first-child,.cmp td:first-child{text-align:left;font-size:15px}.cmp tr:last-child td{border-bottom:0}
-.cmp td.win{font-weight:800;color:var(--ok)}
-.chg{list-style:none;margin:0;padding:0;display:grid;gap:10px}.chg li{display:flex;gap:10px;align-items:flex-start}.chg .tag{flex:none;margin-top:2px}
-.cc{display:grid;grid-template-columns:48px 1fr 1fr;gap:8px 10px;align-items:start;background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px 14px;margin-bottom:8px}
-.cc .nm{font-size:20px;font-weight:800}.cc small{display:block;color:var(--mu);font-size:13px;margin-top:4px}
-.cch{display:grid;grid-template-columns:48px 1fr 1fr;gap:10px;padding:0 14px;font-size:13px;font-weight:700;color:var(--mu)}
-.notice{margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--wnbg);border:1px solid var(--wn);font-size:15px}
-.notice.bad{background:var(--bdbg);border-color:var(--bd)}
-.verdict{border-radius:12px;padding:18px 20px;border:2px solid var(--ac);background:var(--sf);margin-top:18px}.verdict .big{font-size:clamp(24px,7vw,34px);font-weight:800;line-height:1.15;margin:4px 0}.verdict .k{font-size:14px;font-weight:700;color:var(--mu)}.verdict p{margin:6px 0 0;color:var(--mu);font-size:15px}
-.inl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.inl label{font-weight:700;font-size:15px}
-.stint{margin-top:18px}.stint .sum{margin:10px 0 0;font-size:15px}.stint .ign{color:var(--mu);font-size:14px;margin:4px 0 0}
-.grid2{display:grid;grid-template-columns:1fr;gap:12px;margin-top:10px}@media(min-width:620px){.grid2{grid-template-columns:1fr 1fr}}
-.mrow{display:grid;grid-template-columns:1fr;gap:4px;margin:10px 0}@media(min-width:560px){.mrow{grid-template-columns:200px 1fr;align-items:center;gap:12px}}
-.mrow>span{font-weight:700;font-size:15px}.mrow>span small{display:block;color:var(--mu);font-weight:400;font-size:13px}
-.pv{overflow-x:auto;margin-top:10px;border:1px solid var(--ln);border-radius:8px}.pv table{border-collapse:collapse;font-size:13px;white-space:nowrap}.pv th,.pv td{padding:5px 9px;border-bottom:1px solid var(--ln);text-align:left}.pv th{color:var(--mu);font-weight:700}.pv tr:last-child td{border-bottom:0}
-.err{color:var(--bd);font-weight:700;margin:10px 0 0}
-.aiu{font-weight:700;margin-top:16px}.aia{white-space:pre-wrap;margin-top:6px;padding:12px 14px;background:var(--sf2);border-radius:10px;line-height:1.5}
-.ai button[disabled]{opacity:.6;cursor:default}
-.sessel{display:flex;flex-direction:column;gap:4px;margin-top:16px;color:var(--mu);font-size:14px;font-weight:700}.sessel select{width:100%;max-width:420px}
-.f .do{margin:0;font-weight:600}.f details.why{margin:6px 0 0}.f details.why summary{font-size:14px;padding:2px 0}.f details.why p{margin:4px 0 0;color:var(--mu);font-size:15px}
-.tile .n{font-size:24px}.tile .l{font-size:13px}
-.pklist{max-height:340px;overflow:auto;margin-top:10px;border:1px solid var(--ln);border-radius:8px}.pkrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--ln);cursor:pointer}.pkrow:last-child{border-bottom:0}.pkrow span{margin-left:auto;color:var(--mu);font-size:14px}.pkrow input{width:20px;height:20px}
-.readn{margin:14px 0 0;color:var(--mu);font-size:14px}button.link{background:none;border:0;color:var(--tx);text-decoration:underline;padding:0;min-height:0;font-weight:600;display:inline;cursor:pointer}
-.printhead,.printonly{display:none}
-.tabs{display:flex;gap:2px;margin:14px 0 0;border-bottom:1px solid var(--ln);overflow-x:auto}
-.tabs button{background:none;color:var(--mu);border:0;border-bottom:3px solid transparent;border-radius:0;min-height:46px;padding:10px 16px;font-weight:700;font-size:16px}
-.tabs button:hover{filter:none;color:var(--tx)}.tabs button.on{color:var(--tx);border-bottom-color:var(--ac)}
-.tabs button:disabled{opacity:.45;cursor:default}
-.fgrid{display:block}.tabpane{margin-top:4px}
-@media(max-width:699px){#out>.chips{flex-wrap:nowrap;overflow-x:auto;margin-right:-16px;padding-right:16px;scrollbar-width:none}#out>.chips .chip{flex:none;white-space:nowrap}}
-@media(max-width:699px){
-.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;background:var(--sf);border-top:2px solid var(--ac);border-bottom:0;padding:0 2px env(safe-area-inset-bottom,0px);justify-content:space-between;overflow:visible}
-.tabs button{flex:1;min-width:0;padding:10px 2px 9px;font-size:12px;border-bottom:0;border-top:3px solid transparent;margin-top:-2px}
-.tabs button.on{border-top-color:var(--ac)}
-main{padding-bottom:92px}.toast{bottom:84px}}
-@media(min-width:1000px){.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 20px;align-items:start}.cor{grid-template-columns:1fr 1fr}}
+/* ---- import panel ---- */
+.card.ctrl{margin-top:20px;display:grid;gap:4px}
+.card.ctrl>.row label.btn{background:var(--ac);color:var(--acx)}
+.mrow{display:grid;grid-template-columns:1fr;gap:6px;padding:10px 0;border-top:1px solid var(--ln)}@media(min-width:620px){.mrow{grid-template-columns:240px minmax(0,380px);align-items:center;gap:16px}}
+.mrow>span{font-weight:600;font-size:14px}.mrow>span small{display:block;color:var(--mu);font-weight:400;font-size:12.5px}
+.pv{overflow-x:auto;margin-top:14px;border:1px solid var(--ln);border-radius:var(--r-sm)}.pv table{border-collapse:collapse;font:12.5px var(--f-data);white-space:nowrap}.pv th,.pv td{padding:6px 10px;border-bottom:1px solid var(--ln);text-align:left}.pv th{color:var(--mu);font-family:var(--f-body);font-weight:600}.pv tr:last-child td{border-bottom:0}
+.pklist{max-height:340px;overflow:auto;margin-top:12px;border:1px solid var(--ln);border-radius:var(--r-sm)}
+.pkrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--ln);cursor:pointer}.pkrow:last-child{border-bottom:0}.pkrow span{margin-left:auto;color:var(--mu);font:13px var(--f-data)}.pkrow input{width:18px;height:18px}
 
-.dash,.hero,.colL,.colR{display:block}
-.dropov{display:none}
-@media(min-width:1000px){
-main{max-width:1280px;padding:0 32px 64px}
-.bar{padding:20px 0 16px}h1{font-size:30px}
-.card.ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:6px 28px}.card.ctrl>.row{flex:none}.card.ctrl details.set{flex:1 1 100%;order:3;margin-top:8px}.card.ctrl>.hint{margin:0;flex:1 1 280px}
-.call .big{font-size:44px}.tiles{margin-top:16px}.tile{padding:16px 18px}.tile .n{font-size:30px}.tile .l{font-size:14px}
-.dash{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 28px;align-items:start}
-.dash .colL>h2:first-child,.dash .colR>h2:first-child{margin-top:26px}
-.dash.cmpd{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}
-.pick{grid-template-columns:1fr 1fr}
-.mrow{grid-template-columns:280px minmax(0,420px)}
-#out>.card{max-width:860px}
-.chip:hover,.chip.on{border-color:var(--ac)}
-.dropov{position:fixed;inset:0;z-index:50;background:rgba(14,11,12,.82);color:#fff;align-items:center;justify-content:center;font:800 40px/1.2 "Arial Black",sans-serif;letter-spacing:-.02em;border:6px dashed var(--ac);margin:14px;border-radius:18px}
-.dropov.on{display:flex}
-}
-@media(min-width:1500px){main{max-width:1440px}.dash{gap:0 36px}}
-@media print{
-.hero,.dash,.fgrid,.cor{display:block!important}.tabs{display:none!important}.dropov{display:none!important}
-:root,:root[data-theme="dark"],:root:not([data-theme="light"]){--bg:#fff;--sf:#fff;--sf2:#eee;--tx:#111;--mu:#555;--ln:#ccc;--ac:#c40a0a;--wn:#a85f00;--wnbg:#fff4e0;--bd:#c40a0a;--bdbg:#fde8e6;--ok:#17743f;--okbg:#e6f5ec;color-scheme:light}
-body{font-size:12pt}.top,.ctx,.bar .tools,.card.ctrl,.chips,.ctl,.noprint,button,.notice,.stint details,details.set{display:none!important}
-.printhead{display:block;margin:10px 0 0}.printhead p{margin:4px 0;color:var(--mu)}.printonly{display:block}
-.f,.card,.call,.tile,.cr,.cc{break-inside:avoid}.call{margin-top:12px}
-}
-
-/* ---- instrument theme ---- */
-:root{--num:"Bahnschrift","DIN Alternate","DIN 1451 Std","Roboto Condensed","Arial Narrow",system-ui,sans-serif}
-body{font:15px/1.5 "Segoe UI",Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
-.top{background:var(--bar);color:#eef1f3;border-bottom:3px solid var(--ac)}
-.topin{max-width:760px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:28px;min-height:54px}
-.top .mark{gap:9px}.top h1{font:700 22px/1 var(--num);letter-spacing:.01em;color:#fff}
-.top .slashes i{height:21px;width:7px}.top .slashes i+i{width:3px}
-.top .tools{margin-left:auto}
-.top .tools button{background:transparent;color:#c9d1d7;border:1px solid #38424a;min-height:34px;padding:4px 11px;font-size:13px;font-weight:600}
-.top .tools button:hover{filter:none;border-color:#6b7782;color:#fff}
-.top nav.tabs{display:flex;border:0;margin:0;gap:2px;overflow:visible}
-.top .tabs button{background:none;color:#a9b3bb;border:0;border-bottom:3px solid transparent;margin-bottom:-3px;border-radius:0;min-height:54px;padding:0 16px;font:600 15px var(--num);letter-spacing:.03em}
-.top .tabs button:hover{color:#fff;filter:none}.top .tabs button.on{color:#fff;border-bottom-color:var(--ac)}
-main{padding-top:4px}
-h2{display:flex;align-items:center;gap:12px;font:600 13px/1 var(--num);letter-spacing:.05em;color:var(--mu);margin:28px 0 10px}
-h2::after{content:"";flex:1;height:1px;background:var(--ln)}
-.card,.tile,.f,.cr,.cc,.call,.verdict,.empty,.notice,.pv,.ctx,.pklist{border-radius:3px}
-.card{padding:16px 18px;border-color:var(--ln)}
-button,label.btn{border-radius:3px;font-weight:600;letter-spacing:.005em;min-height:44px}
-button.alt,label.btn{background:var(--sf);color:var(--tx);border:1px solid var(--lnb)}
-button.alt:hover,label.btn:hover{background:var(--sf2);filter:none}
-button.sm{min-height:38px}
-.top .tools button.alt{background:transparent}
-input[type=number],input[type=text],select{border-radius:3px;border-color:var(--lnb);background:var(--sf)}
-.tag{border-radius:2px;font-size:12px;font-weight:700;padding:2px 8px;letter-spacing:.01em}
-.ctx{display:flex;flex-wrap:wrap;align-items:center;gap:10px 30px;margin-top:16px;padding:10px 16px;background:var(--sf);border:1px solid var(--ln);border-top:3px solid var(--ln)}
-.ctx .cs{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--mu)}.ctx .cs b{color:var(--tx);font-size:15px}.ctx select{min-height:36px;padding:4px 8px;font-size:15px;font-weight:600;max-width:100%}
+/* ---- session strip ---- */
+.ctx{display:flex;flex-wrap:wrap;align-items:center;gap:10px 28px;margin-top:18px;padding:12px 16px;background:var(--sf);border:1px solid var(--ln);border-radius:var(--r)}
+.cs{display:flex;align-items:center;gap:10px;font:600 12px var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
+.cs select{min-height:36px;font:600 15px var(--f-body);letter-spacing:0;text-transform:none;max-width:min(320px,70vw)}.cs b{font:600 15px var(--f-body);letter-spacing:0;text-transform:none;color:var(--tx)}
 .facts{display:flex;flex-wrap:wrap;gap:6px 26px;margin:0}.facts div{display:flex;align-items:baseline;gap:8px}
-.facts dt{font-size:12px;color:var(--mu);font-weight:600}.facts dd{margin:0;font:600 18px/1 var(--num);font-variant-numeric:tabular-nums}.facts dd.sm{font:600 14px/1.2 "Segoe UI",system-ui,sans-serif}
-.call{padding:20px 22px;background:var(--sf);border:1px solid var(--ln);border-left:8px solid var(--lnb);margin-top:16px}
-.call.high{border-left-color:var(--bd);background:var(--sf)}.call.med{border-left-color:var(--wn);background:var(--sf)}.call.ok{border-left-color:var(--ok);background:var(--sf)}
-.call .k{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:var(--mu)}
-.call .k::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--lnb);flex:none}
-.call.high .k::before{background:var(--bd)}.call.med .k::before{background:var(--wn)}.call.ok .k::before{background:var(--ok)}
-.call .big{font:700 clamp(30px,7vw,48px)/1.04 var(--num);letter-spacing:.005em;margin:8px 0 8px}
-.call .why{font-size:16px;opacity:1;max-width:70ch}
-.tiles{gap:12px;margin-top:12px}
-.tile{padding:14px 16px 13px;border:1px solid var(--ln);border-top:3px solid var(--lnb)}
-.tile .n{font:600 clamp(26px,5vw,36px)/1 var(--num);font-variant-numeric:tabular-nums;letter-spacing:.005em}
-.tile .n small{font:600 14px var(--num);color:var(--mu);margin-left:2px}
-.tile .l{font-size:13px;color:var(--mu);margin-top:8px;line-height:1.3}
-.f{padding:13px 16px 12px;border-left-width:5px;margin:10px 0}
-.f h3{font-size:16px;margin:8px 0 6px;line-height:1.3}.f .do{font-size:15px}
-.cr,.cc{padding:11px 14px}.cr .nm,.cc .nm{font:700 20px var(--num)}
-.verdict{border:1px solid var(--ln);border-left:8px solid var(--ac);padding:18px 22px}
-.verdict .big{font:700 clamp(26px,6vw,38px)/1.1 var(--num)}
-table.cmp{font-variant-numeric:tabular-nums}.cmp th{background:var(--sf2);color:var(--mu);font-weight:600;font-size:12px;padding:9px 8px}.cmp td{font:600 16px var(--num);padding:11px 8px}.cmp td:first-child{font:500 14px "Segoe UI",system-ui,sans-serif}
-.empty{background:var(--sf);border:1px dashed var(--lnb);padding:40px 22px}.empty b{font:700 24px var(--num);margin-bottom:8px}
-.dot.s{fill:var(--tx);stroke:var(--sf);stroke-width:1.5}
-.fitc,.fitp{stroke:var(--ac);opacity:1;stroke-width:2.5}
-.band{fill:var(--wn);opacity:.2}.flag{stroke:var(--tx)}
-.t{font-family:var(--num);font-size:11px;letter-spacing:.02em}
-.axis{stroke:var(--lnb)}.grid{stroke:var(--ln);stroke-dasharray:2 4}
-.chips .chip,.chip{border-radius:3px;border-width:1px;border-color:var(--lnb);font-weight:600}.chip.on{border-color:var(--ac);box-shadow:inset 0 -3px 0 var(--ac);background:var(--sf)}
-details.set summary{font-weight:600}
-.foot{font-size:12px}
-@media(min-width:1000px){.topin{max-width:1280px;padding:0 32px}}
-@media(max-width:699px){
-.top .tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;background:var(--bar);border-top:2px solid var(--ac);padding:0 2px env(safe-area-inset-bottom,0px);gap:0}
-.top .tabs button{flex:1;min-height:56px;padding:6px 2px;margin:0;border-bottom:0;border-top:3px solid transparent;margin-top:-2px;font-size:14px}
-.top .tabs button.on{border-top-color:var(--ac);border-bottom:0}
-.topin{gap:12px}
-.ctx{gap:8px 18px}}
-.top .logo{display:block;flex:none}.top .mark{align-items:center;gap:10px}
-/* ---- refine v14 ---- */
-.top .logo{width:30px;height:30px}
-.top h1{font:800 21px/1 var(--num);font-style:italic;letter-spacing:-.01em;text-transform:lowercase;transform:skewX(-6deg)}
-.topin{min-height:50px}
-body{font-feature-settings:"tnum" 1,"cv11" 1;-webkit-font-smoothing:antialiased}
-.hero h2,.call h2,.card h2.big{letter-spacing:-.02em}
-.card,.tile,.panel{box-shadow:none}
-.tabs button{font-weight:600;letter-spacing:.01em}
-.notice,.bar .note{padding:8px 12px;font-size:13px;background:var(--sf);border:1px solid var(--ln);border-left:3px solid var(--wn);border-radius:3px;color:var(--mu)}
-details>summary{font-weight:600}
-@media print{.top{background:#fff!important}}
-html.pdf{--bg:#fff;--sf:#fff;--sf2:#eee;--tx:#111;--mu:#555;--ln:#ccc;--ac:#c40a0a;--wn:#a85f00;--wnbg:#fff4e0;--bd:#c40a0a;--bdbg:#fde8e6;--ok:#17743f;--okbg:#e6f5ec;color-scheme:light}html.pdf body{background:#fff}html.pdf .hero,html.pdf .dash,html.pdf .fgrid,html.pdf .cor{display:block!important}
-html.pdf .top,html.pdf .ctx,html.pdf .card.ctrl,html.pdf .chips,html.pdf .ctl,html.pdf .noprint,html.pdf button,html.pdf .notice,html.pdf .stint details,html.pdf details.set{display:none!important}
-html.pdf summary{display:block;list-style:none}html.pdf .ovx{display:none!important}html.pdf .printhead{display:block;margin:10px 0 0}html.pdf .printhead p{margin:4px 0;color:var(--mu)}html.pdf .printonly{display:block}
-[data-theme=dark] .empty svg path{stroke:#fff}[data-theme=dark] .empty svg rect{fill:#fff}
-.empty svg{width:56px;height:56px}
-/* ---- clean / apple-style ---- */
-:root{--bg:#f5f5f7;--sf:#fff;--sf2:#f5f5f7;--tx:#1d1d1f;--mu:#6e6e73;--ln:rgba(0,0,0,.08);--lnb:rgba(0,0,0,.16);--ac:#d4160c;--num:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",system-ui,sans-serif;--wnbg:#fff7e6}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--sf:#1c1c1e;--sf2:#2c2c2e;--tx:#f5f5f7;--mu:#98989d;--ln:rgba(255,255,255,.1);--lnb:rgba(255,255,255,.2);--wnbg:#2a2214}}
-:root[data-theme="dark"]{--bg:#000;--sf:#1c1c1e;--sf2:#2c2c2e;--tx:#f5f5f7;--mu:#98989d;--ln:rgba(255,255,255,.1);--lnb:rgba(255,255,255,.2);--wnbg:#2a2214}
-body,button,input,select,textarea{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",system-ui,sans-serif}
-body{background:var(--bg);color:var(--tx);font-size:16px;line-height:1.47;letter-spacing:-.011em}
-.top{background:rgba(251,251,253,.78);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--ln);position:sticky;top:0;z-index:30}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .top{background:rgba(22,22,23,.78)}}
-:root[data-theme="dark"] .top{background:rgba(22,22,23,.78)}
-.top .logo{color:var(--tx)}.top h1{color:var(--tx);font:700 19px/1 var(--num);font-style:normal;transform:none;letter-spacing:-.03em}
-.topin{max-width:980px!important;min-height:48px;padding:0 22px}
-.top nav.tabs{margin:0 auto}
-.top .tabs button{color:var(--mu);border:0;border-radius:980px;min-height:32px;padding:0 14px;margin:0;font:500 14px var(--num);letter-spacing:-.01em}
-.top .tabs button:hover{color:var(--tx)}
-.top .tabs button.on{color:var(--tx);background:var(--sf2);border:0}
-.top .tools button{background:none;color:var(--mu);border:0;font-weight:500;padding:4px 8px}
-main{max-width:980px;margin:0 auto;padding:8px 22px 80px}
-h2{font:600 21px/1.2 var(--num);letter-spacing:-.02em;color:var(--tx);margin:48px 0 14px}
-h2::after,h2::before{display:none!important}
-.card,.tile,.f,.cr,.cc,.call,.verdict,.empty,.notice,.pv,.ctx,.pklist,.cmp,.panel{background:var(--sf);border:0!important;border-radius:20px;box-shadow:none}
-.ctx{background:none;padding:0;margin:20px 0 0;gap:6px 28px;color:var(--mu);font-size:14px}
-.ctx b,.ctx strong{color:var(--tx)}
-.verdict{padding:44px 40px;margin-top:20px;border-left:0}
-.verdict .big{font:700 clamp(34px,7vw,64px)/1.05 var(--num);letter-spacing:-.035em;margin:10px 0 14px}
-.verdict .k,.verdict p{color:var(--mu);font-size:19px;line-height:1.42;max-width:640px}
-.tiles{gap:16px;margin-top:16px}
-.tile{padding:26px 26px 24px}
-.tile .n{font:600 clamp(32px,5vw,48px)/1 var(--num);letter-spacing:-.03em}
-.tile .n small{font:500 17px var(--num);color:var(--mu)}
-.tile .l{font-size:15px;margin-top:10px;color:var(--mu)}
-.f{padding:24px 26px;margin:0 0 16px}
-.f h3{font:600 19px/1.25 var(--num);letter-spacing:-.02em}
-.tag{border-radius:980px;padding:2px 10px;font-size:12px;font-weight:600;letter-spacing:0;text-transform:none}
-button,.btn,label.btn,.btn.pri{border-radius:980px!important;font-weight:500;min-height:40px;padding:0 20px;letter-spacing:-.01em;box-shadow:none}
-button.alt,.alt{background:var(--sf2);color:var(--tx);border:0}
-button:not(.alt):not(.sm):not(.link):not(.tabs button){background:var(--ac);color:#fff;border:0}
-button.link{background:none;color:var(--ac);padding:0;min-height:0;border:0;text-decoration:none;font-weight:500}
-button.link:hover{text-decoration:underline}
-button.sm{min-height:34px;padding:0 16px}
-.top .tabs button:not(.on){background:none}
-input,select{border-radius:12px;border:1px solid var(--lnb);background:var(--sf)}
-details{border:0;border-top:1px solid var(--ln);margin-top:0}
-details>summary{padding:18px 2px;font:500 17px var(--num);color:var(--tx)}
-.empty{padding:72px 24px;text-align:center;border:0}
-.empty b{font:700 clamp(28px,5vw,44px)/1.08 var(--num);letter-spacing:-.03em;display:block;margin-bottom:10px}
-.empty svg{width:48px;height:48px;color:var(--tx)}
-.card.ctrl{padding:20px 24px}
-.notice{padding:14px 18px;font-size:15px;margin-top:14px}
-@media(max-width:700px){.top{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--sf)!important}.topin{padding:0 14px}main{padding:4px 14px 90px}.verdict{padding:28px 22px}.top .tabs{background:rgba(251,251,253,.85)!important;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:1px solid var(--ln)!important}.top .tabs button{border-radius:0;background:none!important;color:var(--mu)}.top .tabs button.on{color:var(--ac)}.tiles{grid-template-columns:1fr}}
-.beta{font-style:normal;font-size:10px;font-weight:700;letter-spacing:.02em;background:var(--ac);color:#fff;border-radius:980px;padding:1px 6px;margin-left:4px;vertical-align:1px}
-.f p{margin:6px 0 0}.f p.do{font-weight:600}
-.ovc{margin-top:14px}.ovt{font-size:13px;font-weight:600;color:var(--mu);margin-bottom:2px}.ovx{stroke:var(--tx);stroke-width:1;opacity:.6}#ovl svg{touch-action:pan-y}.ovr{margin:8px 0 0;font-size:14px;color:var(--mu);font-variant-numeric:tabular-nums;min-height:1.5em}
-@media print{.ovx{display:none!important}}
+.facts dt{font:600 11.5px var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
+.facts dd{margin:0;font:500 15px var(--f-data)}.facts dd.sm{font:500 14px var(--f-body)}
+.readn{margin:14px 0 0;color:var(--mu);font-size:13.5px}
+
+/* ---- status ---- */
+.tag{display:inline-flex;align-items:center;gap:6px;font:600 11.5px/1 var(--f-body);letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;border-radius:4px;background:var(--sf2);color:var(--tx);white-space:nowrap}
+.tag.ok,.ok>.tag{background:var(--okbg);color:var(--ok)}.tag.med,.med>.tag{background:var(--wnbg);color:var(--wn)}.tag.high,.high>.tag{background:var(--bdbg);color:var(--bd)}
+
+/* ---- headline call ---- */
+.call,.verdict{margin-top:18px;background:var(--sf);border:1px solid var(--ln);border-radius:var(--r);padding:24px 26px;box-shadow:var(--shadow)}
+.call .k,.verdict .k{display:flex;align-items:center;gap:8px}
+.call .k::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--lnb)}
+.call.ok .k::before{background:var(--ok)}.call.med .k::before{background:var(--wn)}.call.high .k::before{background:var(--bd)}
+.call .big,.verdict .big{font:700 clamp(34px,6vw,56px)/1 var(--f-disp);letter-spacing:.005em;text-transform:uppercase;margin:12px 0 12px}
+.call.high .big{color:var(--bd)}
+.call .why,.verdict p{margin:0;max-width:70ch;color:var(--tx);font-size:16px}
+.call .conf{margin:8px 0 0;color:var(--mu);font-size:13.5px}
+.call .row{margin-top:18px;padding-top:16px;border-top:1px solid var(--ln)}
+.call input[type=number]{width:96px}
+
+/* ---- stat tiles ---- */
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:14px;background:var(--sf);border:1px solid var(--ln);border-radius:var(--r);overflow:hidden}
+.tile{padding:16px 20px;border-left:1px solid var(--ln);min-width:0}.tile:first-child{border-left:0}
+.tile .n{font:600 clamp(26px,3.6vw,38px)/1 var(--f-disp);letter-spacing:.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tile .n small{font:500 15px var(--f-body);color:var(--mu);margin-left:3px}
+.tile .l{margin-top:8px;font-size:13px;color:var(--mu);line-height:1.35}
+
+/* ---- findings ---- */
+.fgrid{background:var(--sf);border:1px solid var(--ln);border-radius:var(--r);padding:0 20px;box-shadow:var(--shadow)}
+.f{padding:16px 0;border-top:1px solid var(--ln)}.f:first-child{border-top:0}
+.f h3{margin:10px 0 6px}
+.f p{margin:4px 0 0;color:var(--mu);font-size:14.5px}.f p.do,.f .do{color:var(--tx);font-weight:500}
+.f dl{margin:8px 0 0;display:grid;gap:6px}.f dt{font:600 12px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}.f dd{margin:0}
+.f details.why{margin-top:4px}.f details.why summary{padding:6px 0;font-size:13px}
+.chg{list-style:none;margin:0;padding:0;display:grid;gap:12px}.chg li{display:flex;gap:12px;align-items:flex-start}.chg .tag{flex:none;margin-top:1px}
+
+/* ---- corners ---- */
+.cor{display:grid;gap:0;background:var(--sf);border:1px solid var(--ln);border-radius:var(--r);padding:0 18px}
+.cr{display:grid;grid-template-columns:52px auto minmax(0,1fr);gap:4px 14px;align-items:center;padding:12px 0;border-top:1px solid var(--ln)}.cr:first-child{border-top:0}
+.cr .nm,.cc .nm{font:700 20px var(--f-disp)}.cr .dt{color:var(--mu);font-size:14px}
+.cch{display:grid;grid-template-columns:48px 1fr 1fr;gap:10px;padding:0 18px 6px;font:600 12px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}
+.cc{display:grid;grid-template-columns:48px 1fr 1fr;gap:8px 10px;align-items:start;background:var(--sf);border:1px solid var(--ln);border-radius:var(--r);padding:12px 18px;margin-bottom:8px}
+.cc small{display:block;color:var(--mu);font-size:13px;margin-top:4px}
+
+/* ---- tables ---- */
+table.cmp{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.cmp th{font:600 11.5px var(--f-body);letter-spacing:.07em;text-transform:uppercase;color:var(--mu);text-align:right;padding:10px 10px;border-bottom:1px solid var(--ln);white-space:nowrap}
+.cmp td{text-align:right;padding:11px 10px;border-bottom:1px solid var(--ln);font:500 14px var(--f-data);white-space:nowrap}
+.cmp th:first-child,.cmp td:first-child{text-align:left;font-family:var(--f-body)}.cmp tr:last-child td{border-bottom:0}
+.cmp td.win{color:var(--ok);font-weight:700}
+.tbl{overflow-x:auto}
+
+/* ---- layout ---- */
+.tabpane{min-width:0}
+.dash{display:block}.colL,.colR{min-width:0}
+@media(min-width:1000px){.dash{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:0 28px;align-items:start}.dash.cmpd{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.stint .sum{margin:10px 0 0}.stint .ign{color:var(--mu);font-size:14px;margin:4px 0 0}
+
+/* ---- charts ---- */
+svg{display:block;width:100%;height:auto;overflow:visible}
+.axis{stroke:var(--lnb);stroke-width:1}.grid{stroke:var(--ln);stroke-width:1}
+.t{fill:var(--mu);font:500 11px var(--f-data)}.tl{fill:var(--tx);font:600 11px var(--f-body);letter-spacing:.04em}
+.trace{fill:none;stroke:var(--s1);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.traceB{fill:none;stroke:var(--s2);stroke-width:2;stroke-dasharray:6 4;stroke-linejoin:round}
+.traceR{fill:none;stroke:var(--ref);stroke-width:1.5;stroke-dasharray:5 4;stroke-linejoin:round}
+.area{fill:var(--s1);opacity:.1}
+.dot{fill:var(--sf);stroke:var(--s1);stroke-width:2}.dot.s{fill:var(--tx);stroke:var(--sf);stroke-width:2}
+.mkB{fill:var(--sf);stroke:var(--s2);stroke-width:2}
+.fitc{fill:none;stroke:var(--s1);stroke-width:2}.fitp{fill:none;stroke:var(--s1);stroke-width:2;stroke-dasharray:5 4}
+.band{fill:var(--wn);opacity:.16}.flag{stroke:var(--tx);stroke-width:1.5}
+.lg{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:13.5px;color:var(--mu)}.lg span{display:inline-flex;align-items:center;gap:8px}
+.sw{display:inline-block;width:20px;height:0;border-top:2px solid var(--s1)}.sw.b{border-top:2px dashed var(--s2)}.sw.r{border-top:2px dashed var(--ref)}
+.ovc{margin-top:16px}.ovt{display:flex;justify-content:space-between;gap:10px;font:600 12px var(--f-body);letter-spacing:.07em;text-transform:uppercase;color:var(--mu);margin-bottom:4px}
+.ovx{stroke:var(--tx);stroke-width:1;opacity:.55}
+.ovr{margin:10px 0 0;font:500 13px var(--f-data);color:var(--mu);min-height:1.6em}
+#ovl svg,.xh svg{touch-action:pan-y}
+
+/* ---- telemetry page ---- */
+.lapbar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 28px;margin-top:18px}
+.lapbar .lt{font:700 clamp(40px,6vw,64px)/.9 var(--f-disp);letter-spacing:.005em}
+.lapbar .dl{font:500 14px var(--f-data);color:var(--mu);margin-top:6px}
+.tiles.six{grid-template-columns:repeat(6,minmax(0,1fr))}
+.phase{display:flex;height:22px;gap:2px;border-radius:4px;overflow:hidden;margin-top:6px;background:var(--sf)}
+.phase i{display:block;height:100%}.ph-t{background:var(--s1)}.ph-b{background:var(--s2)}.ph-c{background:var(--s3)}
+.phlg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+.phlg div{display:grid;grid-template-columns:12px 1fr;gap:2px 10px;align-items:center}
+.phlg i{width:12px;height:12px;border-radius:3px}.phlg b{font:600 14px var(--f-body)}.phlg span{grid-column:2;font:500 13px var(--f-data);color:var(--mu)}
+.chan{display:grid;grid-template-columns:minmax(0,1fr);gap:8px 32px;padding:22px 0;border-top:1px solid var(--ln)}.chan:first-of-type{border-top:0;padding-top:6px}
+@media(min-width:1000px){.chan{grid-template-columns:minmax(0,1fr) 340px}}
+@media(max-width:999px){.chan>div:last-child{order:-1}.chan .ovc{margin-top:8px}}
+.chan h3{font:600 15px var(--f-disp);letter-spacing:.09em;text-transform:uppercase}
+.chan .what{color:var(--mu);font-size:14px;margin:6px 0 0}
+.chan ul{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.chan li{position:relative;padding-left:16px;font-size:14.5px}.chan li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--s1)}
+.xread{position:sticky;top:calc(env(safe-area-inset-top,0px) + 64px);z-index:5;margin-top:14px;padding:9px 14px;border-radius:var(--r-sm);background:var(--sf2);font:500 13px var(--f-data);color:var(--mu);min-height:38px}
+
+/* ---- AI ---- */
+.aiu{font-weight:600;margin-top:16px}.aia{white-space:pre-wrap;margin-top:6px;padding:12px 14px;background:var(--sf2);border-radius:var(--r-sm);line-height:1.55}
+
+/* ---- misc ---- */
+.printhead,.printonly{display:none}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:var(--r-sm);font-weight:500;font-size:14px;max-width:min(92vw,560px)}
+.dropov{display:none;position:fixed;inset:12px;z-index:70;align-items:center;justify-content:center;border:2px dashed var(--ac);border-radius:16px;background:color-mix(in srgb,var(--bg) 88%,transparent);font:700 34px var(--f-disp);text-transform:uppercase;letter-spacing:.04em;color:var(--tx)}
+.dropov.on{display:flex}
+
+/* ---- phone ---- */
+@media(max-width:760px){
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--sf);border-top:1px solid var(--ln);padding:0 max(4px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(4px,env(safe-area-inset-left,0px));justify-content:space-between;gap:0}
+.tabs button{flex:1;min-width:0;min-height:56px;padding:0 2px;font-size:12px;letter-spacing:.05em}
+.tabs button.on::after{top:-1px;bottom:auto;left:20%;right:20%}
+main{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}.toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+.tiles,.tiles.six{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{border-left:0;border-top:1px solid var(--ln)}.tile:nth-child(2n){border-left:1px solid var(--ln)}.tile:nth-child(-n+2){border-top:0}
+.phlg{grid-template-columns:1fr}.call,.verdict{padding:20px}.fgrid{padding:0 16px}
+}
+@media(min-width:761px) and (max-width:1100px){.tiles.six{grid-template-columns:repeat(3,minmax(0,1fr))}.tiles.six .tile:nth-child(4){border-left:0}.tiles.six .tile:nth-child(n+4){border-top:1px solid var(--ln)}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---- print & PDF ---- */
+@media print{
+:root,:root[data-theme="dark"],:root:not([data-theme="light"]){--bg:#fff;--sf:#fff;--sf2:#f1f3f5;--tx:#111;--mu:#555;--fa:#777;--ln:#d6d9dd;--lnb:#c3c8ce;--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--ref:#98a1ab;--ok:#0d7a3b;--okbg:#e2f2e8;--wn:#94570a;--wnbg:#fcf0d9;--bd:#bf2329;--bdbg:#fbe5e5;--shadow:none;color-scheme:light}
+body{font-size:11pt}.top,.ctx,.card.ctrl,.chips,.ctl,.noprint,button,.notice,.stint details,details.set,.ovx,.xread{display:none!important}
+.dash{display:block!important}.printhead{display:block;margin:10px 0 0}.printhead h1{font:700 26px var(--f-disp);text-transform:uppercase;margin:0}.printhead p{margin:4px 0;color:var(--mu)}
+.f,.card,.call,.tile,.cr,.cc,.chan{break-inside:avoid}
+}
+html.pdf{--bg:#fff;--sf:#fff;--sf2:#f1f3f5;--tx:#111;--mu:#555;--fa:#777;--ln:#d6d9dd;--lnb:#c3c8ce;--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--ref:#98a1ab;--ok:#0d7a3b;--okbg:#e2f2e8;--wn:#94570a;--wnbg:#fcf0d9;--bd:#bf2329;--bdbg:#fbe5e5;--shadow:none;color-scheme:light}
+html.pdf body{background:#fff}html.pdf .dash{display:block!important}
+html.pdf .top,html.pdf .ctx,html.pdf .card.ctrl,html.pdf .chips,html.pdf .ctl,html.pdf .noprint,html.pdf button,html.pdf .notice,html.pdf .stint details,html.pdf details.set,html.pdf .ovx,html.pdf .xread{display:none!important}
+html.pdf summary{display:block;list-style:none}html.pdf summary::before{display:none}
+html.pdf .printhead{display:block;margin:10px 0 0}html.pdf .printhead h1{font:700 26px var(--f-disp);text-transform:uppercase;margin:0}html.pdf .printhead p{margin:4px 0;color:var(--mu)}
+html.pdf .chan{grid-template-columns:minmax(0,1fr)}
 </style></head><body><div class="dropov" id="dropov">Drop lap files to load them</div>
-<header class="top"><div class="topin"><div class="mark"><svg class="logo" viewBox="0 0 100 100" width="30" height="30" aria-hidden="true"><g transform="skewX(-10)" transform-origin="50 50"><rect x="18" y="13.5" width="16" height="72.5" fill="currentColor"/><path d="M49.48 64.17 A22 22 0 1 1 73.85 57.64" fill="none" stroke="currentColor" stroke-width="15"/><circle cx="62.69" cy="64.75" r="7.2" fill="#d4160c"/></g></svg><h1>Pacely</h1></div><nav class="tabs noprint" id="navHold" role="tablist" aria-label="Sections"></nav>
-<div class="tools"><button class="alt sm" id="theme" aria-label="Switch light or dark">Light / Dark</button></div></div></header><main>
-<div id="ctrlHold" hidden><div class="card ctrl" style="margin-top:18px">
-<div class="row"><label class="btn" style="background:var(--ac);color:var(--acx)">Load lap file<input id="file" type="file" accept=".csv,.txt,.tsv,text/csv,text/plain,.xlsx,.xlsm,.xls" multiple hidden></label>
-<button class="alt" id="paste">Paste data</button><button class="alt" id="demo">Try sample sessions</button></div>
+<header class="top"><div class="topin"><div class="mark"><svg class="logo" viewBox="0 0 100 100" width="30" height="30" aria-hidden="true"><g transform="skewX(-10)" transform-origin="50 50"><rect x="18" y="13.5" width="16" height="72.5" fill="currentColor"/><path d="M49.48 64.17 A22 22 0 1 1 73.85 57.64" fill="none" stroke="currentColor" stroke-width="15"/><circle cx="62.69" cy="64.75" r="7.2" style="fill:var(--ac)"/></g></svg><h1>Pacely</h1></div><nav class="tabs noprint" id="navHold" role="tablist" aria-label="Sections"></nav>
+<div class="tools"><button id="theme" aria-label="Switch between light and dark">Theme</button></div></div></header><main>
+<div id="ctrlHold" hidden><div class="card ctrl">
+<div class="row"><label class="btn">Load lap file<input id="file" type="file" accept=".csv,.txt,.tsv,text/csv,text/plain,.xlsx,.xlsm,.xls" multiple hidden></label>
+<button class="alt" id="paste">Paste data</button><button class="alt" id="demo">Open sample sessions</button></div>
 <details class="set"><summary>Settings</summary>
 <div class="row" style="margin-top:8px"><label class="f2">Car speeds up as fuel burns (s per lap)<input id="fuel" type="number" step="0.01" value="0.03"></label>
 <label class="f2">Pit stop costs you (s)<input id="thr" type="number" step="1" value="" placeholder="25"></label></div>
@@ -624,13 +590,13 @@ fine=`<details class="set noprint"><summary>Fine-tune stints and laps</summary>$
 ai=`<details class="set noprint"${(aiState[s.id]&&aiState[s.id].log.length)?' open':''}><summary>Ask AI about this session (optional)</summary>${aiBlock(s)}</details>`,
 note=s.note?`<p class="foot">${esc(s.note)}</p>`:'',
 disc=`<p class="foot">Pacely uses simple rules to flag trends, not certainties. Always confirm with driver feedback and the race situation.</p>`,
-prt=`<div class="ctl noprint"><button class="alt sm" id="print">Print or save as PDF</button></div>`;
+prt=`<div class="ctl noprint"><button class="alt sm" id="print">Save as PDF</button></div>`;
 if(printing)return ph+hero+`<div class="dash"><div class="colL">${finds}</div><div class="colR">${chart}${corners}</div></div>`+note+disc;
 const P={call:ph+readn+hero+`<div class="dash"><div class="colL">${finds}</div><div class="colR">${chart}${corners}</div></div>`+fine+ai+prt+disc,
 files:filesPane(s)};
 return `<div class="tabpane" role="tabpanel">${P[tab]||P.call}</div>`}
 function filesPane(s){const note=s.note?`<p class="foot">${esc(s.note)}</p>`:'',disc=`<p class="foot">Pacely uses simple rules to flag trends, not certainties. Always confirm with driver feedback and the race situation.</p>`;
-return `<h2>This session</h2><div class="card"><details class="set noprint" style="margin:0;border:0;padding:0"><summary>Name, tyre and temperature details</summary>${fieldsBlock(s)}</details><div class="ctl noprint" style="margin-top:12px"><button class="alt sm" id="print">Print or save as PDF</button><button class="alt sm" id="dl">Download as CSV</button><button class="alt sm" id="rm">${armed==='rm'?'Tap again to remove':'Remove this session'}</button><button class="alt sm" id="clr">${armed==='clr'?'Tap again to clear all':'Clear all sessions'}</button></div></div>${note}${disc}`}
+return `<h2>This session</h2><div class="card"><details class="set noprint" style="margin:0;border:0;padding:0"><summary>Name, tyre and temperature details</summary>${fieldsBlock(s)}</details><div class="ctl noprint" style="margin-top:12px"><button class="alt sm" id="print">Save as PDF</button><button class="alt sm" id="dl">Download as CSV</button><button class="alt sm" id="rm">${armed==='rm'?'Tap again to remove':'Remove this session'}</button><button class="alt sm" id="clr">${armed==='clr'?'Tap again to clear all':'Clear all sessions'}</button></div></div>${note}${disc}`}
 const MET=[['Tyre loss per lap','tyre',v=>v.toFixed(2)+' s',.01,-1],['Laps before you should pit','left',v=>v===Infinity?'No limit':v+' laps',1,1],['Lap consistency','resid',v=>'±'+v.toFixed(2)+' s',.02,-1],['Best lap','best',v=>v.toFixed(2)+' s',.05,-1],['Average lap','avg',v=>v.toFixed(2)+' s',.05,-1],['Problems found (fewer is better)','probs',v=>String(v),0,-1]];
 const TXT={tyre:(w,l,d)=>`${w} loses ${d.toFixed(2)} s less per lap to tyre wear than ${l}.`,lost:(w,l,d)=>`${w} has lost ${d.toFixed(1)} s less to tyre wear so far.`,left:(w,l,d)=>`${w} lasts ${d===Infinity?'much longer':d+' more laps'} before hitting your time-loss limit than ${l}.`,resid:(w,l,d)=>`${w} has more consistent laps than ${l} (${d.toFixed(2)} s tighter).`,best:(w,l,d)=>`${w} has the faster best lap, by ${d.toFixed(2)} s.`,avg:(w,l,d)=>`${w} has the faster average lap, by ${d.toFixed(2)} s.`,probs:(w,l,d)=>`${w} has fewer problems than ${l}.`};
 function summ(a){return{tyre:Math.max(a.rateAvg,0),lost:a.lossNow,left:a.left.low,resid:a.resid,best:Math.min(...a.lt),avg:mean(a.lt),probs:a.F.reduce((n,f)=>n+(f.sev=='high'?2:f.sev=='med'?1:0),0)}}
@@ -639,21 +605,93 @@ function ovLap(s,want){const T=s.tr,lt=new Map(s.laps.map(l=>[l.lap,l.t])),ks=Ob
 const best=ks.reduce((a,k)=>lt.get(k)<lt.get(a)?k:a,ks[0]),lap=want!=null&&T.laps[want]&&lt.has(want)?want:best;return{lap,best,ks,t:lt.get(lap),P:T.laps[lap],T}}
 function cumT(P,T,dur){const c=[0];let acc=0;for(let j=0;j<T.nb;j++){acc+=T.bin/Math.max(P.v[j]||0,5)*3.6;c.push(acc)}const k=dur/acc;return c.map(x=>x*k)}
 function ovSeries(o,k,N){const a=o.P[k];if(!a)return null;const n=o.T.nb;return Array.from({length:N},(_,j)=>{const v=a[Math.min(n-1,Math.floor((j+.5)/N*n))];return v==null?null:v})}
-function ovChart(id,title,N,ser,{h=150,zero=false,fmt=v=>v.toFixed(0),top='',bot='',marks=null}={}){const W=600,p=46,X=j=>p+j/(N-1)*(W-p-10);
-const all=ser.flatMap(x=>x.y).filter(v=>v!=null&&isFinite(v));if(!all.length)return'';let mn=Math.min(...all),mx=Math.max(...all);if(zero){const m=Math.max(Math.abs(mn),Math.abs(mx),.05);mn=-m;mx=m}if(mx-mn<1e-6){mx+=1;mn-=1}
-const pad=(mx-mn)*.06;if(!zero){mn=mn>=0?Math.max(0,mn-pad):mn-pad;mx+=pad}const Y=v=>12+(1-(v-mn)/(mx-mn))*(h-30);
-const line=(y,cls)=>{let d='',on=false;y.forEach((v,j)=>{if(v==null){on=false;return}d+=(on?'L':'M')+X(j).toFixed(1)+','+Y(v).toFixed(1);on=true});return`<path class="${cls}" d="${d}"/>`};
-const mks=marks?marks.map(m=>`<line class="grid" x1="${X(m.j)}" x2="${X(m.j)}" y1="12" y2="${h-18}"/><text class="t" x="${X(m.j)+3}" y="22">${esc(m.n)}</text>`).join(''):'';
-return`<div class="ovc"><div class="ovt">${title}</div><svg viewBox="0 0 ${W} ${h}" role="img" aria-label="${esc(title)} by distance, session A solid, session B dashed" data-ov="${id}">
-<line class="axis" x1="${p}" x2="${W-10}" y1="${h-18}" y2="${h-18}"/>${zero?`<line class="axis" x1="${p}" x2="${W-10}" y1="${Y(0)}" y2="${Y(0)}"/>`:''}${mks}
-<text class="t" x="2" y="${Y(mx)+10}">${top||fmt(mx)}</text><text class="t" x="2" y="${Y(mn)-2}">${bot||fmt(mn)}</text>
-${ser.map(x=>line(x.y,x.cls)).join('')}<line class="ovx" x1="0" x2="0" y1="12" y2="${h-18}" style="display:none"/></svg></div>`}
+const niceStep=(span,n)=>{const r=span/n,p=10**Math.floor(Math.log10(r)),m=r/p;return(m<1.5?1:m<3?2:m<7?5:10)*p};
+const XL=46,XR=12;let XW=640,XP=XW-XL-XR;const narrow=()=>innerWidth<700,xwSet=()=>{XW=narrow()?380:640;XP=XW-XL-XR};
+function dChart(id,title,N,len,ser,{h=150,zero=false,fmt=v=>String(Math.round(v)),marks=null,floor=null,note=''}={}){const X=j=>XL+j/(N-1)*XP,pt=marks?22:10,pb=24;
+const all=ser.flatMap(x=>x.y).filter(v=>v!=null&&isFinite(v));if(!all.length)return'';let mn=Math.min(...all),mx=Math.max(...all);if(floor!=null)mn=Math.min(mn,floor);
+if(zero){const m=Math.max(Math.abs(mn),Math.abs(mx),.05);mn=-m;mx=m}if(mx-mn<1e-6){mx+=1;mn-=1}
+const st=niceStep(mx-mn,3);mn=Math.floor(mn/st+1e-9)*st;mx=Math.ceil(mx/st-1e-9)*st;const Y=v=>pt+(1-(v-mn)/(mx-mn))*(h-pt-pb);
+let g='';for(let v=mn;v<=mx+st*.01;v+=st){const y=Y(v).toFixed(1),z=Math.abs(v)<st*.01;g+=`<line class="${z&&zero?'axis':'grid'}" x1="${XL}" x2="${XW-XR}" y1="${y}" y2="${y}"/><text class="t" x="${XL-8}" y="${(+y+4).toFixed(1)}" text-anchor="end">${fmt(z?0:v)}</text>`}
+const ds=niceStep(len,5);for(let d=0;d<=len+1;d+=ds){const x=(XL+d/len*XP).toFixed(1);g+=`<text class="t" x="${x}" y="${h-6}" text-anchor="${d===0?'start':'middle'}">${d?(d>=1000?(d/1000).toLocaleString()+' km':d+' m'):'0'}</text>`}
+const mk=marks?marks.map(m=>`<line class="grid" stroke-dasharray="2 3" x1="${X(m.j).toFixed(1)}" x2="${X(m.j).toFixed(1)}" y1="${pt-4}" y2="${h-pb}"/><text class="tl" x="${X(m.j).toFixed(1)}" y="${pt-8}" text-anchor="middle">${esc(m.n)}</text>`).join(''):'';
+const path=(y,cls)=>{let d='',on=false;y.forEach((v,j)=>{if(v==null){on=false;return}d+=(on?'L':'M')+X(j).toFixed(1)+','+Y(v).toFixed(1);on=true});return`<path class="${cls}" d="${d}"/>`};
+return`<div class="ovc"><div class="ovt"><span>${title}</span>${note?`<span>${note}</span>`:''}</div><svg viewBox="0 0 ${XW} ${h}" role="img" aria-label="${esc(title)} against distance around the lap" data-xh="${id}">
+${g}${mk}<line class="axis" x1="${XL}" x2="${XW-XR}" y1="${h-pb}" y2="${h-pb}"/>${ser.map(x=>path(x.y,x.cls)).join('')}<line class="ovx" x1="0" x2="0" y1="${pt-4}" y2="${h-pb}" style="display:none"/></svg></div>`}
+const XH={};
+function wireXH(){for(const[id,o]of Object.entries(XH)){const box=document.getElementById(id);if(!box)continue;const rd=document.getElementById(o.out),hide=()=>{box.querySelectorAll('.ovx').forEach(l=>l.style.display='none');if(rd)rd.textContent=o.idle};
+box.onpointermove=e=>{const sv=e.target.closest&&e.target.closest('svg[data-xh]');if(!sv)return;const r=sv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*XW,j=Math.max(0,Math.min(o.N-1,Math.round((x-XL)/XP*(o.N-1))));
+box.querySelectorAll('.ovx').forEach(l=>{const X=XL+j/(o.N-1)*XP;l.setAttribute('x1',X);l.setAttribute('x2',X);l.style.display=''});if(rd)rd.textContent=o.read(j)};box.onpointerleave=hide}}
+const cornerAt=(apex,N,j)=>{let k=0;for(let i=0;i<apex.length;i++){const lo=i?(apex[i-1]+apex[i])/2:0;if(j>=lo)k=i}return apex.length?'T'+(k+1):''};
+
+/* ---- telemetry page: one lap, channel by channel ---- */
+const teleSel={};
+const ffill=a=>{if(!a)return null;const r=a.slice();let l=null;for(let i=0;i<r.length;i++){if(r[i]==null)r[i]=l;else l=r[i]}let n=null;for(let i=r.length-1;i>=0;i--){if(r[i]==null)r[i]=n;else n=r[i]}return r.map(x=>x==null?0:x)};
+const pct=(a,q)=>{const s=a.filter(fin).slice().sort((x,y)=>x-y);return s.length?s[Math.min(s.length-1,Math.floor(q*s.length))]:0};
+function lapChan(T,P,t){const N=T.nb,B=T.bin,v=ffill(P.v),dt=v.map(x=>B/Math.max(x,5)*3.6),k=t/dt.reduce((a,c)=>a+c,0),tt=dt.map(x=>x*k),cum=[];let a=0;tt.forEach(x=>{a+=x;cum.push(a)});
+const ms=v.map(x=>x/3.6),a0=v.map((_,j)=>{const j0=Math.max(0,j-1),j1=Math.min(N-1,j+1);return(ms[j1]**2-ms[j0]**2)/(2*B*(j1-j0))/9.81}),ax=a0.map((_,j)=>{let s=0,c=0;for(let q=Math.max(0,j-2);q<=Math.min(N-1,j+2);q++){s+=a0[q];c++}return s/c});
+const b=T.ch.b?ffill(P.b):null,g=T.ch.g?ffill(P.g):null,st=T.ch.s?ffill(P.s):null,bPk=b?pct(b,.95):0,gPk=g?pct(g,.95):0,top=Math.max(...v);
+const on=b?b.map(x=>x>Math.max(.12*bPk,.5)):ax.map(x=>x<-.35);
+const ph=v.map((x,j)=>on[j]?'b':g?(g[j]>.45*gPk?'c':'t'):(ax[j]<.05&&x<.85*top?'c':'t'));
+for(let i=0;i<N;){let j=i;while(j<N&&ph[j]===ph[i])j++;if(j-i<4)for(let q=i;q<j;q++)ph[q]=i?ph[i-1]:(ph[j]||ph[q]);i=j}
+return{v,b,g,st,tt,cum,ax,on,ph,top,t}}
+function corners(T,L){const N=T.nb,B=T.bin,ap=T.apex;return ap.map((a0,i)=>{const lo=i?Math.round((ap[i-1]+a0)/2):0,hi=i<ap.length-1?Math.round((a0+ap[i+1])/2):N-1;let ai=a0;for(let j=Math.max(lo,a0-15);j<=Math.min(hi,a0+15);j++)if(L.v[j]<L.v[ai])ai=j;
+let entry=0;for(let j=lo;j<=ai;j++)entry=Math.max(entry,L.v[j]);let z=-1;for(let j=ai;j>=Math.max(lo,ai-80);j--)if(L.on[j]){z=j;break}let zs=z;if(z>=0)while(zs>0&&zs>lo-20&&(L.on[zs-1]||L.on[zs-2]))zs--;
+let pk=0,dec=0;for(let j=Math.max(0,ai-12);j<=Math.min(N-1,ai+12);j++)if(L.g)pk=Math.max(pk,L.g[j]);if(zs>=0)for(let j=zs;j<=ai;j++)dec=Math.min(dec,L.ax[j]);
+let drv=0,c=0;for(let j=ai;j<=Math.min(N-1,ai+12);j++){drv+=L.ax[j];c++}drv/=c||1;let us=null;if(L.g&&L.st){let s=0,n=0;for(let j=Math.max(0,ai-4);j<=Math.min(N-1,ai+4);j++)if(L.g[j]>.3){s+=L.st[j]/L.g[j];n++}if(n)us=s/n}
+const time=L.cum[hi]-(lo?L.cum[lo-1]:0);return{n:'T'+(i+1),lo,hi,ai,entry,min:L.v[ai],exit:L.v[Math.min(hi,ai+20)],bp:zs>=0?(ai-zs)*B:null,trail:z>=ai-4&&z>=0,pk,dec,drv,us,time}})}
+function teleEmpty(){const ts=sessions.map((s,i)=>s.tr?i:-1).filter(i=>i>=0);
+return`<div class="empty"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M4 34 L14 18 L22 28 L32 10 L44 30" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/></svg><b>No telemetry in this session</b>This session has lap times only. Load a logger export with speed against time (AiM, MoTeC, VBOX and similar) to see every channel of a lap explained.
+<div class="row" style="justify-content:center;margin-top:18px">${ts.length?ts.slice(0,3).map(i=>`<button class="alt" data-gos="${i}">Open ${esc(sessions[i].name)}</button>`).join(''):'<button class="alt" data-godemo="1">Open sample sessions</button>'}</div></div>`}
+function tele(){const s=sessions[cur];if(!s||!s.tr)return`<div class="tabpane">${teleEmpty()}</div>`;const T=s.tr,o=ovLap(s,teleSel[s.id]);if(!o)return`<div class="tabpane">${teleEmpty()}</div>`;
+const N=T.nb,B=T.bin,len=T.len,lt=k=>(s.laps.find(l=>l.lap===k)||{}).t,sorted=[...o.ks].sort((x,y)=>lt(x)-lt(y)),refLap=o.lap===o.best?(sorted[1]??null):o.best,isBest=o.lap===o.best;
+const L=lapChan(T,o.P,o.t),R=refLap!=null?lapChan(T,T.laps[refLap],lt(refLap)):null,refName=refLap==null?'':isBest?`your next-fastest lap (lap ${refLap})`:`your fastest lap (lap ${refLap})`;
+const C=corners(T,L),CR=R?corners(T,R):null,marks=T.apex.map((j,i)=>({j,n:'T'+(i+1)})),f1=x=>x.toFixed(1),f2=x=>x.toFixed(2),km=x=>Math.round(x)+' km/h',at=j=>Math.round((j+.5)*B).toLocaleString()+' m';
+const tTot=L.tt.reduce((a,c)=>a+c,0),share=k=>{let s2=0;L.ph.forEach((p,j)=>{if(p===k)s2+=L.tt[j]});return s2},topJ=L.v.indexOf(L.top),slow=C.length?C.reduce((a,c)=>c.min<a.min?c:a):null;
+const segs=[];L.ph.forEach((p,j)=>{if(segs.length&&segs[segs.length-1].p===p)segs[segs.length-1].n++;else segs.push({p,n:1})});
+const gap=R?L.cum.map((c,j)=>c-R.cum[j]):null,dC=CR?C.map((c,i)=>({n:c.n,d:c.time-CR[i].time})):[],loss=[...dC].sort((a,b)=>b.d-a.d),sg=x=>Math.abs(x)<.005?'0.00':(x>0?'+':'−')+Math.abs(x).toFixed(2);
+// insights
+const I={};I.v=[`Top speed ${km(L.top)} at ${at(topJ)}, average ${km(len/o.t*3.6)}.`];if(slow)I.v.push(`Slowest corner: ${slow.n} at ${km(slow.min)}.`);
+if(R){let w=0,wj=0;L.v.forEach((x,j)=>{const d=R.v[j]-x;if(d>w){w=d;wj=j}});I.v.push(w>=3?`Biggest speed deficit to ${refName}: ${km(w)} at ${at(wj)}, around ${cornerAt(T.apex,N,wj)}.`:`Never more than ${km(Math.max(w,0))} off ${refName}.`)}
+if(R){I.d=[Math.abs(gap[N-1])<.0005?`This lap is level with ${refName}.`:`This lap is ${Math.abs(gap[N-1]).toFixed(3)} s ${gap[N-1]>0?'slower than':'faster than'} ${refName}.`];if(loss[0]&&loss[0].d>.02)I.d.push(`Most time lost around ${loss[0].n}: ${sg(loss[0].d)} s.`);const gn=loss[loss.length-1];if(gn&&gn.d<-.02)I.d.push(`Most time gained around ${gn.n}: ${sg(gn.d)} s.`)}
+const zones=segs.filter(x=>x.p==='b').length;I.b=[`${zones} braking zone${zones==1?'':'s'}, ${(share('b')/tTot*100).toFixed(0)}% of the lap time on the brakes.`];
+const bps=C.filter(c=>c.bp!=null);if(bps.length){const e=bps.reduce((a,c)=>c.bp>a.bp?c:a);I.b.push(`Longest braking: ${e.n}, starting ${Math.round(e.bp)} m before the apex.`)}
+if(CR){const dd=C.map((c,i)=>({n:c.n,d:c.bp!=null&&CR[i].bp!=null?c.bp-CR[i].bp:0})).sort((a,b)=>Math.abs(b.d)-Math.abs(a.d))[0];if(dd&&Math.abs(dd.d)>=8)I.b.push(`At ${dd.n} you braked ${Math.round(Math.abs(dd.d))} m ${dd.d>0?'earlier':'later'} than on ${refName}.`)}
+const tr=C.filter(c=>c.trail).map(c=>c.n);I.b.push(tr.length?`Brake still on at the apex (trail braking) into ${tr.join(', ')}.`:'The brake is released before every apex, with no trail braking.');
+const pkB=Math.min(...L.ax),pkA=Math.max(...L.ax),weak=C.length?C.reduce((a,c)=>c.drv<a.drv?c:a):null;I.a=[`Peak braking ${f1(-pkB)} g, peak acceleration ${f2(pkA)} g.`];if(weak)I.a.push(`Weakest drive out of a corner: ${weak.n}, ${f2(weak.drv)} g from ${km(weak.min)}.`);
+if(L.g){const pc=C.length?C.reduce((a,c)=>c.pk>a.pk?c:a):null,lc=C.length?C.reduce((a,c)=>c.pk<a.pk?c:a):null;I.g=[];if(pc)I.g.push(`Highest cornering force: ${f2(pc.pk)} g at ${pc.n}.`);if(lc&&lc!==pc)I.g.push(`Lowest: ${f2(lc.pk)} g at ${lc.n}.`);const cg=L.g.filter((x,j)=>L.ph[j]==='c');if(cg.length)I.g.push(`Average ${f2(mean(cg))} g while cornering.`)}
+if(L.st&&L.g){const u=C.filter(c=>c.us!=null);I.s=[];if(u.length){const hi=u.reduce((a,c)=>c.us>a.us?c:a),m=mean(u.map(c=>c.us));I.s.push(`Most steering for the grip at ${hi.n}: ${f1(hi.us)}° per g, against ${f1(m)}° per g on average.`);I.s.push(hi.us>m*1.3?`${hi.n} is where the front tyres work hardest. If that number grows over a stint, the car is starting to understeer there.`:'Steering per g is even across the corners, so no single corner stands out for understeer.')}}
+const li=a=>a&&a.length?`<ul>${a.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'';
+const ref=y=>R?[{y:R[y],cls:'traceR'}]:[],ch=(id,title,what,key,chart)=>`<section class="chan"><div>${chart}</div><div><h3>${title}</h3><p class="what">${what}</p>${li(I[key])}</div></section>`;
+const charts=[ch('v','Speed','How fast the car is at every point of the lap. Peaks are the ends of the straights and dips are the corners. The bottom of each dip is the minimum corner speed, which sets the speed onto the next straight.','v',dChart('v','km/h',N,len,[...ref('v'),{y:L.v,cls:'trace'}],{h:200,marks}))];
+if(R)charts.push(ch('d','Time gap','The running time difference to '+refName+'. Where the line climbs, this lap is losing time. Where it falls, it is gaining. The steepest stretches show where the time goes.','d',dChart('d','seconds, + = behind',N,len,[{y:gap,cls:'trace'}],{h:130,zero:true,fmt:v=>(v>0?'+':'')+v.toFixed(2),marks})));
+if(L.b)charts.push(ch('b','Braking','Brake pressure. Each block is a braking zone. A sharp rise is a firm initial stop. A gradual release into the corner is trail braking, which helps the front of the car turn in.','b',dChart('b','brake',N,len,[...ref('b'),{y:L.b,cls:'trace'}],{h:120,floor:0,marks})));
+charts.push(ch('a','Acceleration and braking force','Longitudinal g, worked out from the speed trace. Below zero the car is slowing, above zero it is accelerating. Strong drive straight out of a corner means good traction and early throttle.','a',dChart('a','g',N,len,[...ref('ax'),{y:L.ax,cls:'trace'}],{h:130,zero:true,fmt:v=>v.toFixed(1),marks})));
+if(L.g)charts.push(ch('g','Cornering force','Lateral g: how much grip the car uses through the corners. Higher, flatter peaks mean the car is driven closer to its limit for longer.','g',dChart('g','g',N,len,[...ref('g'),{y:L.g,cls:'trace'}],{h:120,floor:0,fmt:v=>v.toFixed(1),marks})));
+if(L.st)charts.push(ch('s','Steering','Steering angle. Read it with cornering force: more steering for the same g means the front tyres are sliding, which is understeer.','s',dChart('s','degrees',N,len,[...ref('st'),{y:L.st,cls:'trace'}],{h:120,floor:0,marks})));
+XH.tch={N,len,out:'txr',idle:'Move over or touch a chart to read every channel at that point of the lap.',read:j=>[at(j),cornerAt(T.apex,N,j),`speed ${Math.round(L.v[j])}${R?' ('+Math.round(R.v[j])+')':''} km/h`,L.b?`brake ${Math.round(L.b[j])}`:'',L.g?`lateral ${f2(L.g[j])} g`:'',`long. ${f2(L.ax[j])} g`,gap?`gap ${sg(gap[j])} s`:''].filter(Boolean).join(' · ')};
+const tl=(n,l)=>`<div class="tile"><div class="n">${n}</div><div class="l">${l}</div></div>`;
+const PH=[['t','On throttle','ph-t'],['b','Braking','ph-b'],['c','Cornering','ph-c']];
+const opts=[...o.ks].sort((x,y)=>x-y).map(k=>`<option value="${k}" ${k===o.lap?'selected':''}>Lap ${k} · ${fmtS(lt(k))}${k===o.best?' · fastest':''}</option>`).join('');
+return`<div class="tabpane"><div class="printhead"><h1>Pacely telemetry</h1><p><b>${esc(s.name)}</b> · lap ${o.lap} · ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</p></div>
+<div class="lapbar"><label class="fld noprint">Lap<select id="tlap">${opts}</select></label><div><div class="k">Lap ${o.lap}</div><div class="lt">${fmtS(o.t)}</div><div class="dl">${R?`${isBest?'Fastest lap. ':''}${sg(L.t-R.t)} s to ${refName}`:'Only one complete lap'}</div></div></div>
+<div class="tiles six">${tl(Math.round(L.top)+'<small>km/h</small>','Top speed')}${tl(Math.round(len/o.t*3.6)+'<small>km/h</small>','Average speed')}${slow?tl(Math.round(slow.min)+'<small>km/h</small>',`Slowest corner (${slow.n})`):''}${tl((share('b')/tTot*100).toFixed(0)+'<small>%</small>','Time on the brakes')}${tl(f1(-pkB)+'<small>g</small>','Peak braking')}${L.g?tl(f2(Math.max(...C.map(c=>c.pk),0))+'<small>g</small>','Peak cornering'):tl(f2(pkA)+'<small>g</small>','Peak acceleration')}</div>
+<h2>Lap anatomy <small>where the lap is spent, by distance</small></h2><div class="card"><div class="phase" role="img" aria-label="Lap split into braking, cornering and on-throttle sections">${segs.map(x=>`<i class="ph-${x.p}" style="flex:${x.n} 0 0"></i>`).join('')}</div>
+<div class="phlg">${PH.map(([k,n,c])=>`<div><i class="${c}"></i><b>${n}</b><span>${(share(k)/tTot*100).toFixed(0)}% · ${share(k).toFixed(1)} s</span></div>`).join('')}</div>
+<p class="hint">Each band is a stretch of track from the start line (left) to the finish line (right). Braking is when the brake is on, cornering is when the car is carrying high sideways force without braking, and on throttle is everything else, including the straights.</p></div>
+<h2>Channels <small>${R?'this lap against '+esc(refName):'this lap'}</small></h2><div class="card xh" id="tch"><div class="lg"><span><i class="sw"></i>Lap ${o.lap}</span>${R?`<span><i class="sw r"></i>Lap ${refLap}${isBest?' (next fastest)':' (fastest)'}</span>`:''}</div>
+<div class="xread noprint" id="txr">${XH.tch.idle}</div>${charts.join('')}</div>
+<h2>Corner by corner</h2><div class="card tbl"><table class="cmp"><tr><th>Corner</th><th>Brakes at</th><th>Entry</th><th>Minimum</th><th>Exit</th>${L.g?'<th>Peak g</th>':''}<th>Time</th>${CR?'<th>vs ref</th>':''}</tr>
+${C.map((c,i)=>`<tr><td><b>${c.n}</b></td><td>${c.bp==null?'–':Math.round(c.bp)+' m'}</td><td>${Math.round(c.entry)}</td><td>${Math.round(c.min)}</td><td>${Math.round(c.exit)}</td>${L.g?`<td>${f2(c.pk)}</td>`:''}<td>${c.time.toFixed(2)}</td>${CR?`<td class="${dC[i].d<-.005?'win':''}">${sg(dC[i].d)}</td>`:''}</tr>`).join('')}</table></div>
+<p class="foot">Speeds in km/h. "Brakes at" is how far before the apex braking starts. Time is from halfway between the previous corner and this one to halfway to the next. Corners are found automatically from the fastest lap. Longitudinal g is worked out from speed, so it is smoothed. Confirm with driver feedback.</p>
+<div class="ctl noprint"><button class="alt sm" id="print">Save as PDF</button></div></div>`}
+
 function overlay(sa,sb){if(!sa.tr||!sb.tr){const any=sessions.some(x=>x.tr);return any?`<p class="foot noprint">The telemetry overlay appears when both sessions come from telemetry files${sessions.filter(x=>x.tr).length>=2?', for example the two telemetry sample sessions':''}.</p>`:''}
 const a=ovLap(sa,cmpOv.A),b=ovLap(sb,cmpOv.B);if(!a||!b)return'';const N=a.T.nb,len=a.T.len;
 const cA=cumT(a.P,a.T,a.t),cB=cumT(b.P,b.T,b.t),tAt=(c,n,fr)=>{const x=fr*n,i=Math.min(n-1,Math.floor(x));return c[i]+(c[i+1]-c[i])*(x-i)};
 const d=Array.from({length:N},(_,j)=>{const fr=(j+1)/N;return tAt(cB,b.T.nb,fr)-tAt(cA,N,fr)});
 const vA=ovSeries(a,'v',N),vB=ovSeries(b,'v',N),both=k=>a.T.ch[k]&&b.T.ch[k],bA=both('b')?ovSeries(a,'b',N):null,bB=both('b')?ovSeries(b,'b',N):null,sA=both('s')?ovSeries(a,'s',N):null,sB=both('s')?ovSeries(b,'s',N):null;
-const marks=a.T.apex.map((j,i)=>({j,n:'T'+(i+1)}));OV={N,len,vA,vB,d,bA,bB,sA,sB};
+const marks=a.T.apex.map((j,i)=>({j,n:'T'+(i+1)})),f0=v=>v==null?'–':Math.round(v);OV=1;
+XH.ovl={N,len,out:'ovr',idle:'Move over or touch the charts to read the values at any point of the lap.',read:j=>`${Math.round((j+.5)/N*len).toLocaleString()} m · ${cornerAt(a.T.apex,N,j)} · speed A ${f0(vA[j])}, B ${f0(vB[j])} km/h`+(bA?` · brake A ${f0(bA[j])}, B ${f0(bB[j])}`:'')+` · gap ${d[j]>0?'B behind by ':'B ahead by '}${Math.abs(d[j]).toFixed(2)} s`};
 const ap=a.T.apex,seg=ap.map((j,i)=>{const lo=i?Math.round((ap[i-1]+j)/2):0,hi=i<ap.length-1?Math.round((j+ap[i+1])/2):N-1;return{n:'T'+(i+1),g:d[hi]-(lo?d[lo-1]:0)}});
 const ranked=[...seg].sort((x,y)=>Math.abs(y.g)-Math.abs(x.g)).filter(x=>Math.abs(x.g)>=.02).slice(0,4);
 const lens=Math.abs(a.T.len-b.T.len)/Math.min(a.T.len,b.T.len)>.04?`<div class="notice">These laps are different lengths (${Math.round(a.T.len)} m and ${Math.round(b.T.len)} m), so the traces may not line up. Compare laps from the same track.</div>`:'';
@@ -661,11 +699,11 @@ const lo=(o,id,lab)=>`<label class="fld">${lab}<select id="${id}">${o.ks.sort((x
 const fin1=d[N-1],who=fin1>0?'A':'B';
 return`<h2>Telemetry overlay</h2>${lens}<div class="card" id="ovl"><div class="pick noprint">${lo(a,'ovA','Lap for A')}${lo(b,'ovB','Lap for B')}</div>
 <div class="lg" style="margin-top:12px"><span><i class="sw"></i>A: ${esc(sa.name)}, lap ${a.lap}</span><span><i class="sw b"></i>B: ${esc(sb.name)}, lap ${b.lap}</span></div>
-<p class="ovr noprint" id="ovr">Move over or touch the charts to read the values at any point of the lap.</p>
-${ovChart('v','Speed (km/h)',N,[{y:vB,cls:'traceB'},{y:vA,cls:'trace'}],{h:190,marks})}
-${ovChart('d','Gap, B to A (s)',N,[{y:d,cls:'trace'}],{h:120,zero:true,fmt:v=>(v>0?'+':'')+v.toFixed(2),top:'B behind',bot:'B ahead'})}
-${bA?ovChart('b','Brake',N,[{y:bB,cls:'traceB'},{y:bA,cls:'trace'}],{h:100}):''}
-${sA?ovChart('s','Steering (°)',N,[{y:sB,cls:'traceB'},{y:sA,cls:'trace'}],{h:100}):''}
+<div class="xread noprint" id="ovr">Move over or touch the charts to read the values at any point of the lap.</div>
+${dChart('v','Speed · km/h',N,len,[{y:vB,cls:'traceB'},{y:vA,cls:'trace'}],{h:200,marks})}
+${dChart('d','Gap, B to A · seconds',N,len,[{y:d,cls:'trace'}],{h:130,zero:true,fmt:v=>(v>0?'+':'')+v.toFixed(2),marks,note:'above zero: B behind'})}
+${bA?dChart('b','Brake',N,len,[{y:bB,cls:'traceB'},{y:bA,cls:'trace'}],{h:120,floor:0,marks}):''}
+${sA?dChart('s','Steering · degrees',N,len,[{y:sB,cls:'traceB'},{y:sA,cls:'trace'}],{h:120,floor:0,marks}):''}
 <p class="hint">Session ${who} is ${Math.abs(fin1).toFixed(3)} s quicker over these two laps. Distance runs left to right, ${Math.round(len).toLocaleString()} m in total. Corners are marked T1, T2 and so on.</p></div>
 ${ranked.length?`<h2>Where the time goes</h2><div class="card"><ul class="chg">${ranked.map(x=>`<li><span class="tag ${x.g>0?'ok':'high'}">${x.g>0?'A':'B'} gains ${Math.abs(x.g).toFixed(2)} s</span><span>Around ${x.n}: ${x.g>0?`session B loses ${x.g.toFixed(2)} s to A`:`session B gains ${(-x.g).toFixed(2)} s on A`} from the previous corner to the next. Check the speed and brake traces there.</span></li>`).join('')}</ul></div>`:''}`}
 const lapT=(o,k)=>{const s=sessions.find(x=>x.tr===o.T);const l=s&&s.laps.find(l=>l.lap===k);return l?l.t:0};
@@ -688,11 +726,11 @@ const cell=r=>r?`<span class="tag ${r.st}">${CL[r.st]}</span><small>${esc(r.dt)}
 return head+`${warn.length?`<div class="notice">Take care with this comparison: the sessions have ${warn.join(', and ')}.</div>`:''}
 <section class="verdict" aria-live="polite"><div class="k">Comparison</div><div class="big">${lead?`Session ${lead} looks stronger overall`:'Too close to call'}</div><p>${lead?`${esc(ln)} wins ${Math.max(wa,wb)} of ${MET.length} measures (${wa} for A, ${wb} for B).`:`Each session wins ${wa} of ${MET.length} measures.`}</p></section>
 <div class="dash cmpd"><div class="colL"><h2>What is different</h2><div class="card">${ch.length?`<ul class="chg">${ch.join('')}</ul>`:'<p style="margin:0">The two sessions are very similar on every measure.</p>'}</div>
-</div><div class="colR"><h2>Side by side</h2><div class="card" style="padding:8px 12px"><table class="cmp"><tr><th>Measure</th><th>A</th><th>B</th><th>Better</th></tr>${rows.map(r=>`<tr><td>${r.nm}</td><td class="${r.win=='A'?'win':''}">${r.f(r.u)}</td><td class="${r.win=='B'?'win':''}">${r.f(r.v)}</td><td>${r.win=='Same'?'Same':'✓ '+r.win}</td></tr>`).join('')}</table></div></div></div>
+</div><div class="colR"><h2>Side by side</h2><div class="card tbl"><table class="cmp"><tr><th>Measure</th><th>A</th><th>B</th><th>Better</th></tr>${rows.map(r=>`<tr><td>${r.nm}</td><td class="${r.win=='A'?'win':''}">${r.f(r.u)}</td><td class="${r.win=='B'?'win':''}">${r.f(r.v)}</td><td>${r.win=='Same'?'Same':'✓ '+r.win}</td></tr>`).join('')}</table></div></div></div>
 ${ov}
 <details class="set noprint"><summary>Show chart and corners</summary><h2>Lap times</h2><div class="card"><div class="lg"><span><i class="sw"></i>A: ${esc(sa.name)}${stLab(sa,'A')}</span><span><i class="sw b"></i>B: ${esc(sb.name)}${stLab(sb,'B')}</span></div>${chart2(a,b)}</div>
 ${cs.length?`<h2>Corner by corner</h2><div class="cch"><span></span><span>A</span><span>B</span></div>${cs.map(c=>`<div class="cc"><span class="nm">${esc(c)}</span><div>${cell(ca[c])}</div><div>${cell(cb[c])}</div></div>`).join('')}`:''}</details>
-<div class="ctl noprint"><button class="alt sm" id="print">Print or save as PDF</button></div>
+<div class="ctl noprint"><button class="alt sm" id="print">Save as PDF</button></div>
 <p class="foot">Pacely uses simple rules to flag trends, not certainties. Compare sessions with similar conditions, such as the same track and weather.</p>`}
 function pickCard(q){const gi=q.gi,cls=[...new Set(gi.groups.map(g=>g.cls).filter(Boolean))];
 return`<section class="card" style="margin-top:18px"><div style="font-weight:800;font-size:19px">${gi.groups.length} cars in this file</div><p class="hint" style="margin-top:4px">${esc(q.name)}. Tick the ones to load. Each becomes its own session you can compare.</p>${cls.length>1?`<label class="fld" style="margin-top:10px;max-width:260px">Class<select id="pickCls"><option value="">All classes</option>${cls.map(c=>`<option ${q.clsF===c?'selected':''}>${esc(c)}</option>`).join('')}</select></label>`:''}
@@ -708,7 +746,7 @@ ${U.map(([k,l,o])=>`<div class="mrow"><span>${l}</span>${sel(`data-unit="${k}"`,
 <label class="row" style="margin-top:12px;gap:8px;font-size:15px"><input type="checkbox" id="remember" ${q.remember?'checked':''}> Remember this mapping for files with the same columns</label>
 ${q.err?`<p class="err" role="alert">${esc(q.err)}</p>`:''}
 <div class="row" style="margin-top:14px"><button id="impGo">Import</button><button class="alt" id="impSkip">Skip this file</button></div></section>`}
-const TABS=[['call','Race call'],['quali','Qualifying'],['compare','Compare'],['files','Files']];
+const TABS=[['call','Race call'],['quali','Qualifying'],['tele','Telemetry'],['compare','Compare'],['files','Files']];
 const fmtT=t=>{const m=Math.floor(t/60);return m+':'+(t-m*60).toFixed(2).padStart(5,'0')};
 const fmtS=t=>{if(t<60)return t.toFixed(3);const m=Math.floor(t/60);return m+':'+(t-m*60).toFixed(3).padStart(6,'0')};
 function navHTML(){return TABS.map(([k,l])=>`<button role="tab" aria-selected="${tab===k}" class="${tab===k?'on':''}" data-tab="${k}">${l}</button>`).join('')}
@@ -734,7 +772,7 @@ const rows=bs.map((b,i)=>({i,best:b.t,bestLap:b.lap,onBest:bls?bls[i]:null,lossB
 return{ns,ideal,gap:bl.t-ideal,rows,n:SX.length,np:PS.length}}
 function qChart(a){const W=600,H=220,p=56,{L,best}=a,V=L.filter(l=>l.t<=best*1.05);if(V.length<2)return'';
 const x0=Math.min(...V.map(l=>l.lap)),x1=Math.max(...V.map(l=>l.lap)),hi=best*1.05,X=v=>p+(v-x0)/Math.max(x1-x0,1)*(W-p-10),Y=t=>H-24-(t-best)/(hi-best)*(H-40);
-const dots=V.map(l=>`<circle cx="${X(l.lap).toFixed(1)}" cy="${Y(l.t).toFixed(1)}" r="${l===a.bl?6:3.5}" fill="${a.push(l)?'var(--ac)':'var(--lnb)'}" ${l===a.bl?'stroke="var(--tx)" stroke-width="2"':''}/>`).join('');
+const dots=V.map(l=>`<circle cx="${X(l.lap).toFixed(1)}" cy="${Y(l.t).toFixed(1)}" r="${l===a.bl?6:3.5}" fill="${a.push(l)?'var(--s1)':'var(--lnb)'}" ${l===a.bl?'stroke="var(--tx)" stroke-width="2"':''}/>`).join('');
 return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lap times, push laps in red, best lap ringed" style="width:100%;height:auto"><line x1="${p}" y1="${Y(best*1.02)}" x2="${W-10}" y2="${Y(best*1.02)}" stroke="var(--ln)" stroke-dasharray="4 4"/><text x="${p-6}" y="${Y(best)+4}" text-anchor="end" font-size="11" fill="var(--mu)">${fmtT(best)}</text><text x="${p-6}" y="${Y(hi)+4}" text-anchor="end" font-size="11" fill="var(--mu)">+5%</text><text x="${p}" y="${H-6}" font-size="11" fill="var(--mu)">Lap ${x0}</text><text x="${W-10}" y="${H-6}" text-anchor="end" font-size="11" fill="var(--mu)">Lap ${x1}</text>${dots}</svg>`}
 function quali(){let rows=[];try{rows=sessions.map((s,i)=>{try{return{i,a:qAnalyse(s)}}catch(e){return null}}).filter(Boolean)}catch(e){}
 const a=rows.find(r=>r.i===cur);if(!a)return errHTML('Could not analyse this session','Qualifying needs at least 3 lap times in the session.');
@@ -756,7 +794,7 @@ const tag={ok:'✓ Fine',med:'◆ Watch',high:'▲ Act now'};
 const gap=q.bl.t-fast;
 const tiles=sec?`<div class="tile"><div class="n">${fmtS(sec.ideal)}</div><div class="l">Ideal lap (your best sectors added up)</div></div><div class="tile"><div class="n">${sec.gap>0?sec.gap.toFixed(3):'0.000'}<small> s</small></div><div class="l">Time to find from your best lap</div></div>`
 :`<div class="tile"><div class="n">${runs.length}</div><div class="l">Runs (a run is a group of laps between slow in and out laps)</div></div>`;
-const secTable=sec?`<h2>Sectors</h2><div class="card" style="padding:8px 12px"><table class="cmp"><tr><th>Sector</th><th>Best</th><th>On best lap</th><th>Lost on best lap</th><th>Push lap average off best</th></tr>${sec.rows.map(r=>`<tr><td>S${r.i+1} <small style="color:var(--mu)">(best on lap ${r.bestLap})</small></td><td class="win">${fmtS(r.best)}</td><td>${r.onBest==null?'–':fmtS(r.onBest)}</td><td>${r.lossBest==null?'–':'+'+r.lossBest.toFixed(3)}</td><td>${r.avgLoss==null?'–':'+'+r.avgLoss.toFixed(3)}</td></tr>`).join('')}<tr><td><b>Lap</b></td><td class="win">${fmtS(sec.ideal)}</td><td>${fmtS(q.bl.t)}</td><td>${sec.gap>0?'+'+sec.gap.toFixed(3):'0.000'}</td><td></td></tr></table></div>`:'';
+const secTable=sec?`<h2>Sectors</h2><div class="card tbl"><table class="cmp"><tr><th>Sector</th><th>Best</th><th>On best lap</th><th>Lost on best lap</th><th>Push lap average off best</th></tr>${sec.rows.map(r=>`<tr><td>S${r.i+1} <small style="color:var(--mu)">(best on lap ${r.bestLap})</small></td><td class="win">${fmtS(r.best)}</td><td>${r.onBest==null?'–':fmtS(r.onBest)}</td><td>${r.lossBest==null?'–':'+'+r.lossBest.toFixed(3)}</td><td>${r.avgLoss==null?'–':'+'+r.avgLoss.toFixed(3)}</td></tr>`).join('')}<tr><td><b>Lap</b></td><td class="win">${fmtS(sec.ideal)}</td><td>${fmtS(q.bl.t)}</td><td>${sec.gap>0?'+'+sec.gap.toFixed(3):'0.000'}</td><td></td></tr></table></div>`:'';
 const anySec=rows.some(r=>r.a.sec);
 return `<div class="tabpane"><div class="printhead"><h1>Pacely qualifying</h1><p><b>${esc(q.s.name)}</b> · ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}${condText(q.s)?' · '+esc(condText(q.s)):''}</p></div>${sec?'':`<div class="notice" style="margin-top:20px">${q.s.note&&/sector/.test(q.s.note)?esc(q.s.note):'No sector times in this session. Load a timing sheet with sector columns (for example S1, S2, S3) to see your ideal lap and where the time is lost.'}</div>`}
 <section class="verdict"><div class="k">${esc(q.s.name)}</div><div class="big">${fmtT(best)}</div><p>Best lap, lap ${q.bl.lap}${sec&&sec.gap>.0005?`. Ideal lap ${fmtS(sec.ideal)}`:''}${rows.length>1?`. ${rank===1?'Fastest of':'P'+rank+' of'} ${rows.length} loaded sessions${rank>1?`, ${gap.toFixed(3)} s off the fastest`:''}.`:'.'}</p></section>
@@ -764,11 +802,11 @@ return `<div class="tabpane"><div class="printhead"><h1>Pacely qualifying</h1><p
 <div class="fgrid"><div><h2>What to do</h2>${F.map(f=>`<article class="f ${f.sev}"><span class="tag">${tag[f.sev]}</span><h3>${esc(f.t)}</h3><p>${esc(f.m)}</p><p class="do">${esc(f.d)}</p></article>`).join('')}</div>
 <div><h2>Lap times</h2><div class="card">${qChart(q)}<p class="mu" style="margin:8px 0 0;font-size:14px">Red dots are push laps. The ringed dot is the best lap. Laps more than 5% off the best are not shown.</p></div></div></div>
 ${secTable}
-<h2>Runs</h2><div class="card" style="padding:8px 12px"><table class="cmp"><tr><th>Run</th><th>Laps</th><th>Push laps</th><th>Best lap</th><th>Best on lap</th></tr>${runs.map((r,i)=>`<tr><td>${i+1}</td><td>${r.n}</td><td>${r.push}</td><td class="${r.best===q.bl?'win':''}">${fmtT(r.best.t)}</td><td>${r.pos} of ${r.n}</td></tr>`).join('')}</table></div>
-${rows.length>1?`<h2>Sessions ranked by best lap</h2><div class="card" style="padding:8px 12px"><table class="cmp"><tr><th>Pos</th><th>Session</th><th>Best lap</th>${anySec?'<th>Ideal lap</th>':''}<th>Gap</th></tr>${rows.map((r,k)=>`<tr data-qs="${r.i}" style="cursor:pointer"><td>${k+1}</td><td>${r.i===cur?'<b>'+esc(r.a.s.name)+'</b>':esc(r.a.s.name)}</td><td>${fmtT(r.a.best)}</td>${anySec?`<td>${r.a.sec?fmtS(r.a.sec.ideal):'–'}</td>`:''}<td>${k?'+'+(r.a.best-fast).toFixed(3)+' s':'Fastest'}</td></tr>`).join('')}</table></div>`:''}<div class="ctl noprint"><button class="alt sm" id="print">Print or save as PDF</button></div>${q.s.note&&!(!sec&&/sector/.test(q.s.note))?`<p class="foot">${esc(q.s.note)}</p>`:''}</div>`}
+<h2>Runs</h2><div class="card tbl"><table class="cmp"><tr><th>Run</th><th>Laps</th><th>Push laps</th><th>Best lap</th><th>Best on lap</th></tr>${runs.map((r,i)=>`<tr><td>${i+1}</td><td>${r.n}</td><td>${r.push}</td><td class="${r.best===q.bl?'win':''}">${fmtT(r.best.t)}</td><td>${r.pos} of ${r.n}</td></tr>`).join('')}</table></div>
+${rows.length>1?`<h2>Sessions ranked by best lap</h2><div class="card tbl"><table class="cmp"><tr><th>Pos</th><th>Session</th><th>Best lap</th>${anySec?'<th>Ideal lap</th>':''}<th>Gap</th></tr>${rows.map((r,k)=>`<tr data-qs="${r.i}" style="cursor:pointer"><td>${k+1}</td><td>${r.i===cur?'<b>'+esc(r.a.s.name)+'</b>':esc(r.a.s.name)}</td><td>${fmtT(r.a.best)}</td>${anySec?`<td>${r.a.sec?fmtS(r.a.sec.ideal):'–'}</td>`:''}<td>${k?'+'+(r.a.best-fast).toFixed(3)+' s':'Fastest'}</td></tr>`).join('')}</table></div>`:''}<div class="ctl noprint"><button class="alt sm" id="print">Save as PDF</button></div>${q.s.note&&!(!sec&&/sector/.test(q.s.note))?`<p class="foot">${esc(q.s.note)}</p>`:''}</div>`}
 function render(){const el=$('#out'),hold=$('#ctrlHold'),ctrl=document.querySelector('.card.ctrl');hold.append(ctrl);$('#navHold').innerHTML=sessions.length?navHTML():'';view=tab==='compare'?'compare':'single';let h=imp?importCard():'';
 if(!sessions.length){el.innerHTML='<div id="dataSlot"></div>'+h+(msgs.length&&!imp?`<div class="notice ${msgs.some(m=>m.bad)?'bad':''}" role="alert">${msgs.map(m=>esc(m.t)).join('<br>')}</div>`:'')+(imp?'':EMPTY);el.querySelector('#dataSlot').append(ctrl);wire();return}
-if(tab==='call'&&sessions[cur]&&sessions[cur].laps.length<5)tab='quali';let body;try{body=tab==='quali'?quali():tab==='files'&&!printing?`<div class="tabpane" role="tabpanel">${filesPane(sessions[cur])}</div>`:tab==='compare'?(sessions.length>1?`<div class="tabpane">${compare()}</div>`:`<div class="empty"><b>Load a second session to compare</b>Go to the Data tab and load another file, or the sample sessions.</div>`):single(analyse(sessions[cur]))}catch(e){body=errHTML('Could not analyse this session',e.message)+detailsBlock(sessions[cur],true)}
+if(tab==='call'&&sessions[cur]&&sessions[cur].laps.length<5)tab='quali';let body;try{xwSet();for(const k in XH)delete XH[k];body=tab==='quali'?quali():tab==='tele'?tele():tab==='files'&&!printing?`<div class="tabpane" role="tabpanel">${filesPane(sessions[cur])}</div>`:tab==='compare'?(sessions.length>1?`<div class="tabpane">${compare()}</div>`:`<div class="empty"><b>Load a second session to compare</b>Go to the Data tab and load another file, or the sample sessions.</div>`):single(analyse(sessions[cur]))}catch(e){body=errHTML('Could not analyse this session',e.message)+detailsBlock(sessions[cur],true)}
 el.innerHTML=h+bar()+(tab==='files'?'<div id="dataSlot"></div>':'')+body;const sl=el.querySelector('#dataSlot');if(sl)sl.append(ctrl);wire()}
 function wire(){const el=$('#out');
 const fx=$('#fixcols');if(fx)fx.onclick=()=>{const q=SRC.get(sessions[cur].id);if(!q)return;const q2={...q,replaceId:sessions[cur].id,manual:true,pick:false,remember:true,err:''};queue.unshift(q2);imp=q2;render();window.scrollTo({top:0})};
@@ -782,11 +820,8 @@ const s=sessions[cur],bind=(id,fn)=>{const e=$('#'+id);if(e)e.onchange=()=>{fn(e
 if(s&&view==='single'){bind('rem',v=>s.meta.remaining=v);bind('ign',v=>{s.meta.ignore=v;s.meta.stint=null});bind('spl',v=>{s.meta.splits=v;s.meta.stint=null});bind('sname',v=>s.name=v||s.name);bind('cmpd',v=>s.meta.compound=v);bind('ttemp',v=>s.meta.trackTemp=v);bind('atemp',v=>s.meta.airTemp=v)}
 const pr=$('#print');if(pr)pr.onclick=printReport;
 const oA=$('#ovA'),oB=$('#ovB');if(oA){oA.onchange=()=>{cmpOv.A=+oA.value;render()};oB.onchange=()=>{cmpOv.B=+oB.value;render()}}
-const ovl=$('#ovl');if(ovl&&OV){const o=OV,f1=v=>v==null?'–':v.toFixed(0),rd=$('#ovr'),hide=()=>{ovl.querySelectorAll('.ovx').forEach(l=>l.style.display='none')};
-ovl.onpointermove=e=>{const sv=e.target.closest&&e.target.closest('svg[data-ov]');if(!sv)return;const r=sv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*600,j=Math.max(0,Math.min(o.N-1,Math.round((x-46)/(544)*(o.N-1))));
-ovl.querySelectorAll('.ovx').forEach(l=>{const X=46+j/(o.N-1)*544;l.setAttribute('x1',X);l.setAttribute('x2',X);l.style.display=''});
-rd.textContent=`${Math.round((j+.5)/o.N*o.len).toLocaleString()} m · speed A ${f1(o.vA[j])}, B ${f1(o.vB[j])} km/h`+(o.bA?` · brake A ${f1(o.bA[j])}, B ${f1(o.bB[j])}`:'')+` · gap ${o.d[j]>0?'B behind by ':'B ahead by '}${Math.abs(o.d[j]).toFixed(2)} s`};
-ovl.onpointerleave=hide}
+wireXH();const tl=$('#tlap');if(tl)tl.onchange=()=>{teleSel[sessions[cur].id]=+tl.value;render()};
+document.querySelectorAll('[data-gos]').forEach(b=>b.onclick=()=>{cur=+b.dataset.gos;render()});document.querySelectorAll('[data-godemo]').forEach(b=>b.onclick=()=>$('#demo').click());
 const dl=$('#dl');if(dl)dl.onclick=()=>download(s);
 const rm=$('#rm');if(rm)rm.onclick=()=>{if(armed!=='rm'){armed='rm';render();return}DB.del(s.id);sessions.splice(cur,1);cur=Math.max(0,cur-1);A=0;B=Math.min(1,sessions.length-1);cmpSt={A:null,B:null};armed=false;if(sessions.length<2&&tab==='compare')tab='call';render()};
 if(s&&view==='single'){const ex=$('#aiExplain');if(ex)ex.onclick=()=>aiRun(s,AI_EXPLAIN,'Explain this session');
@@ -801,9 +836,9 @@ let pdfBusy=false;
 async function printReport(){let dl=null;try{if(window.claude&&window.claude.use)dl=await window.claude.use('downloads')}catch(e){}
 if(!dl){try{window.print()}catch(e){toast('Printing is not available here. Open Pacely in your browser to print.')}return}
 if(pdfBusy)return;pdfBusy=true;toast('Making the PDF…');const was=printing;
-try{await Promise.all(LIBS.map(loadJS));if(tab!=='compare'){printing=true;render()}
+try{await Promise.all(LIBS.map(loadJS));if(tab!=='compare'&&tab!=='tele'){printing=true;render()}
 let cuts=[];const cv=await html2canvas($('#out'),{scale:2,backgroundColor:'#ffffff',windowWidth:820,logging:false,onclone:d=>{cuts=pdfClone(d)}});
-const s=sessions[cur],base=tab==='compare'?'Pacely comparison':`Pacely ${tab==='quali'?'qualifying':'report'} ${s?s.name:''}`;
+const s=sessions[cur],base=tab==='compare'?'Pacely comparison':`Pacely ${tab==='quali'?'qualifying':tab==='tele'?'telemetry':'report'} ${s?s.name:''}`;
 await dl.save({filename:(base.replace(/[^\w -]+/g,'').replace(/\s+/g,' ').trim()||'Pacely report')+'.pdf',data:pdfFromCanvas(cv,cuts)});toast('PDF saved')}
 catch(e){const c=e&&e.code;if(c!=='declined')toast(c==='rate_limited'?'A download is already waiting for your answer.':!c&&e&&e.message?e.message:'Could not make the PDF.')}
 finally{pdfBusy=false;if(printing!==was){printing=was;render()}}}
@@ -811,7 +846,7 @@ function pdfClone(d){const r=d.documentElement,w=d.defaultView;r.classList.add('
 o.querySelectorAll('svg').forEach(sv=>{const pe=sv.parentElement,pc=w.getComputedStyle(pe),vb=sv.viewBox&&sv.viewBox.baseVal,b=sv.getBoundingClientRect(),bw=vb&&vb.width?Math.min(b.width,pe.clientWidth-parseFloat(pc.paddingLeft)-parseFloat(pc.paddingRight)):b.width,h=vb&&vb.width?bw*vb.height/vb.width:b.height;sv.setAttribute('width',bw);sv.setAttribute('height',h);sv.style.width=bw+'px';sv.style.height=h+'px';
 [sv,...sv.querySelectorAll('*')].forEach(el=>{const cs=w.getComputedStyle(el);['color','fill','stroke','stroke-width','stroke-dasharray','opacity','font-size','font-family','font-weight'].forEach(p=>el.style.setProperty(p,cs.getPropertyValue(p)))})});
 const top=o.getBoundingClientRect().top;
-o.querySelectorAll('.f,.card,.call,.tile,.verdict,.cr,.cc,tr,li,.ovc,.printhead,.foot,.tiles,.empty,section').forEach(e=>{const b=e.getBoundingClientRect();if(b.height)cuts.push(b.bottom-top)});
+o.querySelectorAll('.f,.card,.call,.tile,.verdict,.cr,.cc,tr,li,.ovc,.printhead,.foot,.tiles,.empty,section').forEach(e=>{if(e.closest('.chan')&&!e.matches('.chan'))return;const b=e.getBoundingClientRect();if(b.height)cuts.push(b.bottom-top)});
 o.querySelectorAll('h2').forEach(e=>{const b=e.getBoundingClientRect();if(b.height)cuts.push(b.top-top-4)});
 return cuts.sort((a,b)=>a-b)}
 function pdfFromCanvas(cv,cuts){const doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'}),M=12,W=210-2*M,H=297-2*M-6,k=cv.width/W,ph=H*k/2,total=cv.height/2,sl=[];let y=0;
@@ -914,6 +949,7 @@ $('#forget').onclick=()=>{try{Object.keys(localStorage).filter(k=>k.startsWith('
 addEventListener('beforeprint',()=>{if(sessions.length&&tab!=='compare'){printing=true;render()}});addEventListener('afterprint',()=>{if(printing){printing=false;render()}});
 $('#theme').onclick=()=>{const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme=='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('pacely-theme',r.dataset.theme)}catch(e){}};
 try{const t=localStorage.getItem('pacely-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
+{let nw=narrow();addEventListener('resize',()=>{if(narrow()!==nw){nw=narrow();if(sessions.length)render()}})}
 render();
 DB.open().then(async ok=>{$('#saveNote').textContent=ok?'Drop any lap file here, or paste it straight from Excel. It stays on this device.':'Saving is not available in this browser, so sessions are lost when you close the page. Load two or more to compare them.';
 if(!ok)return;const saved=(await DB.all()).sort((a,b)=>a.created-b.created);if(saved.length&&!sessions.length){sessions=saved;cur=sessions.length-1;A=0;B=Math.min(1,sessions.length-1);render()}});
