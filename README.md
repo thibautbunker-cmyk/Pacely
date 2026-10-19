@@ -11,6 +11,7 @@ The whole app is one file, `index.html`. Sessions are saved in the browser on yo
 - **Race picture:** load a timing sheet with every car (position and race time columns) and the race call shows your position, the gaps ahead and behind and how fast they change, where you would rejoin if you pitted now (pit loss measured from the stops in the file), undercut threats and chances, a lap chart, and how each of your stops went against nearby cars. Pick any lap with "As of lap".
 - **Qualifying:** runs, push laps, where the tyres peak, and an ideal lap from sector times (S1, S2, S3 columns), and the tyres used on each run.
 - **Telemetry:** one lap explained channel by channel against your fastest lap, plus a theoretical best lap from your best mini-sectors: speed, time gap, throttle, braking, gear, RPM, longitudinal and lateral g, steering. With a track map from GPS or X/Y position, a lap anatomy strip and a corner-by-corner table.
+- **Driver sheet:** from the Telemetry tab, a one-page sheet for the driver with the three corners where the lap loses most against their own best through each corner, what to change there (brake point, apex speed, throttle, gear), a track map, and the corners to keep doing. Saves as PDF.
 - **Compare:** two sessions side by side, with a telemetry overlay and where the time is won or lost corner by corner.
 - **AI engineer:** on the Race call, Qualifying and Telemetry tabs. A one-click debrief and plain-English answers based only on the numbers on that page.
 - **Export:** save any report as PDF, download a session as CSV.

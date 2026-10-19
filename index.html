@@ -163,6 +163,9 @@ table.cmp{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .dash{display:block}.colL,.colR{min-width:0}
 @media(min-width:1000px){.dash{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:0 28px;align-items:start}.dash.cmpd{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
 .evg+.evg{border-top:1px solid var(--ln);margin-top:12px;padding-top:12px}.evh{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.evh span{color:var(--mu);font-size:14px}.evh button{margin-left:auto}.evg .chips{margin-top:8px}
+.shh{margin:22px 0 4px}.shh h1{font:700 30px/1.1 var(--fc,'Barlow Condensed'),sans-serif;margin:4px 0}.shh p{margin:0;color:var(--mu)}.shh .k{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--s2)}
+.shg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;margin-top:16px;align-items:start}@media(max-width:760px){.shg{grid-template-columns:1fr}}
+.sc{background:var(--sf);border:1px solid var(--ln);border-left:4px solid var(--s2);border-radius:10px;padding:12px 14px}.sc+.sc{margin-top:10px}.sch{display:flex;align-items:center;gap:10px}.sch b{font-size:18px}.scn{width:24px;height:24px;border-radius:50%;background:var(--s2);color:#fff;font-weight:800;display:grid;place-items:center;font-size:13px}.scl{margin-left:auto;font:700 16px var(--mono,'JetBrains Mono'),monospace;color:var(--s2)}.scs{margin:6px 0 4px;color:var(--mu);font-size:14px}.sc ul{margin:4px 0 0;padding-left:18px}.sc li{font-size:14.5px;margin:3px 0}.shk{margin:14px 0 0}
 .stint .sum{margin:10px 0 0}.stint .ign{color:var(--mu);font-size:14px;margin:4px 0 0}
 
 /* ---- charts ---- */
@@ -188,7 +191,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 .lapbar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 28px;margin-top:18px}
 .lapbar .lt{font:700 clamp(40px,6vw,64px)/.9 var(--f-disp);letter-spacing:.005em}
 .lapbar .dl{font:500 14px var(--f-data);color:var(--mu);margin-top:6px}
-.tiles.six{grid-template-columns:repeat(6,minmax(0,1fr))}
+.tiles.six{grid-template-columns:repeat(6,minmax(0,1fr))}.tiles.four{grid-template-columns:repeat(4,minmax(0,1fr))}
 .phase{display:flex;height:22px;gap:2px;border-radius:4px;overflow:hidden;margin-top:6px;background:var(--sf)}
 .phase i{display:block;height:100%}.ph-t{background:var(--s1)}.ph-b{background:var(--s2)}.ph-c{background:var(--s3)}
 .phlg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
@@ -235,7 +238,7 @@ nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--sf);
 .tabs button{flex:1;min-width:0;min-height:56px;padding:0 2px;font-size:12px;letter-spacing:.05em}
 .tabs button.on::after{top:-1px;bottom:auto;left:20%;right:20%}
 main{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}.toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
-.tiles,.tiles.six{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{border-left:0;border-top:1px solid var(--ln)}.tile:nth-child(2n){border-left:1px solid var(--ln)}.tile:nth-child(-n+2){border-top:0}
+.tiles,.tiles.six,.tiles.four{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{border-left:0;border-top:1px solid var(--ln)}.tile:nth-child(2n){border-left:1px solid var(--ln)}.tile:nth-child(-n+2){border-top:0}
 .phlg{grid-template-columns:1fr}.call,.verdict{padding:20px}.fgrid{padding:0 16px}
 }
 @media(min-width:761px) and (max-width:1100px){.tiles.six{grid-template-columns:repeat(3,minmax(0,1fr))}.tiles.six .tile:nth-child(4){border-left:0}.tiles.six .tile:nth-child(n+4){border-top:1px solid var(--ln)}}
@@ -760,7 +763,7 @@ const bad=new Set([Math.min(...s.laps.map(l=>l.lap))]);s.laps.forEach(l=>{if(l.p
 const fast=Math.min(...ks.map(k=>lt.get(k))),use=ks.filter(k=>!bad.has(k)&&lt.get(k)<=fast*1.07).sort((a,b)=>lt.get(a)-lt.get(b)).slice(0,8);if(use.length<2)return s._mb=null;
 const N=T.nb,M=Math.max(12,Math.min(60,Math.round(T.len/150))),edge=[...Array(M+1)].map((_,i)=>Math.round(i*N/M)),segOf=c=>edge.slice(1).map((e,i)=>c[e-1]-(edge[i]?c[edge[i]-1]:0));
 const segs=use.map(k=>segOf(lapChan(T,T.laps[k],lt.get(k)).cum)),best=[...Array(M)].map((_,m)=>{const md=med(segs.map(sg=>sg[m]));let bi=-1;segs.forEach((sg,i)=>{if(sg[m]>=md*.95&&(bi<0||sg[m]<segs[bi][m]))bi=i});return{t:segs[bi][m],lap:use[bi]}});
-return s._mb={M,edge,best,ideal:best.reduce((a,b)=>a+b.t,0),fast,used:use.length,segOf}}
+return s._mb={M,edge,best,ideal:best.reduce((a,b)=>a+b.t,0),fast,used:use.length,laps:use,segOf}}
 let mapMode='v';
 const mapGeo=M=>{const xs=M.x,ys=M.y,mnx=Math.min(...xs),mxx=Math.max(...xs),mny=Math.min(...ys),mxy=Math.max(...ys),sx=mxx-mnx||1,sy=mxy-mny||1,W=520,pad=30,H=Math.round(Math.max(240,Math.min(460,(W-2*pad)*sy/sx+2*pad))),sc=Math.min((W-2*pad)/sx,(H-2*pad)/sy),ox=(W-sx*sc)/2,oy=(H-sy*sc)/2;return{W,H,pts:xs.map((x,j)=>[ox+(x-mnx)*sc,H-oy-(ys[j]-mny)*sc])}};
 function trackMap(T,L,R,gap,mbLoss){const M=T.map;if(!M)return`<p class="hint" style="margin:0">This file has no position data, so there is no track map. Exports with GPS latitude and longitude, or X and Y track coordinates, draw it automatically.</p>`;
@@ -779,6 +782,34 @@ const sw=(c,t)=>`<div><i class="${c}"></i>${t}</div>`,lg=mode==='ph'?sw('ph-t','
 const chips=[['v','Speed'],['ph','Lap anatomy'],...(gap?[['gap','Time gained and lost']]:[]),...(mbLoss?[['mb','Lost to theoretical best']]:[])].map(([k,n])=>`<button class="chip ${mode===k?'on':''}" data-mapm="${k}">${n}</button>`).join('');
 return`<div class="tmap"><svg viewBox="0 0 ${W} ${H}" id="tmap" role="img" aria-label="Track map coloured by ${mode==='ph'?'lap phase':mode==='gap'?'time gained and lost':'speed'}"><path class="trk-u" d="${under}"/>${runs}${sf}${labs}<circle id="mapdot" class="mapdot" r="7" cx="0" cy="0" style="display:none"/></svg>
 <div><div class="chips noprint" style="margin-top:0">${chips}</div><div class="mlg">${lg}</div><p class="hint">${mode==='mb'?'Coloured by how much time this lap loses in each mini-sector against the best anyone managed there in this session.':mode==='gap'?'Coloured by whether this lap is gaining or losing time on the reference lap over each stretch.':'The track drawn from position data on the fastest lap, starting at the start/finish line (S/F).'} Move over the map or a chart to follow the car.</p></div></div>`}
+
+/* ---- driver sheet: one printable page with the three corners to work on ---- */
+let sheetFor=null;
+function cornerBest(s){if(s._cb!==undefined)return s._cb;const MB=miniBest(s),T=s.tr;if(!MB)return s._cb=null;const lt=new Map(s.laps.map(l=>[l.lap,l.t]));
+const per=MB.laps.map(k=>({k,C:corners(T,lapChan(T,T.laps[k],lt.get(k)))}));return s._cb=T.apex.map((_,i)=>{const b=per.reduce((a,x)=>x.C[i].time<a.C[i].time?x:a);return{lap:b.k,c:b.C[i]}})}
+function coachTips(c,b,lap){const t=[],r=Math.round,ord=n=>n+(n==1?'st':n==2?'nd':n==3?'rd':'th'),dv=b.min-c.min,dbp=c.bp!=null&&b.bp!=null?c.bp-b.bp:0,dfull=c.full!=null&&b.full!=null?c.full-b.full:0,de=b.entry-c.entry;
+if(dbp>=8)t.push([dbp/8,`Brake later. On lap ${lap} you braked ${r(dbp)} m later and still made the corner.`]);
+if(dbp<=-8&&dv>=2)t.push([-dbp/8,`Brake a little earlier and roll more speed to the apex. Braking ${r(-dbp)} m later than on lap ${lap} cost ${r(dv)} km/h at the apex.`]);
+else if(dv>=2)t.push([dv/2,`Carry more speed to the apex: ${r(b.min)} km/h on lap ${lap}, ${r(c.min)} km/h here.`]);
+if(dfull>=10)t.push([dfull/10,`Get back to full throttle sooner: ${r(dfull)} m earlier on lap ${lap}.`]);
+if(de>=3&&dbp<8)t.push([de/3,`Arrive faster: ${r(de)} km/h more at the end of the straight before on lap ${lap}. Look at the exit of the corner before.`]);
+if(c.gmin!=null&&b.gmin!=null&&c.gmin!==b.gmin)t.push([1.5,`Try ${ord(b.gmin)} gear, as on lap ${lap} (you used ${ord(c.gmin)}).`]);
+t.sort((x,y)=>y[0]-x[0]);return t.length?t.slice(0,3).map(x=>x[1]):[`Same speeds and pedal timing as lap ${lap}, so the time is in the line. Compare where you turn in and how much kerb you use.`]}
+function coachSheet(s,o,T,L,C,MB){const CB=cornerBest(s);if(!CB)return`<div class="tabpane">${errHTML('Not enough laps for a driver sheet','The driver sheet compares the lap with your best through every corner, so it needs at least two complete laps.')}</div>`;
+const rows=C.map((c,i)=>({i,n:c.n,c,b:CB[i].c,lap:CB[i].lap,loss:c.time-CB[i].c.time})),top=rows.filter(r=>r.loss>.01).sort((a,b)=>b.loss-a.loss).slice(0,3),good=rows.filter(r=>r.lap===o.lap).map(r=>r.n);
+const onTable=top.reduce((a,r)=>a+r.loss,0),gapAll=rows.reduce((a,r)=>a+Math.max(0,r.loss),0);
+let map='';if(T.map){const{W,H,pts}=mapGeo(T.map),N=T.nb,P=j=>pts[(j+N)%N],f=v=>v.toFixed(1);let d='';for(let j=0;j<=N;j++){const[a,b]=P(j);d+=(j?'L':'M')+f(a)+','+f(b)}
+const hl=top.map((r,k)=>{let p='';for(let j=r.c.lo;j<=r.c.hi;j++){const[a,b]=P(j);p+=(j===r.c.lo?'M':'L')+f(a)+','+f(b)}const[a,b]=P(r.c.ai);return`<path d="${p}" fill="none" stroke="var(--s2)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${f(a)}" cy="${f(b)}" r="13" fill="var(--s2)"/><text x="${f(a)}" y="${f(b+4.5)}" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">${k+1}</text>`}).join('');
+const cx=mean(pts.map(p=>p[0])),cy=mean(pts.map(p=>p[1])),labs=T.apex.map((j,i)=>{if(top.some(r=>r.i===i))return'';const[a,b]=P(j),dx=a-cx,dy=b-cy,m=Math.hypot(dx,dy)||1;return`<text x="${f(a+dx/m*18)}" y="${f(b+dy/m*18+4)}" text-anchor="middle" font-size="11" fill="var(--mu)">T${i+1}</text>`}).join('');
+map=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Track map with the three corners to work on numbered" style="width:100%;height:auto"><path d="${d}" fill="none" stroke="var(--ln)" stroke-width="7" stroke-linejoin="round"/>${hl}${labs}</svg>`}
+const card=(r,k)=>`<article class="sc"><div class="sch"><span class="scn">${k+1}</span><b>${r.n}</b><span class="scl">${r.loss.toFixed(2)} s</span></div><p class="scs">${Math.round(r.c.min)} km/h at the apex, your best here was lap ${r.lap} at ${Math.round(r.b.min)} km/h.</p><ul>${coachTips(r.c,r.b,r.lap).map(t=>`<li>${esc(t)}</li>`).join('')}</ul></article>`;
+const tl=(n,l)=>`<div class="tile"><div class="n">${n}</div><div class="l">${l}</div></div>`;
+return`<div class="tabpane sheet"><div class="row noprint" style="margin:18px 0 0"><label class="fld">Lap<select id="tlap">${o.opts}</select></label><button class="alt sm" id="sheetBack">Back to telemetry</button><button class="alt sm" id="print">Save as PDF</button></div>
+<header class="shh"><div><div class="k">Driver sheet</div><h1>${esc(s.name)}</h1><p>Lap ${o.lap} · ${fmtS(o.t)} · ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</p></div></header>
+<div class="tiles four">${tl(fmtS(o.t),`Lap ${o.lap}`)}${tl(fmtS(MB.fast),Math.abs(o.t-MB.fast)<.0005?'Your fastest lap (this one)':'Your fastest lap')}${tl(fmtS(o.t-gapAll),"Your best corners added up")}${tl('+'+onTable.toFixed(2)+'<small> s</small>',`In the ${top.length==1?'corner':top.length+' corners'} below`)}</div>
+<div class="shg"><div class="card">${map||'<p class="hint">No position data, so no track map.</p>'}</div><div>${top.length?top.map(card).join(''):`<article class="sc"><div class="sch"><b>Every corner within 0.01 s of your best</b></div><p class="scs">There is no single corner to fix on this lap. The time is in consistency across the whole lap.</p></article>`}</div></div>
+${good.length?`<p class="shk"><b>Keep doing:</b> this lap was your best through ${good.join(', ')}.</p>`:''}
+<p class="foot">Each corner is compared with your best time through the same corner across your ${MB.laps.length} fastest clean laps. Corners run from halfway between apexes. Pacely uses simple rules; check with the driver and the onboard video.</p></div>`}
 function tele(){const s=sessions[cur];if(!s||!s.tr)return`<div class="tabpane">${teleEmpty()}</div>`;const T=s.tr,o=ovLap(s,teleSel[s.id]);if(!o)return`<div class="tabpane">${teleEmpty()}</div>`;
 const N=T.nb,B=T.bin,len=T.len,lt=k=>(s.laps.find(l=>l.lap===k)||{}).t,sorted=[...o.ks].sort((x,y)=>lt(x)-lt(y)),refLap=o.lap===o.best?(sorted[1]??null):o.best,isBest=o.lap===o.best;
 const L=lapChan(T,o.P,o.t),R=refLap!=null?lapChan(T,T.laps[refLap],lt(refLap)):null,refName=refLap==null?'':isBest?`your next-fastest lap (lap ${refLap})`:`your fastest lap (lap ${refLap})`;
@@ -843,8 +874,9 @@ trackLengthM:Math.round(len),topSpeedKmh:Math.round(L.top),averageSpeedKmh:Math.
 peakBrakingG:r3(-pkB),peakAccelerationG:r3(pkA),peakCorneringG:L.g?r3(Math.max(...C.map(c=>c.pk),0)):null,
 corners:C.map((c,i)=>({corner:c.n,brakingStartsBeforeApexM:c.bp==null?null:Math.round(c.bp),trailBraking:c.trail,entryKmh:Math.round(c.entry),minimumKmh:Math.round(c.min),exitKmh:Math.round(c.exit),fullThrottleAfterApexM:c.full==null?null:Math.round(c.full),lowestGear:c.gmin,lowestRpmOnExit:c.arpm==null?null:Math.round(c.arpm),peakCorneringG:L.g?r3(c.pk):null,cornerTimeS:r3(c.time),vsReferenceS:CR?r3(dC[i].d):null})),
 theoreticalBest:mbFacts,findingsByChannel:Object.fromEntries(Object.entries(I).filter(([k,v])=>v&&v.length).map(([k,v])=>[IK[k]||k,v]))});
+if(sheetFor===s.id)return coachSheet(s,{...o,opts},T,L,C,MB);
 return`<div class="tabpane"><div class="printhead"><h1>Pacely telemetry</h1><p><b>${esc(s.name)}</b> · lap ${o.lap} · ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</p></div>
-<div class="lapbar"><label class="fld noprint">Lap<select id="tlap">${opts}</select></label><div><div class="k">Lap ${o.lap}</div><div class="lt">${fmtS(o.t)}</div><div class="dl">${R?`${isBest?'Fastest lap. ':''}${sg(L.t-R.t)} s to ${refName}`:'Only one complete lap'}</div></div></div>
+<div class="lapbar"><label class="fld noprint">Lap<select id="tlap">${opts}</select></label>${MB?'<button class="alt sm noprint" id="sheetGo" style="align-self:end">Driver sheet</button>':''}<div><div class="k">Lap ${o.lap}</div><div class="lt">${fmtS(o.t)}</div><div class="dl">${R?`${isBest?'Fastest lap. ':''}${sg(L.t-R.t)} s to ${refName}`:'Only one complete lap'}</div></div></div>
 <div class="tiles six">${tl(Math.round(L.top)+'<small>km/h</small>','Top speed')}${L.th?tl((L.th.reduce((a2,x,j)=>a2+(x>=95?L.tt[j]:0),0)/tTot*100).toFixed(0)+'<small>%</small>','Full throttle'):tl(Math.round(len/o.t*3.6)+'<small>km/h</small>','Average speed')}${slow?tl(Math.round(slow.min)+'<small>km/h</small>',`Slowest corner (${slow.n})`):''}${tl((share('b')/tTot*100).toFixed(0)+'<small>%</small>','Time on the brakes')}${tl(f1(-pkB)+'<small>g</small>','Peak braking')}${L.g?tl(f2(Math.max(...C.map(c=>c.pk),0))+'<small>g</small>','Peak cornering'):tl(f2(pkA)+'<small>g</small>','Peak acceleration')}</div>
 ${mbHTML}<h2>Track map</h2><div class="card">${trackMap(T,L,R,gap,mbLoss)}</div>
 <h2>Lap anatomy <small>where the lap is spent, by distance</small></h2><div class="card"><div class="phase" role="img" aria-label="Lap split into braking, cornering and on-throttle sections">${segs.map(x=>`<i class="ph-${x.p}" style="flex:${x.n} 0 0"></i>`).join('')}</div>
@@ -1008,7 +1040,7 @@ const cl=$('#clr');if(cl)cl.onclick=()=>{if(armed!=='clr'){armed='clr';render();
 const sA=$('#selA'),sB=$('#selB');if(sA){sA.onchange=()=>{A=+sA.value;cmpSt.A=null;cmpOv.A=null;render()};sB.onchange=()=>{B=+sB.value;cmpSt.B=null;cmpOv.B=null;render()};const tA=$('#stA'),tB=$('#stB');if(tA)tA.onchange=()=>{cmpSt.A=+tA.value;render()};if(tB)tB.onchange=()=>{cmpSt.B=+tB.value;render()}}
 const s=sessions[cur],bind=(id,fn)=>{const e=$('#'+id);if(e)e.onchange=()=>{fn(e.value.trim?e.value.trim():e.value);save(s);render()}};
 if(s&&view==='single'){bind('rem',v=>s.meta.remaining=v);bind('asof',v=>s.meta.asOf=v);bind('fuelp',v=>s.meta.fuelPreset=v);bind('ign',v=>{s.meta.ignore=v;s.meta.stint=null});bind('spl',v=>{s.meta.splits=v;s.meta.stint=null});bind('sname',v=>s.name=v||s.name);bind('cmpd',v=>s.meta.compound=v);bind('ttemp',v=>s.meta.trackTemp=v);bind('atemp',v=>s.meta.airTemp=v)}
-const pr=$('#print');if(pr)pr.onclick=printReport;
+const pr=$('#print');if(pr)pr.onclick=printReport;const sg=$('#sheetGo');if(sg)sg.onclick=()=>{sheetFor=sessions[cur].id;render();scrollTo(0,0)};const sb=$('#sheetBack');if(sb)sb.onclick=()=>{sheetFor=null;render()};
 const oA=$('#ovA'),oB=$('#ovB');if(oA){oA.onchange=()=>{cmpOv.A=+oA.value;render()};oB.onchange=()=>{cmpOv.B=+oB.value;render()}}
 wireXH();const tl=$('#tlap');if(tl)tl.onchange=()=>{teleSel[sessions[cur].id]=+tl.value;render()};
 document.querySelectorAll('[data-gos]').forEach(b=>b.onclick=()=>{cur=+b.dataset.gos;render()});document.querySelectorAll('[data-mapm]').forEach(b=>b.onclick=()=>{mapMode=b.dataset.mapm;render()});document.querySelectorAll('[data-godemo]').forEach(b=>b.onclick=()=>$('#demo').click());
@@ -1028,7 +1060,7 @@ if(!dl){try{window.print()}catch(e){toast('Printing is not available here. Open 
 if(pdfBusy)return;pdfBusy=true;toast('Making the PDF…');const was=printing;
 try{await Promise.all(LIBS.map(loadJS));if(tab!=='compare'&&tab!=='tele'){printing=true;render()}
 let cuts=[];const cv=await html2canvas($('#out'),{scale:2,backgroundColor:'#ffffff',windowWidth:820,logging:false,onclone:d=>{cuts=pdfClone(d)}});
-const s=sessions[cur],base=tab==='compare'?'Pacely comparison':`Pacely ${tab==='quali'?'qualifying':tab==='tele'?'telemetry':'report'} ${s?s.name:''}`;
+const s=sessions[cur],base=tab==='compare'?'Pacely comparison':`Pacely ${tab==='quali'?'qualifying':tab==='tele'?(s&&sheetFor===s.id?'driver sheet':'telemetry'):'report'} ${s?s.name:''}`;
 await dl.save({filename:(base.replace(/[^\w -]+/g,'').replace(/\s+/g,' ').trim()||'Pacely report')+'.pdf',data:pdfFromCanvas(cv,cuts)});toast('PDF saved')}
 catch(e){const c=e&&e.code;if(c!=='declined')toast(c==='rate_limited'?'A download is already waiting for your answer.':!c&&e&&e.message?e.message:'Could not make the PDF.')}
 finally{pdfBusy=false;if(printing!==was){printing=was;render()}}}

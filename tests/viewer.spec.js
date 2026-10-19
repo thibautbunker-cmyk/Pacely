@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { openApp, openSamples, pick, tab } = require('./helpers');
+const { openApp, openSamples, pick, tab, loadFile, sample } = require('./helpers');
 
 test('CSV download goes through the viewer and includes sectors', async ({ page }) => {
   await openApp(page, { viewer: true }); await openSamples(page); await pick(page, '7 Qualifying'); await tab(page, 'files');
@@ -33,3 +33,14 @@ for (const [t, name, key] of [['call', '1 Baseline', 'raceCall'], ['quali', '7 Q
     expect(sent).toContain('Answer using ONLY');
   });
 }
+
+test('driver sheet saves as a one-page PDF', async ({ page }) => {
+  await openApp(page, { viewer: true });
+  await loadFile(page, sample('f1-2020-silverstone-fp2-44-hamilton-telemetry.csv'));
+  await tab(page, 'tele'); await page.selectOption('#tlap', '11'); await page.click('#sheetGo');
+  await page.click('#print');
+  await page.waitForFunction(() => window.__saves.length === 1, null, { timeout: 60_000 });
+  const s = await page.evaluate(() => window.__saves[0]);
+  expect(s.filename).toMatch(/^Pacely driver sheet .*\.pdf$/);
+  expect((s.data.match(/\/Type \/Page[^s]/g) || []).length).toBe(1);
+});

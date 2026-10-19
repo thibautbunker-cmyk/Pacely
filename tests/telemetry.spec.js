@@ -53,3 +53,23 @@ test('theoretical best lap is close to the fastest lap, also in races', async ({
   await expect(page.locator('h2', { hasText: 'Theoretical best lap' })).toBeVisible();
   await expect(page.locator('.mbs i')).not.toHaveCount(0);
 });
+
+test('driver sheet: corners to work on against your best through each corner', async ({ page }) => {
+  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  await openApp(page);
+  await loadFile(page, sample('f1-2020-silverstone-fp2-44-hamilton-telemetry.csv'));
+  await tab(page, 'tele');
+  await page.selectOption('#tlap', '11');
+  await page.click('#sheetGo');
+  await expect(page.locator('.shh h1')).toHaveText('F1 2020 silverstone FP2 44 hamilton telemetry');
+  await expect(page.locator('.sc')).toHaveCount(3);
+  const lost = await page.$$eval('.scl', e => e.map(x => parseFloat(x.textContent)));
+  expect(lost[0]).toBeGreaterThanOrEqual(lost[1]); expect(lost[1]).toBeGreaterThanOrEqual(lost[2]);
+  await expect(page.locator('.sc li').first()).not.toBeEmpty();
+  await expect(page.locator('.sheet svg circle')).toHaveCount(3);
+  await page.selectOption('#tlap', '8');
+  await expect(page.locator('.tiles.four')).toContainText('Your fastest lap (this one)');
+  await page.click('#sheetBack');
+  await expect(page.locator('.chan').first()).toBeVisible();
+  expect(errs).toEqual([]);
+});
