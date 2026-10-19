@@ -20,6 +20,12 @@ Columns: `Number`, `Driver`, `Team`, `Lap`, `Lap Time` (m:ss.000), `S1`, `S2`, `
 
 Load one event at a time (or use **Clear all sessions** on the Files tab first), because the ranking table compares every loaded session.
 
+## Race timing
+
+`f1-2022-bahrain-race-timing.csv` is the full lap chart of the 2022 Bahrain Grand Prix: 1,125 laps from all 20 cars. Columns: `Number`, `Driver`, `Team`, `Lap`, `Lap Time`, `S1`, `S2`, `S3`, `Compound`, `Tyre Life`, `Position`, `Race Time (s)` (time since the start at the end of the lap) and `Pit` (`In` or `Out`).
+
+Load it with **Tick all shown**, pick a driver and open **Race call**. Stints split where the tyres change, and the **Stints and tyres** table compares wear and pace on each compound. Leclerc (winner) ran Soft, Soft, Medium and a used Soft after the late safety car.
+
 ## Telemetry
 
 Car telemetry for the two fastest drivers in practice 2 at the 2020 70th Anniversary Grand Prix (Silverstone), ready for the Telemetry tab and the Compare overlay.

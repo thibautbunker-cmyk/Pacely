@@ -51,3 +51,29 @@ test('real F1 race: F1 fuel rate is chosen automatically and braking points are 
   expect(r.brakePoints).toBe(0);
   expect(r.note).toContain('Braking points are not measured');
 });
+
+test('tyre compounds: stints split at tyre changes and compared by compound', async ({ page }) => {
+  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  await openApp(page);
+  await loadFile(page, sample('f1-2022-bahrain-race-timing.csv'));
+  expect(await page.evaluate(() => sessions.length)).toBe(20);
+  await pick(page, 'Leclerc'); await tab(page, 'call');
+  const st = await page.evaluate(() => runLaps(sessions[cur]).stints.map(t => [t.first, t.last, t.c, t.age0]));
+  expect(st).toEqual([[1, 14, 'Soft', 0], [17, 30, 'Soft', 3], [33, 44, 'Medium', 0], [52, 57, 'Soft', 5]]);
+  const card = page.locator('h2:has-text("Stints and tyres") + .card');
+  await expect(card.locator('tr')).toHaveCount(5);
+  await expect(card).toContainText('used, 3 laps old');
+  await expect(card).toContainText('Tyre loss per lap: Soft');
+  await expect(page.locator('.chip[data-st="2"]')).toContainText('Medium');
+  await tab(page, 'quali');
+  await expect(page.locator('h2:has-text("Runs") + .card th', { hasText: 'Tyres' })).toBeVisible();
+  expect(errs).toEqual([]);
+});
+
+test('tyre compounds in qualifying files label each run', async ({ page }) => {
+  await openApp(page);
+  await loadFile(page, sample('f1-2024-spain-qualifying.csv'));
+  await pick(page, 'NOR'); await tab(page, 'quali');
+  const runs = page.locator('h2:has-text("Runs") + .card');
+  await expect(runs).toContainText('Soft');
+});
