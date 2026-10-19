@@ -739,10 +739,12 @@ const ask=()=>{const i=$('#aiq');if(i&&i.value.trim())aiRun(s,i.value.trim())};c
 const cp=$('#copy');if(cp)cp.onclick=async()=>{let ok=false;try{await navigator.clipboard.writeText(lastMsg);ok=true}catch(e){}toast(ok?'Copied: '+lastMsg:'Could not copy. Message: '+lastMsg)};
 if(imp)wireImport()}
 function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.append(e);setTimeout(()=>e.remove(),4000)}
-function download(s){const hasC=s.cr.length>0;let csv;const f=v=>v==null||!fin(v)?'':(+v.toFixed(3));
+async function download(s){const hasC=s.cr.length>0;let csv;const f=v=>v==null||!fin(v)?'':(+v.toFixed(3));
 if(hasC){const t=new Map(s.laps.map(l=>[l.lap,l.t]));csv='lap,corner,lap_time,min_speed,brake_m,steer_deg,lat_g\n'+s.cr.filter(r=>t.has(r.lap)).map(r=>[r.lap,r.corner,f(t.get(r.lap)),f(r.v),f(r.b),f(r.st),f(r.g)].join(',')).join('\n')+'\n'}
 else{const ns=Math.max(0,...s.laps.map(l=>l.s?l.s.length:0));csv='lap,lap_time'+[...Array(ns)].map((_,i)=>',s'+(i+1)).join('')+'\n'+s.laps.map(l=>l.lap+','+f(l.t)+[...Array(ns)].map((_,i)=>','+(l.s&&l.s.length===ns?f(l.s[i]):'')).join('')).join('\n')+'\n'}
-try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=(s.name.replace(/[^\w-]+/g,'-')||'session')+'.csv';document.body.append(a);a.click();a.remove()}catch(e){toast('Download is not available here.')}}
+const fn=(s.name.replace(/[^\w-]+/g,'-')||'session')+'.csv';let dl=null;try{if(window.claude&&window.claude.use)dl=await window.claude.use('downloads')}catch(e){}
+if(dl){try{await dl.save({filename:fn,data:csv});toast('Saved '+fn)}catch(e){const c=e&&e.code;if(c==='declined')return;toast(c==='rate_limited'?'A download is already waiting for your answer.':'Download is not available here.')}return}
+try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=fn;document.body.append(a);a.click();a.remove()}catch(e){toast('Download is not available here.')}}
 function wireImport(){const q=imp,ng=()=>{q.err='';render()};
 if(q.pick){const gs=q.gi.groups,shown=g=>!q.clsF||g.cls===q.clsF;document.querySelectorAll('[data-g]').forEach(e=>e.onchange=()=>{gs[+e.dataset.g].sel=e.checked});const pc=$('#pickCls');if(pc)pc.onchange=()=>{q.clsF=pc.value;render()};$('#pickAll').onclick=()=>{gs.forEach(g=>{if(shown(g))g.sel=true});render()};$('#pickNone').onclick=()=>{gs.forEach(g=>g.sel=false);render()};$('#impSkip').onclick=()=>{queue.shift();advance()};$('#pickGo').onclick=()=>{const ch=gs.filter(g=>g.sel&&shown(g));if(!ch.length){q.err='Tick at least one car.';render();return}try{const notes=[];loadGroups(q,ch,notes);queue.shift();advance();if(notes.length){msgs.push({t:notes.join(' ')});render()}}catch(e){q.err=e.message;render()}};return}
 $('#shape').onchange=e=>{q.shape=e.target.value;ng()};
