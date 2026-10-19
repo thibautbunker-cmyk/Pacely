@@ -282,12 +282,13 @@ const add=v=>{const s=v.map(x=>+x.toFixed(3));lap++;laps.push({lap,t:s.reduce((a
 for(let k=1;k<=n;k++){const ty=k==2?0:k==1?.12:.07*(k-2);add(B.map((b,i)=>b+(evo+ty)/3+(r()-.5)*(i==1?.5:.12)))}
 add(B.map((b,i)=>b*(i==2?1.25:1.06)))});
 return mk('7 Qualifying with sectors',laps,[],{sample:true})}
-function teleDemo(name,seed,q={}){const r=rng(seed),L=3600,C=[[350,80],[900,120],[1500,65],[2200,140],[2900,95],[3350,110]].map(([d,v],i)=>({d,v:(v+(q.dv&&q.dv[i]||0))/3.6,dec:(q.dec&&q.dec[i])||12,R:((v/3.6)**2)/(1.6*9.81)}));
+function teleDemo(name,seed,q={}){const r=rng(seed),L=3600,C=[[350,80],[900,120],[1500,65],[2200,140],[2900,95],[3350,110]].map(([d,v],i)=>({d,v:(v+(q.dv&&q.dv[i]||0))/3.6,dec:(q.dec&&q.dec[i])||12,ramp:(q.ramp&&q.ramp[i])||40,coast:q.coast?q.coast[i]:20,R:((v/3.6)**2)/(1.6*9.81)}));
 const vAt=pos=>{let v=240/3.6;for(const c of C)for(const k of[-L,0,L]){const x=pos-(c.d+k);v=Math.min(v,Math.sqrt(c.v*c.v+2*(x<0?c.dec:6)*Math.abs(x)))}return v};
 const rows=[],dt=.05;let t=0,d=0;for(let lap=1;lap<=6;lap++){const jit=(r()-.5)*.6;d=0;while(d<L){const v=vAt(d)*(1+jit/100)+(r()-.5)*.25,ahead=vAt(d+8);
 const c=C.reduce((a,c)=>Math.abs(c.d-d)<Math.abs(a.d-d)?c:a),near=Math.abs(c.d-d)<70,g=near?Math.min(1.7,v*v/(c.R*9.81)):.05+(r()*.05),st=near?Math.min(220,2600/c.R)*(1-Math.abs(c.d-d)/70):r()*1.5;
-rows.push([t.toFixed(2),lap,d.toFixed(1),(v*3.6).toFixed(1),g.toFixed(2),st.toFixed(1),(ahead<v-.05?Math.min(90,(v-ahead)*55):0).toFixed(1)]);t+=dt;d+=v*dt}}
-const s=build({name,data:rows,dec:false,shape:'series',map:{time:0,lap:1,dist:2,speed:3,latG:4,steer:5,brake:6},units:{time:'s',speed:'kmh',g:'g',dist:'m'}});s.sample=true;return s}
+const x=d-c.d,v0=vAt(d),brk=ahead<v0-.05&&!(x<0&&x>=-c.coast),th=brk?0:Math.max(0,Math.min(100,(x<0&&x>-25?20:x>=0&&x<c.ramp?35+65*x/c.ramp:100)+(r()-.5)*3));
+rows.push([t.toFixed(2),lap,d.toFixed(1),(v*3.6).toFixed(1),g.toFixed(2),st.toFixed(1),(brk?Math.min(90,(v0-ahead)*55):0).toFixed(1),th.toFixed(1)]);t+=dt;d+=v*dt}}
+const s=build({name,data:rows,dec:false,shape:'series',map:{time:0,lap:1,dist:2,speed:3,latG:4,steer:5,brake:6,throttle:7},units:{time:'s',speed:'kmh',g:'g',dist:'m'}});s.sample=true;return s}
 const SAMPLES=[
 {name:'1 Baseline setup',o:{}},
 {name:'2 Softer front springs',o:{us3:.008,us5:.006,deg:.12,seed:11}},
@@ -365,7 +366,7 @@ if(EXACT.every(n=>lower.includes(n))){const m={};const ix=n=>lower.indexOf(n);m.
 return{shape:'table',map:m,units:{lapTime:'s',speed:'kmh',g:'g',time:'s',dist:'m'},exact:true}}
 const m={lap:find(/^(lap|lap ?no|lap ?num(ber)?|lap ?#|lapnum|lap count|laps?|runde|rundennummer|tours?|n tour|vuelta|giro|volta|ronde|kolo)$/),lapTime:find(/^lap ?time$/,/lap ?time/,/^laptime/,/rundenzeit|zeit pro runde|temps au tour|temps tour|tiempo( por)? vuelta|tempo( sul)? giro|tempo( por)? volta|rondetijd/,/^(time|tijd|zeit|temps|tiempo|tempo)$/),corner:find(/^(corner|turn|corner ?(name|id|no|number)|turn ?(no|number))$/,/corner|turn/),
 time:find(/^time( s| ms| sec| seconds)?$/,/^elapsed/,/^session time/,/^timestamp/),dist:find(/^distance/,/^dist/,/distance/,/odometer/),speed:find(/^(gps |ground |car |vehicle )?speed/,/speed/,/velocity/,/^vcar/),
-latG:find(/lat.*acc/,/lat.* g$/,/^g ?lat/,/^glat/,/lateral/,/acc.*lat/),steer:find(/steer/),brake:find(/brake.*(press|pos)/,/brake/)};
+latG:find(/lat.*acc/,/lat.* g$/,/^g ?lat/,/^glat/,/lateral/,/acc.*lat/),steer:find(/steer/),brake:find(/brake.*(press|pos)/,/brake/),throttle:find(/throttle/,/^tps\b/,/accel(erator)? ?pedal/,/gas ?pedal/,/^(aps|ath|pps)\b/,/pedal ?pos/)};
 m.minSpeed=find(/^min.*speed/,/^apex.*speed/);m.brakeM=find(/brake.*(point|dist|m$)/);m.steerDeg=m.steer;
 const uniq=i=>{const v=data.slice(0,3000).map(r=>String(r[i]==null?'':r[i]).trim()).filter(Boolean);return v.length?new Set(v).size/v.length:1};
 const secI=[];L.forEach((s,i)=>{const x=s.match(/^(?:s|sec|sector|sektor|secteur|settore|split) ?([1-9])(?: time| tijd| zeit)?$/);if(x&&!secI.some(z=>z[0]===+x[1]))secI.push([+x[1],i])});secI.sort((a,b)=>a[0]-b[0]);
@@ -384,7 +385,7 @@ const tc=col(m.time);if(tc.length>2){const dts=[];for(let i=1;i<Math.min(tc.leng
 return{shape,map:m,units:u,exact:false}}
 const FIELDS={laps:[['lap','Lap number',0,'If your file has no lap column, laps are numbered 1, 2, 3 in order'],['lapTime','Lap time',1,'Or leave it as none to add up the sector times'],['sec1','Sector 1',0,'Sector times give you an ideal lap in Qualifying'],['sec2','Sector 2',0],['sec3','Sector 3',0],['sec4','Sector 4',0]],
 table:[['lap','Lap number',1],['corner','Corner name',1],['lapTime','Lap time',1],['minSpeed','Minimum speed',0],['brakeM','Braking point (metres)',0],['steerDeg','Steering angle',0],['latG','Lateral g',0]],
-series:[['time','Time',1],['lap','Lap number',0,'Or use distance below if it resets every lap'],['dist','Distance',0],['speed','Speed',1],['latG','Lateral acceleration',0],['steer','Steering angle',0],['brake','Brake pressure or position',0]]};
+series:[['time','Time',1],['lap','Lap number',0,'Or use distance below if it resets every lap'],['dist','Distance',0],['speed','Speed',1],['latG','Lateral acceleration',0],['steer','Steering angle',0],['brake','Brake pressure or position',0],['throttle','Throttle position',0]]};
 const SHAPES={laps:'Lap times only',table:'Lap and corner table',series:'Telemetry over time'};
 const UNITS={laps:[['lapTime','Lap time unit',[['auto','Auto'],['s','Seconds'],['mmss','m:ss.000'],['ms','Milliseconds']]]],
 table:[['lapTime','Lap time unit',[['auto','Auto'],['s','Seconds'],['mmss','m:ss.000'],['ms','Milliseconds']]],['speed','Speed unit',[['kmh','km/h'],['mph','mph'],['ms','m/s']]],['g','Lateral g unit',[['g','g'],['ms2','m/s²']]]],
@@ -412,9 +413,9 @@ function resolveLT(data,i,unit,dec){if(unit!=='auto')return unit;const cells=dat
 function fromSeries(imp,name){const{data,map,units,dec}=imp;if(!(map.time>=0))throw new Error('Choose a column for "Time".');if(!(map.speed>=0))throw new Error('Choose a column for "Speed".');
 if(!(map.lap>=0)&&!(map.dist>=0))throw new Error('Choose either a lap number column or a distance column that resets every lap, so Pacely can split the laps.');
 const ts=units.time==='ms'?.001:1,sf=SPF[units.speed]||1,gf=units.g==='ms2'?1/9.80665:1,df=units.dist==='km'?1000:1;
-const T=[],V=[],G=[],S=[],B=[],Dr=[],LN=[];
+const T=[],V=[],G=[],S=[],B=[],TH=[],Dr=[],LN=[];
 for(const r of data){const t=num(r[map.time],dec)*ts,v=num(r[map.speed],dec)*sf;if(!fin(t)||!fin(v))continue;T.push(t);V.push(v);
-G.push(map.latG>=0?Math.abs(num(r[map.latG],dec))*gf:NaN);S.push(map.steer>=0?Math.abs(num(r[map.steer],dec)):NaN);B.push(map.brake>=0?Math.abs(num(r[map.brake],dec)):NaN);
+G.push(map.latG>=0?Math.abs(num(r[map.latG],dec))*gf:NaN);S.push(map.steer>=0?Math.abs(num(r[map.steer],dec)):NaN);B.push(map.brake>=0?Math.abs(num(r[map.brake],dec)):NaN);TH.push(map.throttle>=0?num(r[map.throttle],dec):NaN);
 Dr.push(map.dist>=0?num(r[map.dist],dec)*df:NaN);LN.push(map.lap>=0?Math.round(num(r[map.lap],dec)):NaN)}
 const n=T.length;if(n<50)throw new Error('Too few rows of telemetry to find laps.');
 const dts=[];for(let i=1;i<n;i++){const d=T[i]-T[i-1];if(d>0)dts.push(d)}const dtM=med(dts)||.1;
@@ -429,8 +430,9 @@ const ml=med(gr.map(g=>g.len).filter(v=>v>0)),md=med(gr.map(g=>g.dur));
 const kept=gr.filter(g=>g.len>=.9*ml&&g.dur>=.9*md);
 if(kept.length<5)throw new Error(`Found ${kept.length} complete lap${kept.length==1?'':'s'}. Pacely needs at least 5. Check the lap number or distance column.`);
 const laps=kept.map(g=>({lap:g.lap,t:g.dur})),L=ml,BIN=5,NB=Math.floor(L/BIN);
-const prof=g=>{const sc=L/g.len,P={v:new Float32Array(NB),g:new Float32Array(NB),s:new Float32Array(NB),b:new Float32Array(NB)};let k=0;
-for(let j=0;j<NB;j++){const pos=(j+.5)*BIN;while(k+1<g.rel.length&&g.rel[k+1]*sc<=pos)k++;const i=g.i0+k;P.v[j]=V[i];P.g[j]=G[i];P.s[j]=S[i];P.b[j]=B[i]}return P};
+{const tv=TH.filter(fin).sort((a,b)=>a-b),hi=tv.length?tv[Math.floor(tv.length*.98)]:0;if(hi>0&&hi<=1.05)for(let i=0;i<TH.length;i++)TH[i]*=100}
+const prof=g=>{const sc=L/g.len,P={v:new Float32Array(NB),g:new Float32Array(NB),s:new Float32Array(NB),b:new Float32Array(NB),th:new Float32Array(NB)};let k=0;
+for(let j=0;j<NB;j++){const pos=(j+.5)*BIN;while(k+1<g.rel.length&&g.rel[k+1]*sc<=pos)k++;const i=g.i0+k;P.v[j]=V[i];P.g[j]=G[i];P.s[j]=S[i];P.b[j]=B[i];P.th[j]=TH[i]}return P};
 const profs=kept.map(prof),best=kept.reduce((a,g,i)=>g.dur<kept[a].dur?i:a,0),rv=Array.from(profs[best].v);
 const sm=rv.map((_,j)=>{let s=0,c=0;for(let k=Math.max(0,j-2);k<=Math.min(NB-1,j+2);k++){s+=rv[k];c++}return s/c});
 let mins=[];for(let i=6;i<NB-6;i++){let isMin=true;for(let k=i-6;k<=i+6;k++)if(sm[k]<sm[i]){isMin=false;break}if(!isMin)continue;
@@ -450,8 +452,8 @@ cr.push({lap:g.lap,corner:'T'+(ci+1),v:mv,b:bm,st:hasS?ps:null,g:hasG?pg:null})}
 note=`Found ${apex.length} corner${apex.length==1?'':'s'} automatically from the fastest lap and measured each one on all ${kept.length} laps.`}
 else note='No clear corners were found, so Pacely will judge tyre wear from lap times only.';
 const r1=x=>Math.round(x*10)/10,r2=x=>Math.round(x*100)/100,keep=(P,k,f)=>Array.from(P[k],x=>fin(x)?f(x):null);
-const tr={bin:BIN,len:L,nb:NB,apex,ch:{g:map.latG>=0,s:map.steer>=0,b:map.brake>=0},laps:{}};
-kept.forEach((g,gi)=>{const P=profs[gi],o={v:keep(P,'v',r1)};if(tr.ch.g)o.g=keep(P,'g',r2);if(tr.ch.s)o.s=keep(P,'s',r1);if(tr.ch.b)o.b=keep(P,'b',r1);tr.laps[g.lap]=o});
+const tr={bin:BIN,len:L,nb:NB,apex,ch:{g:map.latG>=0,s:map.steer>=0,b:map.brake>=0,th:map.throttle>=0},laps:{}};
+kept.forEach((g,gi)=>{const P=profs[gi],o={v:keep(P,'v',r1)};if(tr.ch.g)o.g=keep(P,'g',r2);if(tr.ch.s)o.s=keep(P,'s',r1);if(tr.ch.b)o.b=keep(P,'b',r1);if(tr.ch.th)o.th=keep(P,'th',x=>Math.round(Math.max(0,Math.min(100,x))));tr.laps[g.lap]=o});
 const s=mk(name,laps,cr);s.note=note;s.tr=tr;return s}
 
 /* ---------- laps, stints ---------- */
@@ -629,16 +631,17 @@ const ffill=a=>{if(!a)return null;const r=a.slice();let l=null;for(let i=0;i<r.l
 const pct=(a,q)=>{const s=a.filter(fin).slice().sort((x,y)=>x-y);return s.length?s[Math.min(s.length-1,Math.floor(q*s.length))]:0};
 function lapChan(T,P,t){const N=T.nb,B=T.bin,v=ffill(P.v),dt=v.map(x=>B/Math.max(x,5)*3.6),k=t/dt.reduce((a,c)=>a+c,0),tt=dt.map(x=>x*k),cum=[];let a=0;tt.forEach(x=>{a+=x;cum.push(a)});
 const ms=v.map(x=>x/3.6),a0=v.map((_,j)=>{const j0=Math.max(0,j-1),j1=Math.min(N-1,j+1);return(ms[j1]**2-ms[j0]**2)/(2*B*(j1-j0))/9.81}),ax=a0.map((_,j)=>{let s=0,c=0;for(let q=Math.max(0,j-2);q<=Math.min(N-1,j+2);q++){s+=a0[q];c++}return s/c});
-const b=T.ch.b?ffill(P.b):null,g=T.ch.g?ffill(P.g):null,st=T.ch.s?ffill(P.s):null,bPk=b?pct(b,.95):0,gPk=g?pct(g,.95):0,top=Math.max(...v);
+const b=T.ch.b?ffill(P.b):null,g=T.ch.g?ffill(P.g):null,st=T.ch.s?ffill(P.s):null,th=T.ch.th&&P.th?ffill(P.th):null,bPk=b?pct(b,.95):0,gPk=g?pct(g,.95):0,top=Math.max(...v);
 const on=b?b.map(x=>x>Math.max(.12*bPk,.5)):ax.map(x=>x<-.35);
-const ph=v.map((x,j)=>on[j]?'b':g?(g[j]>.45*gPk?'c':'t'):(ax[j]<.05&&x<.85*top?'c':'t'));
+const ph=v.map((x,j)=>on[j]?'b':th?(th[j]>=50?'t':'c'):g?(g[j]>.45*gPk?'c':'t'):(ax[j]<.05&&x<.85*top?'c':'t'));
 for(let i=0;i<N;){let j=i;while(j<N&&ph[j]===ph[i])j++;if(j-i<4)for(let q=i;q<j;q++)ph[q]=i?ph[i-1]:(ph[j]||ph[q]);i=j}
-return{v,b,g,st,tt,cum,ax,on,ph,top,t}}
+return{v,b,g,st,th,tt,cum,ax,on,ph,top,t}}
 function corners(T,L){const N=T.nb,B=T.bin,ap=T.apex;return ap.map((a0,i)=>{const lo=i?Math.round((ap[i-1]+a0)/2):0,hi=i<ap.length-1?Math.round((a0+ap[i+1])/2):N-1;let ai=a0;for(let j=Math.max(lo,a0-15);j<=Math.min(hi,a0+15);j++)if(L.v[j]<L.v[ai])ai=j;
 let entry=0;for(let j=lo;j<=ai;j++)entry=Math.max(entry,L.v[j]);let z=-1;for(let j=ai;j>=Math.max(lo,ai-80);j--)if(L.on[j]){z=j;break}let zs=z;if(z>=0)while(zs>0&&zs>lo-20&&(L.on[zs-1]||L.on[zs-2]))zs--;
 let pk=0,dec=0;for(let j=Math.max(0,ai-12);j<=Math.min(N-1,ai+12);j++)if(L.g)pk=Math.max(pk,L.g[j]);if(zs>=0)for(let j=zs;j<=ai;j++)dec=Math.min(dec,L.ax[j]);
 let drv=0,c=0;for(let j=ai;j<=Math.min(N-1,ai+12);j++){drv+=L.ax[j];c++}drv/=c||1;let us=null;if(L.g&&L.st){let s=0,n=0;for(let j=Math.max(0,ai-4);j<=Math.min(N-1,ai+4);j++)if(L.g[j]>.3){s+=L.st[j]/L.g[j];n++}if(n)us=s/n}
-const time=L.cum[hi]-(lo?L.cum[lo-1]:0);return{n:'T'+(i+1),lo,hi,ai,entry,min:L.v[ai],exit:L.v[Math.min(hi,ai+20)],bp:zs>=0?(ai-zs)*B:null,trail:z>=ai-4&&z>=0,pk,dec,drv,us,time}})}
+let full=null,pick=null;if(L.th){for(let j=Math.max(lo,ai-20);j<=hi;j++)if(!L.on[j]&&L.th[j]>=20){pick=(j-ai)*B;break}for(let j=ai;j<=hi;j++)if(L.th[j]>=95){full=(j-ai)*B;break}}
+const time=L.cum[hi]-(lo?L.cum[lo-1]:0);return{n:'T'+(i+1),full,pick,lo,hi,ai,entry,min:L.v[ai],exit:L.v[Math.min(hi,ai+20)],bp:zs>=0?(ai-zs)*B:null,trail:z>=ai-4&&z>=0,pk,dec,drv,us,time}})}
 function teleEmpty(){const ts=sessions.map((s,i)=>s.tr?i:-1).filter(i=>i>=0);
 return`<div class="empty"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M4 34 L14 18 L22 28 L32 10 L44 30" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/></svg><b>No telemetry in this session</b>This session has lap times only. Load a logger export with speed against time (AiM, MoTeC, VBOX and similar) to see every channel of a lap explained.
 <div class="row" style="justify-content:center;margin-top:18px">${ts.length?ts.slice(0,3).map(i=>`<button class="alt" data-gos="${i}">Open ${esc(sessions[i].name)}</button>`).join(''):'<button class="alt" data-godemo="1">Open sample sessions</button>'}</div></div>`}
@@ -660,38 +663,44 @@ const tr=C.filter(c=>c.trail).map(c=>c.n);I.b.push(tr.length?`Brake still on at 
 const pkB=Math.min(...L.ax),pkA=Math.max(...L.ax),weak=C.length?C.reduce((a,c)=>c.drv<a.drv?c:a):null;I.a=[`Peak braking ${f1(-pkB)} g, peak acceleration ${f2(pkA)} g.`];if(weak)I.a.push(`Weakest drive out of a corner: ${weak.n}, ${f2(weak.drv)} g from ${km(weak.min)}.`);
 if(L.g){const pc=C.length?C.reduce((a,c)=>c.pk>a.pk?c:a):null,lc=C.length?C.reduce((a,c)=>c.pk<a.pk?c:a):null;I.g=[];if(pc)I.g.push(`Highest cornering force: ${f2(pc.pk)} g at ${pc.n}.`);if(lc&&lc!==pc)I.g.push(`Lowest: ${f2(lc.pk)} g at ${lc.n}.`);const cg=L.g.filter((x,j)=>L.ph[j]==='c');if(cg.length)I.g.push(`Average ${f2(mean(cg))} g while cornering.`)}
 if(L.st&&L.g){const u=C.filter(c=>c.us!=null);I.s=[];if(u.length){const hi=u.reduce((a,c)=>c.us>a.us?c:a),m=mean(u.map(c=>c.us));I.s.push(`Most steering for the grip at ${hi.n}: ${f1(hi.us)}° per g, against ${f1(m)}° per g on average.`);I.s.push(hi.us>m*1.3?`${hi.n} is where the front tyres work hardest. If that number grows over a stint, the car is starting to understeer there.`:'Steering per g is even across the corners, so no single corner stands out for understeer.')}}
+if(L.th){const ft=L.th.reduce((a2,x,j)=>a2+(x>=95?L.tt[j]:0),0);I.th=[`Full throttle for ${(ft/tTot*100).toFixed(0)}% of the lap (${ft.toFixed(1)} s).`];
+const fc=C.filter(c=>c.full!=null);if(fc.length){const w=fc.reduce((a2,c)=>c.full>a2.full?c:a2);I.th.push(`Longest wait for full throttle: ${w.n}, ${Math.round(w.full)} m after the apex.`)}
+if(CR&&R.th){const dd=C.map((c,i)=>({n:c.n,d:c.full!=null&&CR[i].full!=null?c.full-CR[i].full:0})).sort((a2,b2)=>Math.abs(b2.d)-Math.abs(a2.d))[0];if(dd&&Math.abs(dd.d)>=10)I.th.push(`At ${dd.n} you were back to full throttle ${Math.round(Math.abs(dd.d))} m ${dd.d>0?'later':'earlier'} than on ${refName}.`)}
+const lifts=[];for(let j=0;j<N;){if(L.th[j]<90&&!L.on[j]&&L.v[j]>.85*L.top){let k=j;while(k<N&&L.th[k]<90&&!L.on[k])k++;if(k-j>=2)lifts.push(j);j=k}else j++}
+I.th.push(lifts.length?`Lift${lifts.length>1?'s':''} on the straight at ${lifts.slice(0,3).map(at).join(', ')}.`:'No lifts on the straights.')}
 const li=a=>a&&a.length?`<ul>${a.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'';
 const ref=y=>R?[{y:R[y],cls:'traceR'}]:[],ch=(id,title,what,key,chart)=>`<section class="chan"><div>${chart}</div><div><h3>${title}</h3><p class="what">${what}</p>${li(I[key])}</div></section>`;
 const charts=[ch('v','Speed','How fast the car is at every point of the lap. Peaks are the ends of the straights and dips are the corners. The bottom of each dip is the minimum corner speed, which sets the speed onto the next straight.','v',dChart('v','km/h',N,len,[...ref('v'),{y:L.v,cls:'trace'}],{h:200,marks}))];
 if(R)charts.push(ch('d','Time gap','The running time difference to '+refName+'. Where the line climbs, this lap is losing time. Where it falls, it is gaining. The steepest stretches show where the time goes.','d',dChart('d','seconds, + = behind',N,len,[{y:gap,cls:'trace'}],{h:130,zero:true,fmt:v=>(v>0?'+':'')+v.toFixed(2),marks})));
+if(L.th)charts.push(ch('th','Throttle','Throttle pedal position from 0 to 100%. Flat along the top is full throttle. How early and how smoothly the driver gets back to full throttle after each apex decides the speed onto the next straight. A dip on a straight is a lift.','th',dChart('th','%',N,len,[...ref('th'),{y:L.th,cls:'trace'}],{h:120,floor:0,marks})));
 if(L.b)charts.push(ch('b','Braking','Brake pressure. Each block is a braking zone. A sharp rise is a firm initial stop. A gradual release into the corner is trail braking, which helps the front of the car turn in.','b',dChart('b','brake',N,len,[...ref('b'),{y:L.b,cls:'trace'}],{h:120,floor:0,marks})));
 charts.push(ch('a','Acceleration and braking force','Longitudinal g, worked out from the speed trace. Below zero the car is slowing, above zero it is accelerating. Strong drive straight out of a corner means good traction and early throttle.','a',dChart('a','g',N,len,[...ref('ax'),{y:L.ax,cls:'trace'}],{h:130,zero:true,fmt:v=>v.toFixed(1),marks})));
 if(L.g)charts.push(ch('g','Cornering force','Lateral g: how much grip the car uses through the corners. Higher, flatter peaks mean the car is driven closer to its limit for longer.','g',dChart('g','g',N,len,[...ref('g'),{y:L.g,cls:'trace'}],{h:120,floor:0,fmt:v=>v.toFixed(1),marks})));
 if(L.st)charts.push(ch('s','Steering','Steering angle. Read it with cornering force: more steering for the same g means the front tyres are sliding, which is understeer.','s',dChart('s','degrees',N,len,[...ref('st'),{y:L.st,cls:'trace'}],{h:120,floor:0,marks})));
-XH.tch={N,len,out:'txr',idle:'Move over or touch a chart to read every channel at that point of the lap.',read:j=>[at(j),cornerAt(T.apex,N,j),`speed ${Math.round(L.v[j])}${R?' ('+Math.round(R.v[j])+')':''} km/h`,L.b?`brake ${Math.round(L.b[j])}`:'',L.g?`lateral ${f2(L.g[j])} g`:'',`long. ${f2(L.ax[j])} g`,gap?`gap ${sg(gap[j])} s`:''].filter(Boolean).join(' · ')};
+XH.tch={N,len,out:'txr',idle:'Move over or touch a chart to read every channel at that point of the lap.',read:j=>[at(j),cornerAt(T.apex,N,j),`speed ${Math.round(L.v[j])}${R?' ('+Math.round(R.v[j])+')':''} km/h`,L.th?`throttle ${Math.round(L.th[j])}%`:'',L.b?`brake ${Math.round(L.b[j])}`:'',L.g?`lateral ${f2(L.g[j])} g`:'',`long. ${f2(L.ax[j])} g`,gap?`gap ${sg(gap[j])} s`:''].filter(Boolean).join(' · ')};
 const tl=(n,l)=>`<div class="tile"><div class="n">${n}</div><div class="l">${l}</div></div>`;
-const PH=[['t','On throttle','ph-t'],['b','Braking','ph-b'],['c','Cornering','ph-c']];
+const PH=[['t','On throttle','ph-t'],['b','Braking','ph-b'],['c',L.th?'Part throttle or coasting':'Cornering','ph-c']];
 const opts=[...o.ks].sort((x,y)=>x-y).map(k=>`<option value="${k}" ${k===o.lap?'selected':''}>Lap ${k} · ${fmtS(lt(k))}${k===o.best?' · fastest':''}</option>`).join('');
 return`<div class="tabpane"><div class="printhead"><h1>Pacely telemetry</h1><p><b>${esc(s.name)}</b> · lap ${o.lap} · ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</p></div>
 <div class="lapbar"><label class="fld noprint">Lap<select id="tlap">${opts}</select></label><div><div class="k">Lap ${o.lap}</div><div class="lt">${fmtS(o.t)}</div><div class="dl">${R?`${isBest?'Fastest lap. ':''}${sg(L.t-R.t)} s to ${refName}`:'Only one complete lap'}</div></div></div>
-<div class="tiles six">${tl(Math.round(L.top)+'<small>km/h</small>','Top speed')}${tl(Math.round(len/o.t*3.6)+'<small>km/h</small>','Average speed')}${slow?tl(Math.round(slow.min)+'<small>km/h</small>',`Slowest corner (${slow.n})`):''}${tl((share('b')/tTot*100).toFixed(0)+'<small>%</small>','Time on the brakes')}${tl(f1(-pkB)+'<small>g</small>','Peak braking')}${L.g?tl(f2(Math.max(...C.map(c=>c.pk),0))+'<small>g</small>','Peak cornering'):tl(f2(pkA)+'<small>g</small>','Peak acceleration')}</div>
+<div class="tiles six">${tl(Math.round(L.top)+'<small>km/h</small>','Top speed')}${L.th?tl((L.th.reduce((a2,x,j)=>a2+(x>=95?L.tt[j]:0),0)/tTot*100).toFixed(0)+'<small>%</small>','Full throttle'):tl(Math.round(len/o.t*3.6)+'<small>km/h</small>','Average speed')}${slow?tl(Math.round(slow.min)+'<small>km/h</small>',`Slowest corner (${slow.n})`):''}${tl((share('b')/tTot*100).toFixed(0)+'<small>%</small>','Time on the brakes')}${tl(f1(-pkB)+'<small>g</small>','Peak braking')}${L.g?tl(f2(Math.max(...C.map(c=>c.pk),0))+'<small>g</small>','Peak cornering'):tl(f2(pkA)+'<small>g</small>','Peak acceleration')}</div>
 <h2>Lap anatomy <small>where the lap is spent, by distance</small></h2><div class="card"><div class="phase" role="img" aria-label="Lap split into braking, cornering and on-throttle sections">${segs.map(x=>`<i class="ph-${x.p}" style="flex:${x.n} 0 0"></i>`).join('')}</div>
 <div class="phlg">${PH.map(([k,n,c])=>`<div><i class="${c}"></i><b>${n}</b><span>${(share(k)/tTot*100).toFixed(0)}% · ${share(k).toFixed(1)} s</span></div>`).join('')}</div>
-<p class="hint">Each band is a stretch of track from the start line (left) to the finish line (right). Braking is when the brake is on, cornering is when the car is carrying high sideways force without braking, and on throttle is everything else, including the straights.</p></div>
+<p class="hint">Each band is a stretch of track from the start line (left) to the finish line (right). ${L.th?'Braking is when the brake is on, on throttle is when the throttle is past 50%, and the rest is part throttle or coasting, mostly through the middle of the corners.':'Braking is when the brake is on, cornering is when the car is carrying high sideways force without braking, and on throttle is everything else, including the straights.'}</p></div>
 <h2>Channels <small>${R?'this lap against '+esc(refName):'this lap'}</small></h2><div class="card xh" id="tch"><div class="lg"><span><i class="sw"></i>Lap ${o.lap}</span>${R?`<span><i class="sw r"></i>Lap ${refLap}${isBest?' (next fastest)':' (fastest)'}</span>`:''}</div>
 <div class="xread noprint" id="txr">${XH.tch.idle}</div>${charts.join('')}</div>
-<h2>Corner by corner</h2><div class="card tbl"><table class="cmp"><tr><th>Corner</th><th>Brakes at</th><th>Entry</th><th>Minimum</th><th>Exit</th>${L.g?'<th>Peak g</th>':''}<th>Time</th>${CR?'<th>vs ref</th>':''}</tr>
-${C.map((c,i)=>`<tr><td><b>${c.n}</b></td><td>${c.bp==null?'–':Math.round(c.bp)+' m'}</td><td>${Math.round(c.entry)}</td><td>${Math.round(c.min)}</td><td>${Math.round(c.exit)}</td>${L.g?`<td>${f2(c.pk)}</td>`:''}<td>${c.time.toFixed(2)}</td>${CR?`<td class="${dC[i].d<-.005?'win':''}">${sg(dC[i].d)}</td>`:''}</tr>`).join('')}</table></div>
-<p class="foot">Speeds in km/h. "Brakes at" is how far before the apex braking starts. Time is from halfway between the previous corner and this one to halfway to the next. Corners are found automatically from the fastest lap. Longitudinal g is worked out from speed, so it is smoothed. Confirm with driver feedback.</p>
+<h2>Corner by corner</h2><div class="card tbl"><table class="cmp"><tr><th>Corner</th><th>Brakes at</th><th>Entry</th><th>Minimum</th><th>Exit</th>${L.th?'<th>Full throttle</th>':''}${L.g?'<th>Peak g</th>':''}<th>Time</th>${CR?'<th>vs ref</th>':''}</tr>
+${C.map((c,i)=>`<tr><td><b>${c.n}</b></td><td>${c.bp==null?'–':Math.round(c.bp)+' m'}</td><td>${Math.round(c.entry)}</td><td>${Math.round(c.min)}</td><td>${Math.round(c.exit)}</td>${L.th?`<td>${c.full==null?'–':'+'+Math.round(c.full)+' m'}</td>`:''}${L.g?`<td>${f2(c.pk)}</td>`:''}<td>${c.time.toFixed(2)}</td>${CR?`<td class="${dC[i].d<-.005?'win':''}">${sg(dC[i].d)}</td>`:''}</tr>`).join('')}</table></div>
+<p class="foot">Speeds in km/h. "Brakes at" is how far before the apex braking starts, and "Full throttle" is how far after the apex the throttle reaches 95%. Time is from halfway between the previous corner and this one to halfway to the next. Corners are found automatically from the fastest lap. Longitudinal g is worked out from speed, so it is smoothed. Confirm with driver feedback.</p>
 <div class="ctl noprint"><button class="alt sm" id="print">Save as PDF</button></div></div>`}
 
 function overlay(sa,sb){if(!sa.tr||!sb.tr){const any=sessions.some(x=>x.tr);return any?`<p class="foot noprint">The telemetry overlay appears when both sessions come from telemetry files${sessions.filter(x=>x.tr).length>=2?', for example the two telemetry sample sessions':''}.</p>`:''}
 const a=ovLap(sa,cmpOv.A),b=ovLap(sb,cmpOv.B);if(!a||!b)return'';const N=a.T.nb,len=a.T.len;
 const cA=cumT(a.P,a.T,a.t),cB=cumT(b.P,b.T,b.t),tAt=(c,n,fr)=>{const x=fr*n,i=Math.min(n-1,Math.floor(x));return c[i]+(c[i+1]-c[i])*(x-i)};
 const d=Array.from({length:N},(_,j)=>{const fr=(j+1)/N;return tAt(cB,b.T.nb,fr)-tAt(cA,N,fr)});
-const vA=ovSeries(a,'v',N),vB=ovSeries(b,'v',N),both=k=>a.T.ch[k]&&b.T.ch[k],bA=both('b')?ovSeries(a,'b',N):null,bB=both('b')?ovSeries(b,'b',N):null,sA=both('s')?ovSeries(a,'s',N):null,sB=both('s')?ovSeries(b,'s',N):null;
+const vA=ovSeries(a,'v',N),vB=ovSeries(b,'v',N),both=k=>a.T.ch[k]&&b.T.ch[k],bA=both('b')?ovSeries(a,'b',N):null,bB=both('b')?ovSeries(b,'b',N):null,sA=both('s')?ovSeries(a,'s',N):null,sB=both('s')?ovSeries(b,'s',N):null,tA=both('th')?ovSeries(a,'th',N):null,tB=both('th')?ovSeries(b,'th',N):null;
 const marks=a.T.apex.map((j,i)=>({j,n:'T'+(i+1)})),f0=v=>v==null?'–':Math.round(v);OV=1;
-XH.ovl={N,len,out:'ovr',idle:'Move over or touch the charts to read the values at any point of the lap.',read:j=>`${Math.round((j+.5)/N*len).toLocaleString()} m · ${cornerAt(a.T.apex,N,j)} · speed A ${f0(vA[j])}, B ${f0(vB[j])} km/h`+(bA?` · brake A ${f0(bA[j])}, B ${f0(bB[j])}`:'')+` · gap ${d[j]>0?'B behind by ':'B ahead by '}${Math.abs(d[j]).toFixed(2)} s`};
+XH.ovl={N,len,out:'ovr',idle:'Move over or touch the charts to read the values at any point of the lap.',read:j=>`${Math.round((j+.5)/N*len).toLocaleString()} m · ${cornerAt(a.T.apex,N,j)} · speed A ${f0(vA[j])}, B ${f0(vB[j])} km/h`+(tA?` · throttle A ${f0(tA[j])}, B ${f0(tB[j])}%`:'')+(bA?` · brake A ${f0(bA[j])}, B ${f0(bB[j])}`:'')+` · gap ${d[j]>0?'B behind by ':'B ahead by '}${Math.abs(d[j]).toFixed(2)} s`};
 const ap=a.T.apex,seg=ap.map((j,i)=>{const lo=i?Math.round((ap[i-1]+j)/2):0,hi=i<ap.length-1?Math.round((j+ap[i+1])/2):N-1;return{n:'T'+(i+1),g:d[hi]-(lo?d[lo-1]:0)}});
 const ranked=[...seg].sort((x,y)=>Math.abs(y.g)-Math.abs(x.g)).filter(x=>Math.abs(x.g)>=.02).slice(0,4);
 const lens=Math.abs(a.T.len-b.T.len)/Math.min(a.T.len,b.T.len)>.04?`<div class="notice">These laps are different lengths (${Math.round(a.T.len)} m and ${Math.round(b.T.len)} m), so the traces may not line up. Compare laps from the same track.</div>`:'';
@@ -702,10 +711,11 @@ return`<h2>Telemetry overlay</h2>${lens}<div class="card" id="ovl"><div class="p
 <div class="xread noprint" id="ovr">Move over or touch the charts to read the values at any point of the lap.</div>
 ${dChart('v','Speed · km/h',N,len,[{y:vB,cls:'traceB'},{y:vA,cls:'trace'}],{h:200,marks})}
 ${dChart('d','Gap, B to A · seconds',N,len,[{y:d,cls:'trace'}],{h:130,zero:true,fmt:v=>(v>0?'+':'')+v.toFixed(2),marks,note:'above zero: B behind'})}
+${tA?dChart('th','Throttle · %',N,len,[{y:tB,cls:'traceB'},{y:tA,cls:'trace'}],{h:120,floor:0,marks}):''}
 ${bA?dChart('b','Brake',N,len,[{y:bB,cls:'traceB'},{y:bA,cls:'trace'}],{h:120,floor:0,marks}):''}
 ${sA?dChart('s','Steering · degrees',N,len,[{y:sB,cls:'traceB'},{y:sA,cls:'trace'}],{h:120,floor:0,marks}):''}
 <p class="hint">Session ${who} is ${Math.abs(fin1).toFixed(3)} s quicker over these two laps. Distance runs left to right, ${Math.round(len).toLocaleString()} m in total. Corners are marked T1, T2 and so on.</p></div>
-${ranked.length?`<h2>Where the time goes</h2><div class="card"><ul class="chg">${ranked.map(x=>`<li><span class="tag ${x.g>0?'ok':'high'}">${x.g>0?'A':'B'} gains ${Math.abs(x.g).toFixed(2)} s</span><span>Around ${x.n}: ${x.g>0?`session B loses ${x.g.toFixed(2)} s to A`:`session B gains ${(-x.g).toFixed(2)} s on A`} from the previous corner to the next. Check the speed and brake traces there.</span></li>`).join('')}</ul></div>`:''}`}
+${ranked.length?`<h2>Where the time goes</h2><div class="card"><ul class="chg">${ranked.map(x=>`<li><span class="tag ${x.g>0?'ok':'high'}">${x.g>0?'A':'B'} gains ${Math.abs(x.g).toFixed(2)} s</span><span>Around ${x.n}: ${x.g>0?`session B loses ${x.g.toFixed(2)} s to A`:`session B gains ${(-x.g).toFixed(2)} s on A`} from the previous corner to the next. Check the speed${tA?', throttle':''} and brake traces there.</span></li>`).join('')}</ul></div>`:''}`}
 const lapT=(o,k)=>{const s=sessions.find(x=>x.tr===o.T);const l=s&&s.laps.find(l=>l.lap===k);return l?l.t:0};
 function compare(){const sa=sessions[A],sb=sessions[B],opt=i=>sessions.map((s,j)=>`<option value="${j}" ${j==i?'selected':''}>${esc(s.name)}</option>`).join('');
 const stOpts=(sx,k)=>{let r;try{r=runLaps(sx,cmpSt[k])}catch(e){return''}if(r.stints.length<2)return'';return r.stints.map(t=>`<option value="${t.i}" ${t.i===r.idx?'selected':''}>Stint ${t.i+1} · laps ${t.first}–${t.last}${t.n<5?' (too short)':` · ${t.n} clean`}</option>`).join('')};
@@ -934,7 +944,7 @@ clearTimeout(to);st.busy=false;if(sessions[cur]===s&&view==='single')render()}
 const AI_EXPLAIN="Write a short engineer's summary of this session for the team: what is happening, the single most important thing to do, and one thing to tell the driver. Under 110 words.";
 
 /* ---------- wiring ---------- */
-$('#demo').onclick=()=>{msgs=[];armed=false;const first=sessions.length;SAMPLES.forEach(x=>{const s=toSession(demo(x.o),x.name,{sample:true});addSession(s)});addSession(raceDemo());addSession(qualiDemo());addSession(teleDemo('8 Telemetry, driver A',41));addSession(teleDemo('9 Telemetry, driver B',43,{dv:[2,0,-1,0,-5,0],dec:[0,0,9,0,0,0]}));
+$('#demo').onclick=()=>{msgs=[];armed=false;const first=sessions.length;SAMPLES.forEach(x=>{const s=toSession(demo(x.o),x.name,{sample:true});addSession(s)});addSession(raceDemo());addSession(qualiDemo());addSession(teleDemo('8 Telemetry, driver A',41,{coast:[0,20,0,20,20,20]}));addSession(teleDemo('9 Telemetry, driver B',43,{dv:[2,0,-1,0,-5,0],dec:[0,0,9,0,0,0],ramp:[40,40,55,40,75,40]}));
 A=first;B=first+1;cmpSt={A:null,B:null};cur=first;view='single';tab='call';render()};
 {const ov=$('#dropov');let dc=0;const hasF=e=>e.dataTransfer&&[...e.dataTransfer.types].includes('Files');
 addEventListener('dragenter',e=>{if(hasF(e)){e.preventDefault();dc++;ov.classList.add('on')}});
