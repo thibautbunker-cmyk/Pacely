@@ -212,6 +212,9 @@ body{font-feature-settings:"tnum" 1,"cv11" 1;-webkit-font-smoothing:antialiased}
 .notice,.bar .note{padding:8px 12px;font-size:13px;background:var(--sf);border:1px solid var(--ln);border-left:3px solid var(--wn);border-radius:3px;color:var(--mu)}
 details>summary{font-weight:600}
 @media print{.top{background:#fff!important}}
+html.pdf{--bg:#fff;--sf:#fff;--sf2:#eee;--tx:#111;--mu:#555;--ln:#ccc;--ac:#c40a0a;--wn:#a85f00;--wnbg:#fff4e0;--bd:#c40a0a;--bdbg:#fde8e6;--ok:#17743f;--okbg:#e6f5ec;color-scheme:light}html.pdf body{background:#fff}html.pdf .hero,html.pdf .dash,html.pdf .fgrid,html.pdf .cor{display:block!important}
+html.pdf .top,html.pdf .ctx,html.pdf .card.ctrl,html.pdf .chips,html.pdf .ctl,html.pdf .noprint,html.pdf button,html.pdf .notice,html.pdf .stint details,html.pdf details.set{display:none!important}
+html.pdf summary{display:block;list-style:none}html.pdf .printhead{display:block;margin:10px 0 0}html.pdf .printhead p{margin:4px 0;color:var(--mu)}html.pdf .printonly{display:block}
 [data-theme=dark] .empty svg path{stroke:#fff}[data-theme=dark] .empty svg rect{fill:#fff}
 .empty svg{width:56px;height:56px}
 /* ---- clean / apple-style ---- */
@@ -708,7 +711,7 @@ const tiles=sec?`<div class="tile"><div class="n">${fmtS(sec.ideal)}</div><div c
 :`<div class="tile"><div class="n">${runs.length}</div><div class="l">Runs (a run is a group of laps between slow in and out laps)</div></div>`;
 const secTable=sec?`<h2>Sectors</h2><div class="card" style="padding:8px 12px"><table class="cmp"><tr><th>Sector</th><th>Best</th><th>On best lap</th><th>Lost on best lap</th><th>Push lap average off best</th></tr>${sec.rows.map(r=>`<tr><td>S${r.i+1} <small style="color:var(--mu)">(best on lap ${r.bestLap})</small></td><td class="win">${fmtS(r.best)}</td><td>${r.onBest==null?'–':fmtS(r.onBest)}</td><td>${r.lossBest==null?'–':'+'+r.lossBest.toFixed(3)}</td><td>${r.avgLoss==null?'–':'+'+r.avgLoss.toFixed(3)}</td></tr>`).join('')}<tr><td><b>Lap</b></td><td class="win">${fmtS(sec.ideal)}</td><td>${fmtS(q.bl.t)}</td><td>${sec.gap>0?'+'+sec.gap.toFixed(3):'0.000'}</td><td></td></tr></table></div>`:'';
 const anySec=rows.some(r=>r.a.sec);
-return `<div class="tabpane">${sec?'':`<div class="notice" style="margin-top:20px">${q.s.note&&/sector/.test(q.s.note)?esc(q.s.note):'No sector times in this session. Load a timing sheet with sector columns (for example S1, S2, S3) to see your ideal lap and where the time is lost.'}</div>`}
+return `<div class="tabpane"><div class="printhead"><h1>Pacely qualifying</h1><p><b>${esc(q.s.name)}</b> · ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}${condText(q.s)?' · '+esc(condText(q.s)):''}</p></div>${sec?'':`<div class="notice" style="margin-top:20px">${q.s.note&&/sector/.test(q.s.note)?esc(q.s.note):'No sector times in this session. Load a timing sheet with sector columns (for example S1, S2, S3) to see your ideal lap and where the time is lost.'}</div>`}
 <section class="verdict"><div class="k">${esc(q.s.name)}</div><div class="big">${fmtT(best)}</div><p>Best lap, lap ${q.bl.lap}${sec&&sec.gap>.0005?`. Ideal lap ${fmtS(sec.ideal)}`:''}${rows.length>1?`. ${rank===1?'Fastest of':'P'+rank+' of'} ${rows.length} loaded sessions${rank>1?`, ${gap.toFixed(3)} s off the fastest`:''}.`:'.'}</p></section>
 <div class="tiles">${tiles}<div class="tile"><div class="n">${pl.length}</div><div class="l">Push laps (within 2% of the best)</div></div>${sec?'':`<div class="tile"><div class="n">${pl.length>1?'±'+spread.toFixed(2):'n/a'}<small>${pl.length>1?' s':''}</small></div><div class="l">Spread between push laps</div></div>`}</div>
 <div class="fgrid"><div><h2>What to do</h2>${F.map(f=>`<article class="f ${f.sev}"><span class="tag">${tag[f.sev]}</span><h3>${esc(f.t)}</h3><p>${esc(f.m)}</p><p class="do">${esc(f.d)}</p></article>`).join('')}</div>
@@ -730,7 +733,7 @@ const cl=$('#clr');if(cl)cl.onclick=()=>{if(armed!=='clr'){armed='clr';render();
 const sA=$('#selA'),sB=$('#selB');if(sA){sA.onchange=()=>{A=+sA.value;cmpSt.A=null;render()};sB.onchange=()=>{B=+sB.value;cmpSt.B=null;render()};const tA=$('#stA'),tB=$('#stB');if(tA)tA.onchange=()=>{cmpSt.A=+tA.value;render()};if(tB)tB.onchange=()=>{cmpSt.B=+tB.value;render()}}
 const s=sessions[cur],bind=(id,fn)=>{const e=$('#'+id);if(e)e.onchange=()=>{fn(e.value.trim?e.value.trim():e.value);save(s);render()}};
 if(s&&view==='single'){bind('rem',v=>s.meta.remaining=v);bind('ign',v=>{s.meta.ignore=v;s.meta.stint=null});bind('spl',v=>{s.meta.splits=v;s.meta.stint=null});bind('sname',v=>s.name=v||s.name);bind('cmpd',v=>s.meta.compound=v);bind('ttemp',v=>s.meta.trackTemp=v);bind('atemp',v=>s.meta.airTemp=v)}
-const pr=$('#print');if(pr)pr.onclick=()=>{try{window.print()}catch(e){toast('Printing is not available here. Open Pacely in your browser to print.')}};
+const pr=$('#print');if(pr)pr.onclick=printReport;
 const dl=$('#dl');if(dl)dl.onclick=()=>download(s);
 const rm=$('#rm');if(rm)rm.onclick=()=>{if(armed!=='rm'){armed='rm';render();return}DB.del(s.id);sessions.splice(cur,1);cur=Math.max(0,cur-1);A=0;B=Math.min(1,sessions.length-1);cmpSt={A:null,B:null};armed=false;if(sessions.length<2&&tab==='compare')tab='call';render()};
 if(s&&view==='single'){const ex=$('#aiExplain');if(ex)ex.onclick=()=>aiRun(s,AI_EXPLAIN,'Explain this session');
@@ -738,6 +741,30 @@ document.querySelectorAll('.aiq').forEach(b=>b.onclick=()=>aiRun(s,b.dataset.q))
 const ask=()=>{const i=$('#aiq');if(i&&i.value.trim())aiRun(s,i.value.trim())};const ab=$('#aiAsk');if(ab)ab.onclick=ask;const ai=$('#aiq');if(ai)ai.onkeydown=e=>{if(e.key==='Enter')ask()}}
 const cp=$('#copy');if(cp)cp.onclick=async()=>{let ok=false;try{await navigator.clipboard.writeText(lastMsg);ok=true}catch(e){}toast(ok?'Copied: '+lastMsg:'Could not copy. Message: '+lastMsg)};
 if(imp)wireImport()}
+/* ---------- print: the browser's print dialog, or a PDF made in the page inside the Claude viewer ---------- */
+const LIBS=['https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js','https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js'],libP={};
+const loadJS=u=>libP[u]=libP[u]||new Promise((res,rej)=>{const s=document.createElement('script');s.src=u;s.onload=res;s.onerror=()=>{delete libP[u];s.remove();rej(new Error('Could not load the PDF maker. Check your internet connection and try again.'))};document.head.append(s)});
+let pdfBusy=false;
+async function printReport(){let dl=null;try{if(window.claude&&window.claude.use)dl=await window.claude.use('downloads')}catch(e){}
+if(!dl){try{window.print()}catch(e){toast('Printing is not available here. Open Pacely in your browser to print.')}return}
+if(pdfBusy)return;pdfBusy=true;toast('Making the PDF…');const was=printing;
+try{await Promise.all(LIBS.map(loadJS));if(tab!=='compare'){printing=true;render()}
+let cuts=[];const cv=await html2canvas($('#out'),{scale:2,backgroundColor:'#ffffff',windowWidth:820,logging:false,onclone:d=>{cuts=pdfClone(d)}});
+const s=sessions[cur],base=tab==='compare'?'Pacely comparison':`Pacely ${tab==='quali'?'qualifying':'report'} ${s?s.name:''}`;
+await dl.save({filename:(base.replace(/[^\w -]+/g,'').replace(/\s+/g,' ').trim()||'Pacely report')+'.pdf',data:pdfFromCanvas(cv,cuts)});toast('PDF saved')}
+catch(e){const c=e&&e.code;if(c!=='declined')toast(c==='rate_limited'?'A download is already waiting for your answer.':!c&&e&&e.message?e.message:'Could not make the PDF.')}
+finally{pdfBusy=false;if(printing!==was){printing=was;render()}}}
+function pdfClone(d){const r=d.documentElement,w=d.defaultView;r.classList.add('pdf');r.dataset.theme='light';const o=d.getElementById('out'),top=o.getBoundingClientRect().top,cuts=[];
+o.querySelectorAll('.f,.card,.call,.tile,.verdict,.cr,.cc,tr,.printhead,.foot,.tiles,.empty,section').forEach(e=>{const b=e.getBoundingClientRect();if(b.height)cuts.push(b.bottom-top)});
+o.querySelectorAll('h2').forEach(e=>{const b=e.getBoundingClientRect();if(b.height)cuts.push(b.top-top-4)});
+o.querySelectorAll('svg').forEach(sv=>{const b=sv.getBoundingClientRect();sv.setAttribute('width',b.width);sv.setAttribute('height',b.height);
+[sv,...sv.querySelectorAll('*')].forEach(el=>{const cs=w.getComputedStyle(el);['color','fill','stroke','stroke-width','stroke-dasharray','opacity','font-size','font-family','font-weight'].forEach(p=>el.style.setProperty(p,cs.getPropertyValue(p)))})});
+return cuts.sort((a,b)=>a-b)}
+function pdfFromCanvas(cv,cuts){const doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'}),M=12,W=210-2*M,H=297-2*M-6,k=cv.width/W,ph=H*k/2,total=cv.height/2,sl=[];let y=0;
+while(y<total-1){let e=Math.min(y+ph,total);if(e<total){const c=cuts.filter(v=>v>y+ph*.4&&v<=y+ph).pop();if(c)e=c}sl.push([y,e]);y=e}
+sl.forEach(([a,b],i)=>{const pc=document.createElement('canvas'),h=Math.ceil((b-a)*2);pc.width=cv.width;pc.height=h;const x=pc.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,pc.width,h);x.drawImage(cv,0,Math.floor(a*2),cv.width,h,0,0,cv.width,h);
+if(i)doc.addPage();doc.addImage(pc.toDataURL('image/jpeg',.92),'JPEG',M,M,W,h/k);doc.setFontSize(8);doc.setTextColor(120);doc.text(`Pacely · page ${i+1} of ${sl.length}`,M,297-8)});
+return doc.output('blob')}
 function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.append(e);setTimeout(()=>e.remove(),4000)}
 async function download(s){const hasC=s.cr.length>0;let csv;const f=v=>v==null||!fin(v)?'':(+v.toFixed(3));
 if(hasC){const t=new Map(s.laps.map(l=>[l.lap,l.t]));csv='lap,corner,lap_time,min_speed,brake_m,steer_deg,lat_g\n'+s.cr.filter(r=>t.has(r.lap)).map(r=>[r.lap,r.corner,f(t.get(r.lap)),f(r.v),f(r.b),f(r.st),f(r.g)].join(',')).join('\n')+'\n'}
