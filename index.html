@@ -167,6 +167,7 @@ table.cmp{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .shg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;margin-top:16px;align-items:start}@media(max-width:760px){.shg{grid-template-columns:1fr}}
 .sc{background:var(--sf);border:1px solid var(--ln);border-left:4px solid var(--s2);border-radius:10px;padding:12px 14px}.sc+.sc{margin-top:10px}.sch{display:flex;align-items:center;gap:10px}.sch b{font-size:18px}.scn{width:24px;height:24px;border-radius:50%;background:var(--s2);color:#fff;font-weight:800;display:grid;place-items:center;font-size:13px}.scl{margin-left:auto;font:700 16px var(--mono,'JetBrains Mono'),monospace;color:var(--s2)}.scs{margin:6px 0 4px;color:var(--mu);font-size:14px}.sc ul{margin:4px 0 0;padding-left:18px}.sc li{font-size:14.5px;margin:3px 0}.shk{margin:14px 0 0}
 .tmr{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--ln)}.evh+.tmr{margin-top:8px}.tmr>div{flex:1;min-width:0}.tmr b{display:block;font-weight:600}.tmr span{color:var(--mu);font-size:13.5px}
+.livedot{width:10px;height:10px;border-radius:50%;background:#e5322d;box-shadow:0 0 0 3px rgba(229,50,45,.2)}.chk{display:flex;align-items:center;gap:6px;font-size:14.5px}
 .stint .sum{margin:10px 0 0}.stint .ign{color:var(--mu);font-size:14px;margin:4px 0 0}
 
 /* ---- charts ---- */
@@ -263,7 +264,7 @@ html.pdf .chan{grid-template-columns:minmax(0,1fr)}
 <div class="tools"><button id="theme" aria-label="Switch between light and dark">Theme</button></div></div></header><main>
 <div id="ctrlHold" hidden><div class="card ctrl">
 <div class="row"><label class="btn">Load lap file<input id="file" type="file" accept=".csv,.txt,.tsv,text/csv,text/plain,.xlsx,.xlsm,.xls" multiple hidden></label>
-<button class="alt" id="paste">Paste data</button><button class="alt" id="demo">Open sample sessions</button></div>
+<button class="alt" id="paste">Paste data</button><button class="alt" id="demo">Open sample sessions</button><button class="alt" id="live">Start live race</button></div>
 <details class="set"><summary>Settings</summary>
 <div class="row" style="margin-top:8px"><label class="f2">Car speeds up as fuel burns (s per lap)<input id="fuel" type="number" step="0.01" value="0.03"></label>
 <label class="f2">Pit stop costs you (s)<input id="thr" type="number" step="1" value="" placeholder="25"></label>
@@ -579,7 +580,7 @@ const LAB={high:'▲ Act now',med:'◆ Watch',ok:'✓ OK'},CL={high:'▲ Problem
 /* ---------- state ---------- */
 let sessions=[],tab='call',cmpSt={A:null,B:null},cmpOv={A:null,B:null},OV=null,printing=false,view='single',cur=0,A=0,B=1,lastMsg='',msgs=[],imp=null,queue=[],armed=false;
 const fuel=()=>+$('#fuel').value||0,thr=n=>{const v=+$('#thr').value;return v>0?v:25};
-const remOf=s=>{const t=String(s.meta.remaining??'').trim();if(t==='')return null;const v=parseInt(t,10);return v>=0?v:null};
+const remOf=s=>{if(s.meta.live&&+s.meta.total>0)return Math.max(0,+s.meta.total-Math.max(0,...s.laps.map(l=>l.lap)));const t=String(s.meta.remaining??'').trim();if(t==='')return null;const v=parseInt(t,10);return v>=0?v:null};
 const FUELP={club:['Club or touring car',.02],gt:['GT car',.035],f1:['Formula 1',.06]};
 function fuelFor(s){const p=s.meta.fuelPreset;if(p&&FUELP[p])return{v:FUELP[p][1],src:FUELP[p][0]+' rate'};if(p==='set')return{v:fuel(),src:'from Settings'};
 const top=s.tr?Math.max(...Object.values(s.tr.laps).map(l=>Math.max(...l.v.filter(fin)))):0;return top>=295?{v:FUELP.f1[1],src:`Formula 1 rate, chosen because the car reaches ${spd(top)}`}:{v:fuel(),src:'from Settings'}}
@@ -681,13 +682,26 @@ function stintsCard(s,a){const R=stintRows(s,a);if(R.length<2)return'';const cs=
 let sum='';if(cs.length>=2){const by=cs.map(c=>{const q=R.filter(r=>r.t.c===c);return{c,rate:mean(q.map(r=>r.rate)),pace:mean(q.map(r=>r.pace))}}),lw=by.reduce((x,y)=>y.rate<x.rate?y:x),fp=by.reduce((x,y)=>y.pace<x.pace?y:x);
 sum=`<p style="margin:12px 0 0">Tyre loss per lap: ${by.map(b=>`${b.c} ${b.rate.toFixed(2)} s`).join(', ')}. ${lw.c} wore the slowest${fp.c!==lw.c?`, while ${fp.c} was ${(by.filter(b=>b!==fp).reduce((x,y)=>Math.min(x,y.pace),1e9)-fp.pace).toFixed(2)} s per lap quicker on fuel-corrected pace`:` and was also the quickest on fuel-corrected pace`}.</p>`}
 return`<h2>Stints and tyres</h2><div class="card tbl"><table class="cmp"><tr><th>Stint</th><th>Tyres</th><th>Clean laps</th><th>Tyre loss per lap</th><th>Fuel-corrected pace</th><th>Best lap</th></tr>${R.map(r=>`<tr${r.t.i===a.run.idx?' class="on"':''}><td>${r.t.i===a.run.idx?'<b>':''}Stint ${r.t.i+1}${r.t.i===a.run.idx?'</b>':''} <small style="color:var(--mu)">laps ${r.t.first}–${r.t.last}</small></td><td>${r.t.c?esc(r.t.c):'–'}${r.t.age0>=2?` <small style="color:var(--mu)">(used, ${r.t.age0} laps old)</small>`:r.t.age0!=null?' <small style="color:var(--mu)">(new)</small>':''}</td><td>${r.t.n}</td><td>${r.rate.toFixed(2)} s</td><td>${fmtT(r.pace)}</td><td>${fmtT(r.best)}</td></tr>`).join('')}</table>${sum}<p class="hint" style="margin-top:8px">Fuel-corrected pace is the average lap with the fuel burned off added back, so stints early and late in the race compare fairly.</p></div>`}
+
+/* ---- live race: lap times typed in as the race runs ---- */
+function liveCard(s){const n=s.laps.length?Math.max(...s.laps.map(l=>l.lap)):0,tot=+s.meta.total||0,last=[...s.laps].sort((a,b)=>b.lap-a.lap).slice(0,6),cm=s.meta.liveC||'';
+return`<section class="card live noprint" style="margin-top:18px"><div class="evh"><span class="livedot" aria-hidden="true"></span><b>Live race</b><span>${n?`${n} lap${n==1?'':'s'} in${tot?` of ${tot}`:''}`:'No laps yet'}</span></div>
+<div class="row" style="margin-top:12px;align-items:flex-end"><label class="fld" style="flex:2 1 180px">Lap ${n+1} time<input id="liveT" type="text" inputmode="decimal" autocomplete="off" placeholder="1:32.415 or 92.415"></label>
+<label class="fld" style="flex:1 1 120px">Tyres<select id="liveC">${[['','Not set'],['Soft','Soft'],['Medium','Medium'],['Hard','Hard'],['Inter','Inter'],['Wet','Wet']].map(([v,l])=>`<option value="${v}" ${v===cm?'selected':''}>${l}</option>`).join('')}</select></label>
+<label class="chk" style="flex:0 0 auto;padding-bottom:10px"><input type="checkbox" id="liveP"> Pitted this lap</label><button id="liveAdd">Add lap</button>${n?'<button class="alt" id="liveUndo">Undo last lap</button>':''}</div>
+${s._liveErr?`<p class="hint" style="color:var(--bad,#c62828)" role="alert">${esc(s._liveErr)}</p>`:''}
+<div class="row" style="margin-top:10px;align-items:center"><label class="inl">Race length<input id="liveTot" type="number" min="1" step="1" value="${tot||''}" placeholder="laps" style="width:90px"></label>${last.length?`<div class="chips" style="margin:0">${last.map(l=>`<span class="chip" style="cursor:default">L${l.lap} ${fmtS(l.t)}${l.pit?' · pit':''}${l.c?' · '+esc(l.c):''}</span>`).join('')}</div>`:''}</div>
+<p class="hint" style="margin:10px 0 0">Type each lap time and press Enter. Tick <b>Pitted this lap</b> on the in-lap, and change <b>Tyres</b> when new ones go on, so the stint starts again. ${n<5?`The race call starts after 5 laps (${5-n} to go).`:'The race call below updates with every lap.'}</p></section>`}
+function liveAdd(s){const e=$('#liveT'),t=parseLapTime(e.value,'auto',false);if(!fin(t)||t<=0||t>3600){s._liveErr='Type a lap time such as 1:32.415 or 92.415.';render();focusLive();return}
+s._liveErr='';const lap=(s.laps.length?Math.max(...s.laps.map(l=>l.lap)):0)+1,o={lap,t};if(s.meta.liveC)o.c=s.meta.liveC;if($('#liveP').checked)o.pit=true;s.laps.push(o);delete s._mb;delete s._cb;save(s);render();focusLive()}
+const focusLive=()=>{const e=$('#liveT');if(e)e.focus()};
 function single(a){const s=sessions[cur],o={high:0,med:1,ok:2},c=call(a);a.F.sort((x,y)=>o[x.sev]-o[y.sev]);
 const top=a.F.filter(f=>f.sev!='ok').slice(0,2).map(f=>f.t);
 lastMsg=`Pacely (${s.name}): ${c.head}.`+(top.length?' '+top.join('. ')+'.':' No other problems found.');
 const cons=a.resid<.15?['Good','ok']:a.resid<.3?['Fair','med']:['Poor','high'];
 const ph=`<div class="printhead"><h1>Pacely report</h1><p><b>${esc(s.name)}</b> · ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}${condText(s,a.st.c)?' · '+esc(condText(s,a.st.c)):''}</p><p>Stint laps ${a.st.first}–${a.st.last} · fuel gain ${a.fuel} s/lap · pit stop cost ${a.thr.toFixed(0)} s</p></div>`,
 hero=`<section class="call ${c.sev}" aria-live="polite"><div class="k">${esc(s.name)}</div><div class="big">${esc(c.head)}</div><p class="why">${esc(c.why)}</p><p class="conf">Confidence: ${a.conf} · fuel effect ${a.fuel} s per lap (${esc(a.fuelSrc||'from Settings')})</p>
-<div class="row noprint"><div class="inl"><label for="rem">Laps to go</label><input type="number" id="rem" min="0" step="1" value="${esc(s.meta.remaining??'')}" placeholder="0 = finished"></div><button id="copy">Copy message for the pit wall</button></div></section>
+<div class="row noprint">${s.meta.live&&+s.meta.total>0?`<div class="inl"><label>Laps to go</label><b style="font-size:20px">${a.rem}</b></div>`:`<div class="inl"><label for="rem">Laps to go</label><input type="number" id="rem" min="0" step="1" value="${esc(s.meta.remaining??'')}" placeholder="0 = finished"></div>`}<button id="copy">Copy message for the pit wall</button></div></section>
 <div class="tiles"><div class="tile"><div class="n">${Math.max(a.rateAvg,0).toFixed(2)}<small> s</small></div><div class="l">Tyre loss per lap</div></div>
 ${a.rem===0?`<div class="tile"><div class="n">${isFinite(a.optLen)?a.optLen:'–'}<small> laps</small></div><div class="l">Best stint on this set (on wear alone)</div></div>`:`<div class="tile"><div class="n">${a.left.low===Infinity?'–':fmtL(a.left.low,a.left.high)}<small> laps</small></div><div class="l">Before you should pit</div></div>`}
 <div class="tile"><div class="n"><span class="tag ${cons[1]}">${cons[0]}</span></div><div class="l">Lap consistency (±${a.resid.toFixed(2)} s)</div></div></div>`,
@@ -703,7 +717,7 @@ note=s.note?`<p class="foot">${esc(s.note)}</p>`:'',
 disc=`<p class="foot">Pacely uses simple rules to flag trends, not certainties. Always confirm with driver feedback and the race situation.</p>`,
 prt=`<div class="ctl noprint"><button class="alt sm" id="print">Save as PDF</button></div>`;
 if(printing)return ph+hero+`<div class="dash"><div class="colL">${finds}</div><div class="colR">${chart}${corners}</div></div>`+stintsCard(s,a)+raceCard(s,a)+note+disc;
-const P={call:ph+readn+hero+`<div class="dash"><div class="colL">${finds}</div><div class="colR">${chart}${corners}</div></div>`+stintsCard(s,a)+raceCard(s,a)+fine+ai+prt+disc,
+const P={call:ph+(s.meta.live?liveCard(s):'')+readn+hero+`<div class="dash"><div class="colL">${finds}</div><div class="colR">${chart}${corners}</div></div>`+stintsCard(s,a)+raceCard(s,a)+fine+ai+prt+disc,
 files:filesPane(s)};
 return `<div class="tabpane" role="tabpanel">${P[tab]||P.call}</div>`}
 function filesPane(s){const note=s.note?`<p class="foot">${esc(s.note)}</p>`:'',disc=`<p class="foot">Pacely uses simple rules to flag trends, not certainties. Always confirm with driver feedback and the race situation.</p>`;
@@ -1032,7 +1046,7 @@ ${rows.length>1?`<h2>Sessions ranked by best lap${evN>1&&sessions.length>evN?` <
 <div class="ctl noprint"><button class="alt sm" id="print">Save as PDF</button></div>${q.s.note&&!(!sec&&/sector/.test(q.s.note))?`<p class="foot">${esc(q.s.note)}</p>`:''}</div>`}
 function render(){const el=$('#out'),hold=$('#ctrlHold'),ctrl=document.querySelector('.card.ctrl');hold.append(ctrl);$('#navHold').innerHTML=sessions.length?navHTML():'';view=tab==='compare'?'compare':'single';let h=imp?importCard():'';
 if(!sessions.length){el.innerHTML='<div id="dataSlot"></div>'+h+(msgs.length&&!imp?`<div class="notice ${msgs.some(m=>m.bad)?'bad':''}" role="alert">${msgs.map(m=>esc(m.t)).join('<br>')}</div>`:'')+(imp?'':EMPTY+(TEAM.list&&TEAM.list.length?teamCard():''));el.querySelector('#dataSlot').append(ctrl);wire();return}
-if(tab==='call'&&sessions[cur]&&sessions[cur].laps.length<5)tab='quali';let body;try{xwSet();for(const k in XH)delete XH[k];body=tab==='quali'?quali():tab==='tele'?tele():tab==='files'&&!printing?`<div class="tabpane" role="tabpanel">${filesPane(sessions[cur])}</div>`:tab==='compare'?(sessions.length>1?`<div class="tabpane">${compare()}</div>`:`<div class="empty"><b>Load a second session to compare</b>Go to the Data tab and load another file, or the sample sessions.</div>`):single(analyse(sessions[cur]))}catch(e){body=errHTML('Could not analyse this session',e.message)+detailsBlock(sessions[cur],true)}
+if(tab==='call'&&sessions[cur]&&sessions[cur].laps.length<5&&!sessions[cur].meta.live)tab='quali';let body;try{xwSet();for(const k in XH)delete XH[k];body=tab==='call'&&sessions[cur].meta.live&&sessions[cur].laps.length<5?`<div class="tabpane" role="tabpanel">${liveCard(sessions[cur])}</div>`:tab==='quali'?quali():tab==='tele'?tele():tab==='files'&&!printing?`<div class="tabpane" role="tabpanel">${filesPane(sessions[cur])}</div>`:tab==='compare'?(sessions.length>1?`<div class="tabpane">${compare()}</div>`:`<div class="empty"><b>Load a second session to compare</b>Go to the Data tab and load another file, or the sample sessions.</div>`):single(analyse(sessions[cur]))}catch(e){body=errHTML('Could not analyse this session',e.message)+detailsBlock(sessions[cur],true)}
 el.innerHTML=h+bar()+(tab==='files'?'<div id="dataSlot"></div>':'')+body;const sl=el.querySelector('#dataSlot');if(sl)sl.append(ctrl);wire()}
 function wire(){const el=$('#out');
 const fx=$('#fixcols');if(fx)fx.onclick=()=>{const q=SRC.get(sessions[cur].id);if(!q)return;const q2={...q,replaceId:sessions[cur].id,manual:true,pick:false,remember:true,err:''};queue.unshift(q2);imp=q2;render();window.scrollTo({top:0})};
@@ -1044,7 +1058,7 @@ const cl=$('#clr');if(cl)cl.onclick=()=>{if(armed!=='clr'){armed='clr';render();
 const sA=$('#selA'),sB=$('#selB');if(sA){sA.onchange=()=>{A=+sA.value;cmpSt.A=null;cmpOv.A=null;render()};sB.onchange=()=>{B=+sB.value;cmpSt.B=null;cmpOv.B=null;render()};const tA=$('#stA'),tB=$('#stB');if(tA)tA.onchange=()=>{cmpSt.A=+tA.value;render()};if(tB)tB.onchange=()=>{cmpSt.B=+tB.value;render()}}
 const s=sessions[cur],bind=(id,fn)=>{const e=$('#'+id);if(e)e.onchange=()=>{fn(e.value.trim?e.value.trim():e.value);save(s);render()}};
 if(s&&view==='single'){bind('rem',v=>s.meta.remaining=v);bind('asof',v=>s.meta.asOf=v);bind('fuelp',v=>s.meta.fuelPreset=v);bind('ign',v=>{s.meta.ignore=v;s.meta.stint=null});bind('spl',v=>{s.meta.splits=v;s.meta.stint=null});bind('sname',v=>s.name=v||s.name);bind('cmpd',v=>s.meta.compound=v);bind('ttemp',v=>s.meta.trackTemp=v);bind('atemp',v=>s.meta.airTemp=v)}
-const pr=$('#print');if(pr)pr.onclick=printReport;const sg=$('#sheetGo');if(sg)sg.onclick=()=>{sheetFor=sessions[cur].id;render();scrollTo(0,0)};const sb=$('#sheetBack');if(sb)sb.onclick=()=>{sheetFor=null;render()};
+const pr=$('#print');if(pr)pr.onclick=printReport;if(s&&s.meta.live){const la=$('#liveAdd');if(la)la.onclick=()=>liveAdd(s);const lt=$('#liveT');if(lt)lt.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();liveAdd(s)}};const lu=$('#liveUndo');if(lu)lu.onclick=()=>{const m=Math.max(...s.laps.map(l=>l.lap));s.laps=s.laps.filter(l=>l.lap!==m);delete s._mb;save(s);render();focusLive()};const lc=$('#liveC');if(lc)lc.onchange=()=>{s.meta.liveC=lc.value;save(s);render();focusLive()};const lo=$('#liveTot');if(lo)lo.onchange=()=>{s.meta.total=lo.value;save(s);render()}}const sg=$('#sheetGo');if(sg)sg.onclick=()=>{sheetFor=sessions[cur].id;render();scrollTo(0,0)};const sb=$('#sheetBack');if(sb)sb.onclick=()=>{sheetFor=null;render()};
 const oA=$('#ovA'),oB=$('#ovB');if(oA){oA.onchange=()=>{cmpOv.A=+oA.value;render()};oB.onchange=()=>{cmpOv.B=+oB.value;render()}}
 wireXH();const tl=$('#tlap');if(tl)tl.onchange=()=>{teleSel[sessions[cur].id]=+tl.value;render()};
 document.querySelectorAll('[data-gos]').forEach(b=>b.onclick=()=>{cur=+b.dataset.gos;render()});document.querySelectorAll('[data-mapm]').forEach(b=>b.onclick=()=>{mapMode=b.dataset.mapm;render()});document.querySelectorAll('[data-godemo]').forEach(b=>b.onclick=()=>$('#demo').click());
@@ -1195,6 +1209,7 @@ quali:{what:'this qualifying session',facts:'Qualifying facts',label:'Debrief th
 tele:{what:'this lap',facts:'Lap telemetry facts',label:'Debrief this lap',explain:"Write a short engineer's debrief of this lap: where it is strong, where it loses time against the reference lap and why, and the single most useful change for the driver. Under 110 words.",chips:['Where am I losing time?','How is my braking?','What should I tell the driver?'],ph:'Ask about this lap'}};
 
 /* ---------- wiring ---------- */
+$('#live').onclick=()=>{msgs=[];armed=false;const d=new Date(),s=mk(`Live race ${d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} ${d.toTimeString().slice(0,5)}`,[],[]);s.meta.live=true;s.evName='Live races';addSession(s);tab='call';render();focusLive()};
 $('#demo').onclick=()=>{msgs=[];armed=false;const first=sessions.length;SAMPLES.forEach(x=>{const s=toSession(demo(x.o),x.name,{sample:true});addSession(s)});addSession(raceDemo());addSession(qualiDemo());addSession(teleDemo('8 Telemetry, driver A',41,{coast:[0,20,0,20,20,20]}));addSession(teleDemo('9 Telemetry, driver B',43,{dv:[2,0,-1,0,-5,0],dec:[0,0,9,0,0,0],ramp:[40,40,55,40,75,40],lug:[0,0,0,0,1,0]}));
 A=first;B=first+1;cmpSt={A:null,B:null};cur=first;view='single';tab='call';render()};
 {const ov=$('#dropov');let dc=0;const hasF=e=>e.dataTransfer&&[...e.dataTransfer.types].includes('Files');

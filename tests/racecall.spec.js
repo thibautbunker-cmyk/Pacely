@@ -106,3 +106,35 @@ test('single-car files show no race picture', async ({ page }) => {
   await openApp(page); await openSamples(page); await pick(page, '6 Race'); await tab(page, 'call');
   await expect(page.locator('h2', { hasText: 'Race picture' })).toHaveCount(0);
 });
+
+test('live race: lap times typed in update the race call every lap', async ({ page }) => {
+  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  await openApp(page);
+  await page.click('#live');
+  await expect(page.locator('.live')).toContainText('No laps yet');
+  const add = async t => { await page.fill('#liveT', t); await page.press('#liveT', 'Enter'); };
+  await page.selectOption('#liveC', 'Soft');
+  await add('1:32.40'); await add('92.10'); await add('1:32.2');
+  await expect(page.locator('.live')).toContainText('The race call starts after 5 laps (2 to go)');
+  expect(await page.evaluate(() => document.activeElement.id)).toBe('liveT');
+  await add('nonsense');
+  await expect(page.locator('.live [role=alert]')).toBeVisible();
+  for (let i = 4; i <= 12; i++) await add((92 + 0.25 * i).toFixed(3));
+  await expect(page.locator('.call .big')).toBeVisible();
+  await page.fill('#liveTot', '40'); await page.locator('#liveTot').dispatchEvent('change');
+  await expect(page.locator('.call')).toContainText('Laps to go');
+  await expect(page.locator('.call')).toContainText('28');
+  const h1 = await page.evaluate(() => call(analyse(sessions[cur])).head);
+  expect(h1).toMatch(/pit|Stop needed/i);
+  // pit stop and new tyres start a new stint
+  await page.check('#liveP'); await add('1:58.0');
+  await page.selectOption('#liveC', 'Medium');
+  for (let i = 0; i < 6; i++) await add((92.4 + 0.05 * i).toFixed(3));
+  const st = await page.evaluate(() => runLaps(sessions[cur]).stints.map(t => [t.first, t.last, t.c]));
+  expect(st[st.length - 1]).toEqual([15, 19, 'Medium']);
+  await page.click('#liveUndo');
+  expect(await page.evaluate(() => sessions[cur].laps.length)).toBe(18);
+  await page.reload();
+  expect(await page.evaluate(() => sessions[cur].meta.live)).toBe(true);
+  expect(errs).toEqual([]);
+});
