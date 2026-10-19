@@ -9,7 +9,7 @@ Everything runs in the browser from a single file, `index.html`. Sessions are sa
 - Load CSV/TSV/TXT files, drag and drop, or paste straight from Excel
 - Reads lap-time lists, lap-and-corner tables, or raw telemetry over time
 - Race call: tyre loss per lap, pit window, laps-to-go check, corner-by-corner problems
-- Qualifying (beta): runs, push laps, where the tyres peak
+- Qualifying: runs, push laps, where the tyres peak, and an ideal lap from sector times (S1, S2, S3 columns)
 - Compare two sessions side by side
 - Print or save a report as PDF, download a session as CSV
 - Optional AI explanation of a session (see below)

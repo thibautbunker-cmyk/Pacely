@@ -305,6 +305,12 @@ stint(1,14,92.4,.06,9);laps[0].t+=4.6;
 laps.push({lap:15,t:92.3+9.2});laps.push({lap:16,t:92.1+16.4});
 stint(17,14,91.3,.05,8);
 return mk('6 Race with pit stop',laps,[],{sample:true})}
+function qualiDemo(){const r=rng(17),B=[30.42,38.15,23.08],laps=[];let lap=0;
+const add=v=>{const s=v.map(x=>+x.toFixed(3));lap++;laps.push({lap,t:s.reduce((a,b)=>a+b,0),s})};
+[[.25,4],[.05,4],[-.15,3]].forEach(([evo,n])=>{add(B.map((b,i)=>b*(i==0?1.22:1.08)));
+for(let k=1;k<=n;k++){const ty=k==2?0:k==1?.12:.07*(k-2);add(B.map((b,i)=>b+(evo+ty)/3+(r()-.5)*(i==1?.5:.12)))}
+add(B.map((b,i)=>b*(i==2?1.25:1.06)))});
+return mk('7 Qualifying with sectors',laps,[],{sample:true})}
 const SAMPLES=[
 {name:'1 Baseline setup',o:{}},
 {name:'2 Softer front springs',o:{us3:.008,us5:.006,deg:.12,seed:11}},
@@ -324,7 +330,7 @@ const save=s=>{if(s&&!s.sample)DB.put(s)};
 /* ---------- CSV reading ---------- */
 const num=(v,dec)=>{if(v==null)return NaN;let s=String(v).trim();if(s==='')return NaN;if(dec)s=s.replace(',','.');return Number(s)};
 function parseLapTime(v,unit,dec){let s=String(v==null?'':v).trim();if(!s)return NaN;s=s.replace(/\s*(seconds|secs|sec|s)$/i,'').replace(/(\d)['’](\d)/,'$1:$2').replace(/["”]$/,'').trim();
-if(unit==='mmss'||(unit==='auto'&&/^\d+:\d/.test(s))){let m=s.match(/^(\d+):(\d{1,2}(?:[.,]\d+)?)$/);if(m)return +m[1]*60+ +m[2].replace(',','.');m=s.match(/^(\d+):(\d+):(\d+(?:[.,]\d+)?)$/);if(m)return +m[1]*3600+ +m[2]*60+ +m[3].replace(',','.');return NaN}
+if((unit==='mmss'||unit==='auto')&&/^\d+:\d/.test(s)){let m=s.match(/^(\d+):(\d{1,2}(?:[.,]\d+)?)$/);if(m)return +m[1]*60+ +m[2].replace(',','.');m=s.match(/^(\d+):(\d+):(\d+(?:[.,]\d+)?)$/);if(m)return +m[1]*3600+ +m[2]*60+ +m[3].replace(',','.');return NaN}
 const n=num(s,dec);return unit==='ms'?n/1000:n}
 function detectDelim(text){const lines=text.slice(0,20000).split(/\r?\n/).filter(l=>l.trim()).slice(0,60);let best=',',bs=0;
 for(const d of [',',';','\t']){const cnt={};lines.forEach(l=>{const c=l.split(d).length-1;if(c>0)cnt[c]=(cnt[c]||0)+1});let sc=0,top=0;for(const[c,n]of Object.entries(cnt)){if(n>top||(n==top&&+c>sc)){top=n;sc=+c}}const score=top*(sc>0?1:0)*Math.min(sc,3);if(score>bs){bs=score;best=d}}return best}
@@ -343,7 +349,7 @@ else if(d>=1&&ratio(rows[d-1])<.5&&rows[d-1].length>=w*.8){names=rows[d-1]}
 else names=rows[d].map((_,i)=>'Column '+(i+1));
 while(names.length<w)names.push('Column '+(names.length+1));
 return{names:names.slice(0,w).map(s=>String(s).trim()||'(blank)'),units:units&&units.slice(0,w).map(s=>String(s).trim()),data:rows.slice(d).filter(r=>r.length>=Math.max(2,w*.6))}}
-const EXACT=['lap','corner','lap_time','min_speed','brake_m','steer_deg','lat_g'];
+const EXACT=['lap','corner','lap_time','min_speed','brake_m','steer_deg','lat_g'],SECK=['sec1','sec2','sec3','sec4'];
 function guess(names,units,data,dec){const L=names.map(s=>s.toLowerCase().replace(/[^a-z0-9/²]+/g,' ').trim()),U=(units||[]).map(s=>(s||'').toLowerCase());
 const find=(...res)=>{for(const re of res){const i=L.findIndex(s=>re.test(s));if(i>=0)return i}return -1};
 const lower=names.map(s=>s.toLowerCase());
@@ -354,11 +360,12 @@ time:find(/^time( s| ms| sec| seconds)?$/,/^elapsed/,/^session time/,/^timestamp
 latG:find(/lat.*acc/,/lat.* g$/,/^g ?lat/,/^glat/,/lateral/,/acc.*lat/),steer:find(/steer/),brake:find(/brake.*(press|pos)/,/brake/)};
 m.minSpeed=find(/^min.*speed/,/^apex.*speed/);m.brakeM=find(/brake.*(point|dist|m$)/);m.steerDeg=m.steer;
 const uniq=i=>{const v=data.slice(0,3000).map(r=>String(r[i]==null?'':r[i]).trim()).filter(Boolean);return v.length?new Set(v).size/v.length:1};
-if(m.lapTime<0||(m.time<0&&true)){}
-if(m.lapTime<0){let best=-1,bs=1e9;names.forEach((n,i)=>{if(i===m.lap||i===m.time||i===m.speed)return;const v=data.slice(0,400).map(r=>parseLapTime(r[i],'auto',dec)).filter(x=>fin(x));if(v.length<Math.max(5,data.slice(0,400).length*.8))return;const mu=mean(v);if(!(mu>15&&mu<900))return;const sd=Math.sqrt(mean(v.map(x=>(x-mu)*(x-mu))));const cv=sd/mu;if(cv<.25&&cv<bs){bs=cv;best=i}});if(best>=0)m.lapTime=best}
+const secI=[];L.forEach((s,i)=>{const x=s.match(/^(?:s|sec|sector|sektor|secteur|settore|split) ?([1-9])(?: time| tijd| zeit)?$/);if(x&&!secI.some(z=>z[0]===+x[1]))secI.push([+x[1],i])});secI.sort((a,b)=>a[0]-b[0]);
+SECK.forEach((k,j)=>{m[k]=secI[j]&&secI[j][0]===j+1?secI[j][1]:-1});
+if(m.lapTime<0){let best=-1,bs=1e9;names.forEach((n,i)=>{if(i===m.lap||i===m.time||i===m.speed||secI.some(z=>z[1]===i))return;const v=data.slice(0,400).map(r=>parseLapTime(r[i],'auto',dec)).filter(x=>fin(x));if(v.length<Math.max(5,data.slice(0,400).length*.8))return;const mu=mean(v);if(!(mu>15&&mu<900))return;const sd=Math.sqrt(mean(v.map(x=>(x-mu)*(x-mu))));const cv=sd/mu;if(cv<.25&&cv<bs){bs=cv;best=i}});if(best>=0)m.lapTime=best}
 if(m.lap<0){names.forEach((n,i)=>{if(m.lap>=0||i===m.lapTime||i===m.time)return;const v=data.slice(0,300).map(r=>num(r[i],dec));if(v.length>=5&&v.every(fin)&&v.every((x,k)=>k===0||x===v[k-1]+1)&&v[0]<=2)m.lap=i})}
 let shape;if(m.corner>=0&&m.lap>=0&&m.lapTime>=0)shape='table';else if(m.time>=0&&m.speed>=0&&(m.lapTime<0||(data.length>500&&uniq(m.lapTime)<.2)))shape='series';else shape='laps';
-if(shape==='laps'&&m.lapTime<0&&m.time>=0)m.lapTime=m.time;
+if(shape==='laps'&&m.lapTime<0&&m.time>=0&&m.sec1<0)m.lapTime=m.time;
 if(shape==='table'){if(m.minSpeed<0)m.minSpeed=m.speed;}
 const col=i=>i>=0?data.map(r=>num(r[i],dec)).filter(fin):[];
 const spT=((U[m.speed]||'')+' '+(names[m.speed]||'')).toLowerCase(),gT=((U[m.latG]||'')+' '+(names[m.latG]||'')).toLowerCase(),dT=((U[m.dist]||'')+' '+(names[m.dist]||'')).toLowerCase();
@@ -367,7 +374,7 @@ const gc=col(shape==='table'?m.latG:m.latG);if(/m\/s|ms2|m s/.test(gT)||(gc.leng
 const dc=col(m.dist);if(/\bkm\b|\(km\)|\[km\]/.test(dT)||(dc.length&&Math.max(...dc.map(Math.abs))<60))u.dist='km';
 const tc=col(m.time);if(tc.length>2){const dts=[];for(let i=1;i<Math.min(tc.length,2000);i++){const d=tc[i]-tc[i-1];if(d>0)dts.push(d)}if(med(dts)>=2)u.time='ms'}
 return{shape,map:m,units:u,exact:false}}
-const FIELDS={laps:[['lap','Lap number',0,'If your file has no lap column, laps are numbered 1, 2, 3 in order'],['lapTime','Lap time',1]],
+const FIELDS={laps:[['lap','Lap number',0,'If your file has no lap column, laps are numbered 1, 2, 3 in order'],['lapTime','Lap time',1,'Or leave it as none to add up the sector times'],['sec1','Sector 1',0,'Sector times give you an ideal lap in Qualifying'],['sec2','Sector 2',0],['sec3','Sector 3',0],['sec4','Sector 4',0]],
 table:[['lap','Lap number',1],['corner','Corner name',1],['lapTime','Lap time',1],['minSpeed','Minimum speed',0],['brakeM','Braking point (metres)',0],['steerDeg','Steering angle',0],['latG','Lateral g',0]],
 series:[['time','Time',1],['lap','Lap number',0,'Or use distance below if it resets every lap'],['dist','Distance',0],['speed','Speed',1],['latG','Lateral acceleration',0],['steer','Steering angle',0],['brake','Brake pressure or position',0]]};
 const SHAPES={laps:'Lap times only',table:'Lap and corner table',series:'Telemetry over time'};
@@ -380,9 +387,13 @@ const SPF={kmh:1,mph:1.609344,ms:3.6};
 function build(imp){const{data,map,units,shape,dec}=imp,name=imp.name.replace(/\.[^.]+$/,'');
 const need=(k,label)=>{if(!(map[k]>=0))throw new Error(`Choose a column for "${label}".`)};
 const cell=(r,k)=>map[k]>=0?num(r[map[k]],dec):NaN;
-if(shape==='laps'){need('lapTime','Lap time');const laps=[];let n=0;const lu=resolveLT(data,map.lapTime,units.lapTime,dec);
-for(const r of data){const t=parseLapTime(r[map.lapTime],lu,dec);if(!fin(t)||t<=0)continue;n++;const lap=map.lap>=0?num(r[map.lap],dec):n;if(!fin(lap))continue;laps.push({lap:Math.round(lap),t})}
-if(laps.length<3)throw new Error(`Found only ${laps.length} usable lap times. Pacely needs at least 3.`);return mk(name,laps,[])}
+if(shape==='laps'){const SK=SECK.filter(k=>map[k]>=0);if(!SK.length)need('lapTime','Lap time');const laps=[];let n=0,off=0,both=0;
+const lu=map.lapTime>=0?resolveLT(data,map.lapTime,units.lapTime,dec):null,su=SK.map(k=>resolveLT(data,map[k],units.lapTime,dec));
+for(const r of data){const sv=SK.map((k,j)=>parseLapTime(r[map[k]],su[j],dec)),sOk=SK.length>0&&sv.every(v=>fin(v)&&v>0),sum=sOk?sv.reduce((a,b)=>a+b,0):NaN;
+const t=lu?parseLapTime(r[map.lapTime],lu,dec):sum;if(!fin(t)||t<=0)continue;n++;const lap=map.lap>=0?num(r[map.lap],dec):n;if(!fin(lap))continue;
+const o={lap:Math.round(lap),t};if(sOk){o.s=sv;if(lu){both++;if(Math.abs(sum-t)>Math.max(.05,t*.002))off++}}laps.push(o)}
+if(laps.length<3)throw new Error(`Found only ${laps.length} usable lap times. Pacely needs at least 3.`);const s=mk(name,laps,[]);
+if(both&&off>both*.3){s.laps.forEach(l=>delete l.s);s.note=`The sector times do not add up to the lap time on ${off} of ${both} laps, so Pacely ignored them. Check which columns hold the sector times and load the file again.`}return s}
 if(shape==='table'){need('lap','Lap number');need('corner','Corner name');need('lapTime','Lap time');const lu=resolveLT(data,map.lapTime,units.lapTime,dec),sf=SPF[units.speed]||1,gf=units.g==='ms2'?1/9.80665:1,rows=[];
 for(const r of data){const lap=cell(r,'lap'),t=parseLapTime(r[map.lapTime],lu,dec),c=String(r[map.corner]==null?'':r[map.corner]).trim();if(!fin(lap)||!fin(t)||!c)continue;
 const v=cell(r,'minSpeed')*sf,b=cell(r,'brakeM'),st=Math.abs(cell(r,'steerDeg')),g=Math.abs(cell(r,'latG'))*gf;
@@ -571,8 +582,10 @@ disc=`<p class="foot">Pacely uses simple rules to flag trends, not certainties. 
 prt=`<div class="ctl noprint"><button class="alt sm" id="print">Print or save as PDF</button></div>`;
 if(printing)return ph+hero+`<div class="dash"><div class="colL">${finds}</div><div class="colR">${chart}${corners}</div></div>`+note+disc;
 const P={call:ph+readn+hero+`<div class="dash"><div class="colL">${finds}</div><div class="colR">${chart}${corners}</div></div>`+fine+ai+prt+disc,
-files:`<h2>This session</h2><div class="card"><details class="set noprint" style="margin:0;border:0;padding:0"><summary>Name, tyre and temperature details</summary>${fieldsBlock(s)}</details><div class="ctl noprint" style="margin-top:12px"><button class="alt sm" id="print">Print or save as PDF</button><button class="alt sm" id="dl">Download as CSV</button><button class="alt sm" id="rm">${armed==='rm'?'Tap again to remove':'Remove this session'}</button><button class="alt sm" id="clr">${armed==='clr'?'Tap again to clear all':'Clear all sessions'}</button></div></div>${note}${disc}`};
+files:filesPane(s)};
 return `<div class="tabpane" role="tabpanel">${P[tab]||P.call}</div>`}
+function filesPane(s){const note=s.note?`<p class="foot">${esc(s.note)}</p>`:'',disc=`<p class="foot">Pacely uses simple rules to flag trends, not certainties. Always confirm with driver feedback and the race situation.</p>`;
+return `<h2>This session</h2><div class="card"><details class="set noprint" style="margin:0;border:0;padding:0"><summary>Name, tyre and temperature details</summary>${fieldsBlock(s)}</details><div class="ctl noprint" style="margin-top:12px"><button class="alt sm" id="print">Print or save as PDF</button><button class="alt sm" id="dl">Download as CSV</button><button class="alt sm" id="rm">${armed==='rm'?'Tap again to remove':'Remove this session'}</button><button class="alt sm" id="clr">${armed==='clr'?'Tap again to clear all':'Clear all sessions'}</button></div></div>${note}${disc}`}
 const MET=[['Tyre loss per lap','tyre',v=>v.toFixed(2)+' s',.01,-1],['Laps before you should pit','left',v=>v===Infinity?'No limit':v+' laps',1,1],['Lap consistency','resid',v=>'±'+v.toFixed(2)+' s',.02,-1],['Best lap','best',v=>v.toFixed(2)+' s',.05,-1],['Average lap','avg',v=>v.toFixed(2)+' s',.05,-1],['Problems found (fewer is better)','probs',v=>String(v),0,-1]];
 const TXT={tyre:(w,l,d)=>`${w} loses ${d.toFixed(2)} s less per lap to tyre wear than ${l}.`,lost:(w,l,d)=>`${w} has lost ${d.toFixed(1)} s less to tyre wear so far.`,left:(w,l,d)=>`${w} lasts ${d===Infinity?'much longer':d+' more laps'} before hitting your time-loss limit than ${l}.`,resid:(w,l,d)=>`${w} has more consistent laps than ${l} (${d.toFixed(2)} s tighter).`,best:(w,l,d)=>`${w} has the faster best lap, by ${d.toFixed(2)} s.`,avg:(w,l,d)=>`${w} has the faster average lap, by ${d.toFixed(2)} s.`,probs:(w,l,d)=>`${w} has fewer problems than ${l}.`};
 function summ(a){return{tyre:Math.max(a.rateAvg,0),lost:a.lossNow,left:a.left.low,resid:a.resid,best:Math.min(...a.lt),avg:mean(a.lt),probs:a.F.reduce((n,f)=>n+(f.sev=='high'?2:f.sev=='med'?1:0),0)}}
@@ -614,15 +627,16 @@ ${U.map(([k,l,o])=>`<div class="mrow"><span>${l}</span>${sel(`data-unit="${k}"`,
 <label class="row" style="margin-top:12px;gap:8px;font-size:15px"><input type="checkbox" id="remember" ${q.remember?'checked':''}> Remember this mapping for files with the same columns</label>
 ${q.err?`<p class="err" role="alert">${esc(q.err)}</p>`:''}
 <div class="row" style="margin-top:14px"><button id="impGo">Import</button><button class="alt" id="impSkip">Skip this file</button></div></section>`}
-const TABS=[['call','Race call'],['quali','Qualifying <i class="beta">Beta</i>'],['compare','Compare'],['files','Files']];
+const TABS=[['call','Race call'],['quali','Qualifying'],['compare','Compare'],['files','Files']];
 const fmtT=t=>{const m=Math.floor(t/60);return m+':'+(t-m*60).toFixed(2).padStart(5,'0')};
+const fmtS=t=>{if(t<60)return t.toFixed(3);const m=Math.floor(t/60);return m+':'+(t-m*60).toFixed(3).padStart(6,'0')};
 function navHTML(){return TABS.map(([k,l])=>`<button role="tab" aria-selected="${tab===k}" class="${tab===k?'on':''}" data-tab="${k}">${l}</button>`).join('')}
 function ctxHTML(){const s=sessions[cur];let ns='';try{ns=runLaps(s).stints.length}catch(e){}const best=s.laps.length?fmtT(Math.min(...s.laps.map(l=>l.t))):'–';
 return `<div class="ctx noprint"><label class="cs">Session${sessions.length>1?`<select id="selS">${sessions.map((x,i)=>`<option value="${i}" ${i==cur?'selected':''}>${esc(x.name)}</option>`).join('')}</select>`:`<b>${esc(s.name)}</b>`}</label><dl class="facts"><div><dt>Laps</dt><dd>${s.laps.length}</dd></div><div><dt>Best lap</dt><dd>${best}</dd></div>${ns?`<div><dt>Stints</dt><dd>${ns}</dd></div>`:''}${condText(s)?`<div><dt>Conditions</dt><dd class="sm">${esc(condText(s))}</dd></div>`:''}</dl></div>`}
 function bar(){const n=msgs.length?`<div class="notice ${msgs.some(m=>m.bad)?'bad':''}" role="alert">${msgs.map(m=>esc(m.t)).join('<br>')}</div>`:'';
 return `${n}${tab!=='compare'?ctxHTML():''}`}
 
-/* ---- qualifying (beta): lap times only ---- */
+/* ---- qualifying: lap times, plus sector times when the file has them ---- */
 function qAnalyse(s){const L=s.laps.filter(l=>fin(l.t)&&l.t>0).sort((a,b)=>a.lap-b.lap);
 if(L.length<3)throw new Error('Qualifying needs at least 3 lap times in the session.');
 const best=Math.min(...L.map(l=>l.t)),push=l=>l.t<=best*1.02,slow=l=>l.t>best*1.07;
@@ -631,15 +645,27 @@ for(const l of L){const brk=prev&&l.lap!==prev.lap+1;if(slow(l)||brk){cur=null}i
 runs.forEach(r=>{r.best=r.laps.reduce((a,l)=>l.t<a.t?l:a);r.pos=r.laps.indexOf(r.best)+1;r.n=r.laps.length;r.push=r.laps.filter(push).length});
 const pl=L.filter(push),bl=L.find(l=>l.t===best),avg=mean(pl.map(l=>l.t)),spread=pl.length>1?sd(pl.map(l=>l.t)):0;
 const useful=runs.filter(r=>r.n>=3),poss=useful.map(r=>r.pos).sort((a,b)=>a-b),med=poss.length?poss[Math.floor(poss.length/2)]:null;
-return{s,L,best,bl,runs,pl,avg,spread,med,push,slow}}
+return{s,L,best,bl,runs,pl,avg,spread,med,push,slow,sec:qSectors(L,bl,push)}}
+function qSectors(L,bl,push){const ns=(L.find(l=>l.s&&l.s.length)||{s:[]}).s.length,SX=L.filter(l=>l.s&&l.s.length===ns);if(ns<2||SX.length<3)return null;
+const bs=[...Array(ns)].map((_,i)=>{const b=SX.reduce((a,l)=>l.s[i]<a.s[i]?l:a);return{t:b.s[i],lap:b.lap}}),ideal=bs.reduce((a,b)=>a+b.t,0);
+const bls=bl.s&&bl.s.length===ns?bl.s:null,PS=SX.filter(push);
+const rows=bs.map((b,i)=>({i,best:b.t,bestLap:b.lap,onBest:bls?bls[i]:null,lossBest:bls?bls[i]-b.t:null,avgLoss:PS.length?mean(PS.map(l=>l.s[i]-b.t)):null,spread:PS.length>1?sd(PS.map(l=>l.s[i])):null}));
+return{ns,ideal,gap:bl.t-ideal,rows,n:SX.length,np:PS.length}}
 function qChart(a){const W=600,H=220,p=56,{L,best}=a,V=L.filter(l=>l.t<=best*1.05);if(V.length<2)return'';
 const x0=Math.min(...V.map(l=>l.lap)),x1=Math.max(...V.map(l=>l.lap)),hi=best*1.05,X=v=>p+(v-x0)/Math.max(x1-x0,1)*(W-p-10),Y=t=>H-24-(t-best)/(hi-best)*(H-40);
 const dots=V.map(l=>`<circle cx="${X(l.lap).toFixed(1)}" cy="${Y(l.t).toFixed(1)}" r="${l===a.bl?6:3.5}" fill="${a.push(l)?'var(--ac)':'var(--lnb)'}" ${l===a.bl?'stroke="var(--tx)" stroke-width="2"':''}/>`).join('');
 return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lap times, push laps in red, best lap ringed" style="width:100%;height:auto"><line x1="${p}" y1="${Y(best*1.02)}" x2="${W-10}" y2="${Y(best*1.02)}" stroke="var(--ln)" stroke-dasharray="4 4"/><text x="${p-6}" y="${Y(best)+4}" text-anchor="end" font-size="11" fill="var(--mu)">${fmtT(best)}</text><text x="${p-6}" y="${Y(hi)+4}" text-anchor="end" font-size="11" fill="var(--mu)">+5%</text><text x="${p}" y="${H-6}" font-size="11" fill="var(--mu)">Lap ${x0}</text><text x="${W-10}" y="${H-6}" text-anchor="end" font-size="11" fill="var(--mu)">Lap ${x1}</text>${dots}</svg>`}
 function quali(){let rows=[];try{rows=sessions.map((s,i)=>{try{return{i,a:qAnalyse(s)}}catch(e){return null}}).filter(Boolean)}catch(e){}
 const a=rows.find(r=>r.i===cur);if(!a)return errHTML('Could not analyse this session','Qualifying needs at least 3 lap times in the session.');
-const q=a.a,{best,runs,pl,avg,spread,med}=q;rows.sort((x,y)=>x.a.best-y.a.best);const fast=rows[0].a.best,rank=rows.findIndex(r=>r.i===cur)+1;
+const q=a.a,{best,runs,pl,avg,spread,med,sec}=q;rows.sort((x,y)=>x.a.best-y.a.best);const fast=rows[0].a.best,rank=rows.findIndex(r=>r.i===cur)+1;
 const F=[];
+if(sec){const R=sec.rows,where=R.map(r=>`S${r.i+1} on lap ${r.bestLap}`).join(', ');
+if(sec.gap>.0005)F.push({sev:sec.gap>.3?'med':'ok',t:`Ideal lap ${fmtS(sec.ideal)}, ${sec.gap.toFixed(3)} s quicker than your best`,m:`Your best sectors were ${where}. Put together, they make a lap ${sec.gap.toFixed(3)} s quicker than lap ${q.bl.lap}.`,d:sec.gap>.3?'The pace for a faster lap is already there. The job is putting the best sectors together on one lap.':'Your best lap is already close to your ideal lap. More time will have to come from the car or the line.'});
+else if(sec.gap>=-.0005)F.push({sev:'ok',t:'Your best lap is your ideal lap',m:`Lap ${q.bl.lap} has your best time in every sector.`,d:'There is nothing left to put together from this session. More time will have to come from the car or the line.'});
+const lb=R.filter(r=>r.lossBest!=null).sort((x,y)=>y.lossBest-x.lossBest)[0];
+if(lb&&lb.lossBest>.05)F.push({sev:'med',t:`Your best lap lost the most time in sector ${lb.i+1}`,m:`On lap ${q.bl.lap}, sector ${lb.i+1} was ${lb.lossBest.toFixed(3)} s slower than your best sector ${lb.i+1}, set on lap ${lb.bestLap}.`,d:`Compare laps ${q.bl.lap} and ${lb.bestLap} through sector ${lb.i+1}: braking points, line and traffic.`});
+const al=sec.np>=3?R.filter(r=>r.avgLoss!=null).sort((x,y)=>y.avgLoss-x.avgLoss)[0]:null;
+if(al&&al.avgLoss>.05&&(!lb||lb.lossBest<=.05||al.i!==lb.i))F.push({sev:al.avgLoss>.2?'med':'ok',t:`Sector ${al.i+1} is where push laps lose the most`,m:`Across ${sec.np} push laps, sector ${al.i+1} averaged ${al.avgLoss.toFixed(3)} s off its best, more than any other sector.`,d:`Start in sector ${al.i+1} next session. It has the most time to find.`})}
 const last=runs.filter(r=>r.n>=2&&r.pos===r.n&&r.push>=2);
 if(last.length)F.push({sev:'med',t:'The best lap came at the end of a run',m:'Lap times were still improving when the run finished, so one more push lap may have been faster.',d:'Next time, stay out one lap longer if the track and traffic allow it.'});
 if(med&&runs.filter(r=>r.n>=3).length>=2)F.push({sev:'ok',t:`The tyres peak around lap ${med} of a run`,m:`The best lap in each run came most often on lap ${med} of that run.`,d:med===1?'The tyres work straight away. Push from the first flying lap.':`Use ${med-1} lap${med==2?'':'s'} to bring the tyres up to temperature before pushing.`});
@@ -647,16 +673,21 @@ if(pl.length>=3){const g=avg-best;F.push({sev:g>.5?'med':'ok',t:g>.5?'The best l
 if(!F.length)F.push({sev:'ok',t:'Not enough push laps for more advice',m:'Pacely needs two or more runs, or three or more laps within 2% of the best.',d:'Load a longer session, or one that includes several runs.'});
 const tag={ok:'✓ Fine',med:'◆ Watch',high:'▲ Act now'};
 const gap=q.bl.t-fast;
-return `<div class="tabpane"><div class="notice" style="margin-top:20px"><b>Beta.</b> Qualifying uses lap times only for now. Sector times are not read yet, so there is no ideal lap.</div>
-<section class="verdict"><div class="k">${esc(q.s.name)}</div><div class="big">${fmtT(best)}</div><p>Best lap, lap ${q.bl.lap}${rows.length>1?`. ${rank===1?'Fastest of':'P'+rank+' of'} ${rows.length} loaded sessions${rank>1?`, ${gap.toFixed(3)} s off the fastest`:''}.`:'.'}</p></section>
-<div class="tiles"><div class="tile"><div class="n">${runs.length}</div><div class="l">Runs (a run is a group of laps between slow in and out laps)</div></div><div class="tile"><div class="n">${pl.length}</div><div class="l">Push laps (within 2% of the best)</div></div><div class="tile"><div class="n">${pl.length>1?'±'+spread.toFixed(2):'n/a'}<small>${pl.length>1?' s':''}</small></div><div class="l">Spread between push laps</div></div></div>
+const tiles=sec?`<div class="tile"><div class="n">${fmtS(sec.ideal)}</div><div class="l">Ideal lap (your best sectors added up)</div></div><div class="tile"><div class="n">${sec.gap>0?sec.gap.toFixed(3):'0.000'}<small> s</small></div><div class="l">Time to find from your best lap</div></div>`
+:`<div class="tile"><div class="n">${runs.length}</div><div class="l">Runs (a run is a group of laps between slow in and out laps)</div></div>`;
+const secTable=sec?`<h2>Sectors</h2><div class="card" style="padding:8px 12px"><table class="cmp"><tr><th>Sector</th><th>Best</th><th>On best lap</th><th>Lost on best lap</th><th>Push lap average off best</th></tr>${sec.rows.map(r=>`<tr><td>S${r.i+1} <small style="color:var(--mu)">(best on lap ${r.bestLap})</small></td><td class="win">${fmtS(r.best)}</td><td>${r.onBest==null?'–':fmtS(r.onBest)}</td><td>${r.lossBest==null?'–':'+'+r.lossBest.toFixed(3)}</td><td>${r.avgLoss==null?'–':'+'+r.avgLoss.toFixed(3)}</td></tr>`).join('')}<tr><td><b>Lap</b></td><td class="win">${fmtS(sec.ideal)}</td><td>${fmtS(q.bl.t)}</td><td>${sec.gap>0?'+'+sec.gap.toFixed(3):'0.000'}</td><td></td></tr></table></div>`:'';
+const anySec=rows.some(r=>r.a.sec);
+return `<div class="tabpane">${sec?'':`<div class="notice" style="margin-top:20px">${q.s.note&&/sector/.test(q.s.note)?esc(q.s.note):'No sector times in this session. Load a timing sheet with sector columns (for example S1, S2, S3) to see your ideal lap and where the time is lost.'}</div>`}
+<section class="verdict"><div class="k">${esc(q.s.name)}</div><div class="big">${fmtT(best)}</div><p>Best lap, lap ${q.bl.lap}${sec&&sec.gap>.0005?`. Ideal lap ${fmtS(sec.ideal)}`:''}${rows.length>1?`. ${rank===1?'Fastest of':'P'+rank+' of'} ${rows.length} loaded sessions${rank>1?`, ${gap.toFixed(3)} s off the fastest`:''}.`:'.'}</p></section>
+<div class="tiles">${tiles}<div class="tile"><div class="n">${pl.length}</div><div class="l">Push laps (within 2% of the best)</div></div>${sec?'':`<div class="tile"><div class="n">${pl.length>1?'±'+spread.toFixed(2):'n/a'}<small>${pl.length>1?' s':''}</small></div><div class="l">Spread between push laps</div></div>`}</div>
 <div class="fgrid"><div><h2>What to do</h2>${F.map(f=>`<article class="f ${f.sev}"><span class="tag">${tag[f.sev]}</span><h3>${esc(f.t)}</h3><p>${esc(f.m)}</p><p class="do">${esc(f.d)}</p></article>`).join('')}</div>
 <div><h2>Lap times</h2><div class="card">${qChart(q)}<p class="mu" style="margin:8px 0 0;font-size:14px">Red dots are push laps. The ringed dot is the best lap. Laps more than 5% off the best are not shown.</p></div></div></div>
+${secTable}
 <h2>Runs</h2><div class="card" style="padding:8px 12px"><table class="cmp"><tr><th>Run</th><th>Laps</th><th>Push laps</th><th>Best lap</th><th>Best on lap</th></tr>${runs.map((r,i)=>`<tr><td>${i+1}</td><td>${r.n}</td><td>${r.push}</td><td class="${r.best===q.bl?'win':''}">${fmtT(r.best.t)}</td><td>${r.pos} of ${r.n}</td></tr>`).join('')}</table></div>
-${rows.length>1?`<h2>Sessions ranked by best lap</h2><div class="card" style="padding:8px 12px"><table class="cmp"><tr><th>Pos</th><th>Session</th><th>Best lap</th><th>Gap</th></tr>${rows.map((r,k)=>`<tr data-qs="${r.i}" style="cursor:pointer"><td>${k+1}</td><td>${r.i===cur?'<b>'+esc(r.a.s.name)+'</b>':esc(r.a.s.name)}</td><td>${fmtT(r.a.best)}</td><td>${k?'+'+(r.a.best-fast).toFixed(3)+' s':'Fastest'}</td></tr>`).join('')}</table></div>`:''}</div>`}
+${rows.length>1?`<h2>Sessions ranked by best lap</h2><div class="card" style="padding:8px 12px"><table class="cmp"><tr><th>Pos</th><th>Session</th><th>Best lap</th>${anySec?'<th>Ideal lap</th>':''}<th>Gap</th></tr>${rows.map((r,k)=>`<tr data-qs="${r.i}" style="cursor:pointer"><td>${k+1}</td><td>${r.i===cur?'<b>'+esc(r.a.s.name)+'</b>':esc(r.a.s.name)}</td><td>${fmtT(r.a.best)}</td>${anySec?`<td>${r.a.sec?fmtS(r.a.sec.ideal):'–'}</td>`:''}<td>${k?'+'+(r.a.best-fast).toFixed(3)+' s':'Fastest'}</td></tr>`).join('')}</table></div>`:''}${q.s.note&&!(!sec&&/sector/.test(q.s.note))?`<p class="foot">${esc(q.s.note)}</p>`:''}</div>`}
 function render(){const el=$('#out'),hold=$('#ctrlHold'),ctrl=document.querySelector('.card.ctrl');hold.append(ctrl);$('#navHold').innerHTML=sessions.length?navHTML():'';view=tab==='compare'?'compare':'single';let h=imp?importCard():'';
 if(!sessions.length){el.innerHTML='<div id="dataSlot"></div>'+h+(msgs.length&&!imp?`<div class="notice ${msgs.some(m=>m.bad)?'bad':''}" role="alert">${msgs.map(m=>esc(m.t)).join('<br>')}</div>`:'')+(imp?'':EMPTY);el.querySelector('#dataSlot').append(ctrl);wire();return}
-if(tab==='call'&&sessions[cur]&&sessions[cur].laps.length<5)tab='quali';let body;try{body=tab==='quali'?quali():tab==='compare'?(sessions.length>1?`<div class="tabpane">${compare()}</div>`:`<div class="empty"><b>Load a second session to compare</b>Go to the Data tab and load another file, or the sample sessions.</div>`):single(analyse(sessions[cur]))}catch(e){body=errHTML('Could not analyse this session',e.message)+detailsBlock(sessions[cur],true)}
+if(tab==='call'&&sessions[cur]&&sessions[cur].laps.length<5)tab='quali';let body;try{body=tab==='quali'?quali():tab==='files'?`<div class="tabpane" role="tabpanel">${filesPane(sessions[cur])}</div>`:tab==='compare'?(sessions.length>1?`<div class="tabpane">${compare()}</div>`:`<div class="empty"><b>Load a second session to compare</b>Go to the Data tab and load another file, or the sample sessions.</div>`):single(analyse(sessions[cur]))}catch(e){body=errHTML('Could not analyse this session',e.message)+detailsBlock(sessions[cur],true)}
 el.innerHTML=h+bar()+(tab==='files'?'<div id="dataSlot"></div>':'')+body;const sl=el.querySelector('#dataSlot');if(sl)sl.append(ctrl);wire()}
 function wire(){const el=$('#out');
 const fx=$('#fixcols');if(fx)fx.onclick=()=>{const q=SRC.get(sessions[cur].id);if(!q)return;const q2={...q,replaceId:sessions[cur].id,manual:true,pick:false,remember:true,err:''};queue.unshift(q2);imp=q2;render();window.scrollTo({top:0})};
@@ -679,7 +710,7 @@ if(imp)wireImport()}
 function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.append(e);setTimeout(()=>e.remove(),4000)}
 function download(s){const hasC=s.cr.length>0;let csv;const f=v=>v==null||!fin(v)?'':(+v.toFixed(3));
 if(hasC){const t=new Map(s.laps.map(l=>[l.lap,l.t]));csv='lap,corner,lap_time,min_speed,brake_m,steer_deg,lat_g\n'+s.cr.filter(r=>t.has(r.lap)).map(r=>[r.lap,r.corner,f(t.get(r.lap)),f(r.v),f(r.b),f(r.st),f(r.g)].join(',')).join('\n')+'\n'}
-else csv='lap,lap_time\n'+s.laps.map(l=>l.lap+','+f(l.t)).join('\n')+'\n';
+else{const ns=Math.max(0,...s.laps.map(l=>l.s?l.s.length:0));csv='lap,lap_time'+[...Array(ns)].map((_,i)=>',s'+(i+1)).join('')+'\n'+s.laps.map(l=>l.lap+','+f(l.t)+[...Array(ns)].map((_,i)=>','+(l.s&&l.s.length===ns?f(l.s[i]):'')).join('')).join('\n')+'\n'}
 try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=(s.name.replace(/[^\w-]+/g,'-')||'session')+'.csv';document.body.append(a);a.click();a.remove()}catch(e){toast('Download is not available here.')}}
 function wireImport(){const q=imp,ng=()=>{q.err='';render()};
 if(q.pick){const gs=q.gi.groups,shown=g=>!q.clsF||g.cls===q.clsF;document.querySelectorAll('[data-g]').forEach(e=>e.onchange=()=>{gs[+e.dataset.g].sel=e.checked});const pc=$('#pickCls');if(pc)pc.onchange=()=>{q.clsF=pc.value;render()};$('#pickAll').onclick=()=>{gs.forEach(g=>{if(shown(g))g.sel=true});render()};$('#pickNone').onclick=()=>{gs.forEach(g=>g.sel=false);render()};$('#impSkip').onclick=()=>{queue.shift();advance()};$('#pickGo').onclick=()=>{const ch=gs.filter(g=>g.sel&&shown(g));if(!ch.length){q.err='Tick at least one car.';render();return}try{const notes=[];loadGroups(q,ch,notes);queue.shift();advance();if(notes.length){msgs.push({t:notes.join(' ')});render()}}catch(e){q.err=e.message;render()}};return}
@@ -749,7 +780,7 @@ clearTimeout(to);st.busy=false;if(sessions[cur]===s&&view==='single')render()}
 const AI_EXPLAIN="Write a short engineer's summary of this session for the team: what is happening, the single most important thing to do, and one thing to tell the driver. Under 110 words.";
 
 /* ---------- wiring ---------- */
-$('#demo').onclick=()=>{msgs=[];armed=false;const first=sessions.length;SAMPLES.forEach(x=>{const s=toSession(demo(x.o),x.name,{sample:true});addSession(s)});addSession(raceDemo());
+$('#demo').onclick=()=>{msgs=[];armed=false;const first=sessions.length;SAMPLES.forEach(x=>{const s=toSession(demo(x.o),x.name,{sample:true});addSession(s)});addSession(raceDemo());addSession(qualiDemo());
 A=first;B=first+1;cmpSt={A:null,B:null};cur=first;view='single';tab='call';render()};
 {const ov=$('#dropov');let dc=0;const hasF=e=>e.dataTransfer&&[...e.dataTransfer.types].includes('Files');
 addEventListener('dragenter',e=>{if(hasF(e)){e.preventDefault();dc++;ov.classList.add('on')}});
