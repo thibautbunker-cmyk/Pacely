@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pacely</title>
+<meta name="theme-color" content="#101316">
+<link rel="icon" type="image/svg+xml" href="icons/favicon.svg"><link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pacely">
+<style>
+:root{--bg:#e6e9ec;--sf:#fff;--sf2:#eef1f3;--tx:#14181c;--mu:#59646e;--ln:#d3d9de;--lnb:#b4bdc5;--ac:#d4160c;--acx:#fff;--wn:#a35a00;--wnbg:#fff3de;--bd:#c4120a;--bdbg:#fde8e6;--ok:#16794a;--okbg:#e2f3ea;--bar:#101316;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1013;--sf:#171b1f;--sf2:#1f2429;--tx:#e9edf0;--mu:#8f9ba6;--ln:#2b333a;--lnb:#3c464f;--ac:#e5170d;--acx:#fff;--wn:#f2a71b;--wnbg:#2b2310;--bd:#ff5247;--bdbg:#2f1614;--ok:#38c97f;--okbg:#10271c;--bar:#080a0c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0d1013;--sf:#171b1f;--sf2:#1f2429;--tx:#e9edf0;--mu:#8f9ba6;--ln:#2b333a;--lnb:#3c464f;--ac:#e5170d;--acx:#fff;--wn:#f2a71b;--wnbg:#2b2310;--bd:#ff5247;--bdbg:#2f1614;--ok:#38c97f;--okbg:#10271c;--bar:#080a0c;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.5 "Avenir Next","Segoe UI",system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:0 16px 48px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0 14px;border-bottom:3px solid var(--ac)}
+.mark{display:flex;align-items:center;gap:10px}
+.slashes{display:flex;gap:4px;transform:skewX(-24deg)}.slashes i{display:block;width:9px;height:26px;background:var(--ac)}.slashes i+i{width:4px;opacity:.55}
+h1{font:900 26px/1 "Arial Black","Helvetica Neue",sans-serif;letter-spacing:-.02em;margin:0}
+.tools{display:flex;gap:8px}
+h2{font-size:15px;font-weight:700;margin:30px 0 10px;color:var(--mu)}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:16px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button,label.btn{font:inherit;font-weight:700;background:var(--ac);color:var(--acx);border:0;border-radius:8px;padding:12px 18px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+button:hover,label.btn:hover{filter:brightness(1.12)}
+button.alt,label.btn{background:var(--sf2);color:var(--tx)}
+button.sm{min-height:40px;padding:8px 12px;font-size:15px}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,label.btn:focus-within{outline:3px solid var(--tx);outline-offset:2px}
+details.set{margin-top:12px;border-top:1px solid var(--ln);padding-top:10px}summary{cursor:pointer;color:var(--mu);font-weight:600;padding:6px 0}
+label.f2{display:flex;flex-direction:column;gap:4px;color:var(--mu);font-size:14px}
+input[type=number],input[type=text],select{font:inherit;font-size:16px;background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:8px;padding:9px 10px;min-height:44px;max-width:100%}
+input[type=number]{width:110px}input[type=text]{width:100%}
+.hint{color:var(--mu);font-size:14px;margin:10px 0 0}
+.empty{margin-top:20px;padding:34px 20px;text-align:center;color:var(--mu);border:2px dashed var(--ln);border-radius:10px}.empty b{display:block;font-size:20px;color:var(--tx);margin-bottom:6px}
+.call{border-radius:12px;padding:20px;border:2px solid var(--ln);background:var(--sf);margin-top:22px}
+.call.high{border-color:var(--bd);background:var(--bdbg)}.call.med{border-color:var(--wn);background:var(--wnbg)}.call.ok{border-color:var(--ok);background:var(--okbg)}
+.call .k{font-size:14px;font-weight:700;color:var(--mu)}
+.call .big{font-size:clamp(28px,8vw,40px);line-height:1.1;font-weight:800;margin:4px 0 6px;letter-spacing:-.01em}
+.call .why{color:var(--tx);opacity:.85;margin:0}.call .conf{color:var(--mu);font-size:14px;margin:6px 0 0}
+.call .row{margin-top:14px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+
+.tile{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px 14px}
+.tile .n{font-size:26px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}.tile .n small{font-size:14px;font-weight:600}
+.tile .l{font-size:14px;color:var(--mu);margin-top:2px}.tile .w{font-size:14px;font-weight:700;margin-top:4px}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:800;padding:4px 10px;border-radius:99px;background:var(--sf2);color:var(--tx);white-space:nowrap}
+.high>.tag,.tag.high{background:var(--bd);color:#fff}.med>.tag,.tag.med{background:var(--wn);color:#fff}.ok>.tag,.tag.ok{background:var(--ok);color:#fff}
+:root[data-theme="dark"] .med>.tag,:root[data-theme="dark"] .tag.med,:root[data-theme="dark"] .ok>.tag,:root[data-theme="dark"] .tag.ok{color:#111}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .med>.tag,:root:not([data-theme="light"]) .tag.med,:root:not([data-theme="light"]) .ok>.tag,:root:not([data-theme="light"]) .tag.ok{color:#111}}
+.f{margin:10px 0;padding:16px;background:var(--sf);border:1px solid var(--ln);border-left:6px solid var(--ln);border-radius:10px}
+.f.high{border-left-color:var(--bd)}.f.med{border-left-color:var(--wn)}.f.ok{border-left-color:var(--ok)}
+.f h3{font-size:19px;line-height:1.25;margin:8px 0 10px}
+.f dl{margin:0;display:grid;gap:8px}.f dt{font-size:13px;font-weight:700;color:var(--mu)}.f dd{margin:0}
+.cor{display:grid;gap:8px}
+.cr{display:grid;grid-template-columns:56px auto 1fr;gap:6px 12px;align-items:center;background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px 14px}
+.cr .nm{font-size:20px;font-weight:800}.cr .dt{color:var(--mu);font-size:15px}
+.cr .nums{grid-column:1/-1;color:var(--mu);font-size:13px;font-variant-numeric:tabular-nums}
+svg{width:100%;height:auto;display:block}.axis{stroke:var(--ln)}.grid{stroke:var(--ln);stroke-dasharray:3 5}
+.trace{fill:none;stroke:var(--ac);stroke-width:2.5;stroke-linejoin:round}.dot{fill:var(--sf);stroke:var(--ac);stroke-width:2.5}
+.fitc{fill:none;stroke:var(--tx);stroke-width:2;opacity:.8}.fitp{fill:none;stroke:var(--tx);stroke-width:2;stroke-dasharray:5 4;opacity:.8}
+.band{fill:var(--wn);opacity:.2}.flag{stroke:var(--tx);stroke-width:2}
+.t{fill:var(--mu);font-size:12px}
+.foot{color:var(--mu);font-size:13px;margin-top:26px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;font-size:15px;max-width:92vw}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
+.chip{background:var(--sf);color:var(--tx);border:2px solid var(--ln);border-radius:99px;padding:8px 14px;min-height:40px;font-size:15px}
+.chip.on{border-color:var(--ac);background:var(--sf2)}.chip.dim{opacity:.6}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+.pick{display:grid;grid-template-columns:1fr;gap:10px}@media(min-width:620px){.pick{grid-template-columns:1fr 1fr}}
+.pk{display:grid;gap:10px;align-content:start}.pick label,.fld{display:flex;flex-direction:column;gap:4px;color:var(--mu);font-size:14px;font-weight:700}
+.lg{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;margin-bottom:8px}.lg span{display:inline-flex;align-items:center;gap:6px}
+.sw{display:inline-block;width:22px;height:0;border-top:3px solid var(--ac)}.sw.b{border-top:3px dashed var(--tx)}
+.traceB{fill:none;stroke:var(--tx);stroke-width:2.5;stroke-dasharray:6 4;stroke-linejoin:round}.mkB{fill:var(--sf);stroke:var(--tx);stroke-width:2.5}
+table.cmp{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.cmp th{font-size:13px;color:var(--mu);text-align:right;padding:8px 6px;border-bottom:1px solid var(--ln)}.cmp td{text-align:right;padding:11px 6px;border-bottom:1px solid var(--ln);font-size:16px}
+.cmp th:first-child,.cmp td:first-child{text-align:left;font-size:15px}.cmp tr:last-child td{border-bottom:0}
+.cmp td.win{font-weight:800;color:var(--ok)}
+.chg{list-style:none;margin:0;padding:0;display:grid;gap:10px}.chg li{display:flex;gap:10px;align-items:flex-start}.chg .tag{flex:none;margin-top:2px}
+.cc{display:grid;grid-template-columns:48px 1fr 1fr;gap:8px 10px;align-items:start;background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.cc .nm{font-size:20px;font-weight:800}.cc small{display:block;color:var(--mu);font-size:13px;margin-top:4px}
+.cch{display:grid;grid-template-columns:48px 1fr 1fr;gap:10px;padding:0 14px;font-size:13px;font-weight:700;color:var(--mu)}
+.notice{margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--wnbg);border:1px solid var(--wn);font-size:15px}
+.notice.bad{background:var(--bdbg);border-color:var(--bd)}
+.verdict{border-radius:12px;padding:18px 20px;border:2px solid var(--ac);background:var(--sf);margin-top:18px}.verdict .big{font-size:clamp(24px,7vw,34px);font-weight:800;line-height:1.15;margin:4px 0}.verdict .k{font-size:14px;font-weight:700;color:var(--mu)}.verdict p{margin:6px 0 0;color:var(--mu);font-size:15px}
+.inl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.inl label{font-weight:700;font-size:15px}
+.stint{margin-top:18px}.stint .sum{margin:10px 0 0;font-size:15px}.stint .ign{color:var(--mu);font-size:14px;margin:4px 0 0}
+.grid2{display:grid;grid-template-columns:1fr;gap:12px;margin-top:10px}@media(min-width:620px){.grid2{grid-template-columns:1fr 1fr}}
+.mrow{display:grid;grid-template-columns:1fr;gap:4px;margin:10px 0}@media(min-width:560px){.mrow{grid-template-columns:200px 1fr;align-items:center;gap:12px}}
+.mrow>span{font-weight:700;font-size:15px}.mrow>span small{display:block;color:var(--mu);font-weight:400;font-size:13px}
+.pv{overflow-x:auto;margin-top:10px;border:1px solid var(--ln);border-radius:8px}.pv table{border-collapse:collapse;font-size:13px;white-space:nowrap}.pv th,.pv td{padding:5px 9px;border-bottom:1px solid var(--ln);text-align:left}.pv th{color:var(--mu);font-weight:700}.pv tr:last-child td{border-bottom:0}
+.err{color:var(--bd);font-weight:700;margin:10px 0 0}
+.aiu{font-weight:700;margin-top:16px}.aia{white-space:pre-wrap;margin-top:6px;padding:12px 14px;background:var(--sf2);border-radius:10px;line-height:1.5}
+.ai button[disabled]{opacity:.6;cursor:default}
+.sessel{display:flex;flex-direction:column;gap:4px;margin-top:16px;color:var(--mu);font-size:14px;font-weight:700}.sessel select{width:100%;max-width:420px}
+.f .do{margin:0;font-weight:600}.f details.why{margin:6px 0 0}.f details.why summary{font-size:14px;padding:2px 0}.f details.why p{margin:4px 0 0;color:var(--mu);font-size:15px}
+.tile .n{font-size:24px}.tile .l{font-size:13px}
+.pklist{max-height:340px;overflow:auto;margin-top:10px;border:1px solid var(--ln);border-radius:8px}.pkrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--ln);cursor:pointer}.pkrow:last-child{border-bottom:0}.pkrow span{margin-left:auto;color:var(--mu);font-size:14px}.pkrow input{width:20px;height:20px}
+.readn{margin:14px 0 0;color:var(--mu);font-size:14px}button.link{background:none;border:0;color:var(--tx);text-decoration:underline;padding:0;min-height:0;font-weight:600;display:inline;cursor:pointer}
+.printhead,.printonly{display:none}
+.tabs{display:flex;gap:2px;margin:14px 0 0;border-bottom:1px solid var(--ln);overflow-x:auto}
+.tabs button{background:none;color:var(--mu);border:0;border-bottom:3px solid transparent;border-radius:0;min-height:46px;padding:10px 16px;font-weight:700;font-size:16px}
+.tabs button:hover{filter:none;color:var(--tx)}.tabs button.on{color:var(--tx);border-bottom-color:var(--ac)}
+.tabs button:disabled{opacity:.45;cursor:default}
+.fgrid{display:block}.tabpane{margin-top:4px}
+@media(max-width:699px){#out>.chips{flex-wrap:nowrap;overflow-x:auto;margin-right:-16px;padding-right:16px;scrollbar-width:none}#out>.chips .chip{flex:none;white-space:nowrap}}
+@media(max-width:699px){
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;background:var(--sf);border-top:2px solid var(--ac);border-bottom:0;padding:0 2px env(safe-area-inset-bottom,0px);justify-content:space-between;overflow:visible}
+.tabs button{flex:1;min-width:0;padding:10px 2px 9px;font-size:12px;border-bottom:0;border-top:3px solid transparent;margin-top:-2px}
+.tabs button.on{border-top-color:var(--ac)}
+main{padding-bottom:92px}.toast{bottom:84px}}
+@media(min-width:1000px){.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 20px;align-items:start}.cor{grid-template-columns:1fr 1fr}}
+
+.dash,.hero,.colL,.colR{display:block}
+.dropov{display:none}
+@media(min-width:1000px){
+main{max-width:1280px;padding:0 32px 64px}
+.bar{padding:20px 0 16px}h1{font-size:30px}
+.card.ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:6px 28px}.card.ctrl>.row{flex:none}.card.ctrl details.set{flex:1 1 100%;order:3;margin-top:8px}.card.ctrl>.hint{margin:0;flex:1 1 280px}
+.call .big{font-size:44px}.tiles{margin-top:16px}.tile{padding:16px 18px}.tile .n{font-size:30px}.tile .l{font-size:14px}
+.dash{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 28px;align-items:start}
+.dash .colL>h2:first-child,.dash .colR>h2:first-child{margin-top:26px}
+.dash.cmpd{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}
+.pick{grid-template-columns:1fr 1fr}
+.mrow{grid-template-columns:280px minmax(0,420px)}
+#out>.card{max-width:860px}
+.chip:hover,.chip.on{border-color:var(--ac)}
+.dropov{position:fixed;inset:0;z-index:50;background:rgba(14,11,12,.82);color:#fff;align-items:center;justify-content:center;font:800 40px/1.2 "Arial Black",sans-serif;letter-spacing:-.02em;border:6px dashed var(--ac);margin:14px;border-radius:18px}
+.dropov.on{display:flex}
+}
+@media(min-width:1500px){main{max-width:1440px}.dash{gap:0 36px}}
+@media print{
+.hero,.dash,.fgrid,.cor{display:block!important}.tabs{display:none!important}.dropov{display:none!important}
+:root,:root[data-theme="dark"],:root:not([data-theme="light"]){--bg:#fff;--sf:#fff;--sf2:#eee;--tx:#111;--mu:#555;--ln:#ccc;--ac:#c40a0a;--wn:#a85f00;--wnbg:#fff4e0;--bd:#c40a0a;--bdbg:#fde8e6;--ok:#17743f;--okbg:#e6f5ec;color-scheme:light}
+body{font-size:12pt}.top,.ctx,.bar .tools,.card.ctrl,.chips,.ctl,.noprint,button,.notice,.stint details,details.set{display:none!important}
+.printhead{display:block;margin:10px 0 0}.printhead p{margin:4px 0;color:var(--mu)}.printonly{display:block}
+.f,.card,.call,.tile,.cr,.cc{break-inside:avoid}.call{margin-top:12px}
+}
+
+/* ---- instrument theme ---- */
+:root{--num:"Bahnschrift","DIN Alternate","DIN 1451 Std","Roboto Condensed","Arial Narrow",system-ui,sans-serif}
+body{font:15px/1.5 "Segoe UI",Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+.top{background:var(--bar);color:#eef1f3;border-bottom:3px solid var(--ac)}
+.topin{max-width:760px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:28px;min-height:54px}
+.top .mark{gap:9px}.top h1{font:700 22px/1 var(--num);letter-spacing:.01em;color:#fff}
+.top .slashes i{height:21px;width:7px}.top .slashes i+i{width:3px}
+.top .tools{margin-left:auto}
+.top .tools button{background:transparent;color:#c9d1d7;border:1px solid #38424a;min-height:34px;padding:4px 11px;font-size:13px;font-weight:600}
+.top .tools button:hover{filter:none;border-color:#6b7782;color:#fff}
+.top nav.tabs{display:flex;border:0;margin:0;gap:2px;overflow:visible}
+.top .tabs button{background:none;color:#a9b3bb;border:0;border-bottom:3px solid transparent;margin-bottom:-3px;border-radius:0;min-height:54px;padding:0 16px;font:600 15px var(--num);letter-spacing:.03em}
+.top .tabs button:hover{color:#fff;filter:none}.top .tabs button.on{color:#fff;border-bottom-color:var(--ac)}
+main{padding-top:4px}
+h2{display:flex;align-items:center;gap:12px;font:600 13px/1 var(--num);letter-spacing:.05em;color:var(--mu);margin:28px 0 10px}
+h2::after{content:"";flex:1;height:1px;background:var(--ln)}
+.card,.tile,.f,.cr,.cc,.call,.verdict,.empty,.notice,.pv,.ctx,.pklist{border-radius:3px}
+.card{padding:16px 18px;border-color:var(--ln)}
+button,label.btn{border-radius:3px;font-weight:600;letter-spacing:.005em;min-height:44px}
+button.alt,label.btn{background:var(--sf);color:var(--tx);border:1px solid var(--lnb)}
+button.alt:hover,label.btn:hover{background:var(--sf2);filter:none}
+button.sm{min-height:38px}
+.top .tools button.alt{background:transparent}
+input[type=number],input[type=text],select{border-radius:3px;border-color:var(--lnb);background:var(--sf)}
+.tag{border-radius:2px;font-size:12px;font-weight:700;padding:2px 8px;letter-spacing:.01em}
+.ctx{display:flex;flex-wrap:wrap;align-items:center;gap:10px 30px;margin-top:16px;padding:10px 16px;background:var(--sf);border:1px solid var(--ln);border-top:3px solid var(--ln)}
+.ctx .cs{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--mu)}.ctx .cs b{color:var(--tx);font-size:15px}.ctx select{min-height:36px;padding:4px 8px;font-size:15px;font-weight:600;max-width:100%}
+.facts{display:flex;flex-wrap:wrap;gap:6px 26px;margin:0}.facts div{display:flex;align-items:baseline;gap:8px}
+.facts dt{font-size:12px;color:var(--mu);font-weight:600}.facts dd{margin:0;font:600 18px/1 var(--num);font-variant-numeric:tabular-nums}.facts dd.sm{font:600 14px/1.2 "Segoe UI",system-ui,sans-serif}
+.call{padding:20px 22px;background:var(--sf);border:1px solid var(--ln);border-left:8px solid var(--lnb);margin-top:16px}
+.call.high{border-left-color:var(--bd);background:var(--sf)}.call.med{border-left-color:var(--wn);background:var(--sf)}.call.ok{border-left-color:var(--ok);background:var(--sf)}
+.call .k{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:var(--mu)}
+.call .k::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--lnb);flex:none}
+.call.high .k::before{background:var(--bd)}.call.med .k::before{background:var(--wn)}.call.ok .k::before{background:var(--ok)}
+.call .big{font:700 clamp(30px,7vw,48px)/1.04 var(--num);letter-spacing:.005em;margin:8px 0 8px}
+.call .why{font-size:16px;opacity:1;max-width:70ch}
+.tiles{gap:12px;margin-top:12px}
+.tile{padding:14px 16px 13px;border:1px solid var(--ln);border-top:3px solid var(--lnb)}
+.tile .n{font:600 clamp(26px,5vw,36px)/1 var(--num);font-variant-numeric:tabular-nums;letter-spacing:.005em}
+.tile .n small{font:600 14px var(--num);color:var(--mu);margin-left:2px}
+.tile .l{font-size:13px;color:var(--mu);margin-top:8px;line-height:1.3}
+.f{padding:13px 16px 12px;border-left-width:5px;margin:10px 0}
+.f h3{font-size:16px;margin:8px 0 6px;line-height:1.3}.f .do{font-size:15px}
+.cr,.cc{padding:11px 14px}.cr .nm,.cc .nm{font:700 20px var(--num)}
+.verdict{border:1px solid var(--ln);border-left:8px solid var(--ac);padding:18px 22px}
+.verdict .big{font:700 clamp(26px,6vw,38px)/1.1 var(--num)}
+table.cmp{font-variant-numeric:tabular-nums}.cmp th{background:var(--sf2);color:var(--mu);font-weight:600;font-size:12px;padding:9px 8px}.cmp td{font:600 16px var(--num);padding:11px 8px}.cmp td:first-child{font:500 14px "Segoe UI",system-ui,sans-serif}
+.empty{background:var(--sf);border:1px dashed var(--lnb);padding:40px 22px}.empty b{font:700 24px var(--num);margin-bottom:8px}
+.dot.s{fill:var(--tx);stroke:var(--sf);stroke-width:1.5}
+.fitc,.fitp{stroke:var(--ac);opacity:1;stroke-width:2.5}
+.band{fill:var(--wn);opacity:.2}.flag{stroke:var(--tx)}
+.t{font-family:var(--num);font-size:11px;letter-spacing:.02em}
+.axis{stroke:var(--lnb)}.grid{stroke:var(--ln);stroke-dasharray:2 4}
+.chips .chip,.chip{border-radius:3px;border-width:1px;border-color:var(--lnb);font-weight:600}.chip.on{border-color:var(--ac);box-shadow:inset 0 -3px 0 var(--ac);background:var(--sf)}
+details.set summary{font-weight:600}
+.foot{font-size:12px}
+@media(min-width:1000px){.topin{max-width:1280px;padding:0 32px}}
+@media(max-width:699px){
+.top .tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;background:var(--bar);border-top:2px solid var(--ac);padding:0 2px env(safe-area-inset-bottom,0px);gap:0}
+.top .tabs button{flex:1;min-height:56px;padding:6px 2px;margin:0;border-bottom:0;border-top:3px solid transparent;margin-top:-2px;font-size:14px}
+.top .tabs button.on{border-top-color:var(--ac);border-bottom:0}
+.topin{gap:12px}
+.ctx{gap:8px 18px}}
+.top .logo{display:block;flex:none}.top .mark{align-items:center;gap:10px}
+/* ---- refine v14 ---- */
+.top .logo{width:30px;height:30px}
+.top h1{font:800 21px/1 var(--num);font-style:italic;letter-spacing:-.01em;text-transform:lowercase;transform:skewX(-6deg)}
+.topin{min-height:50px}
+body{font-feature-settings:"tnum" 1,"cv11" 1;-webkit-font-smoothing:antialiased}
+.hero h2,.call h2,.card h2.big{letter-spacing:-.02em}
+.card,.tile,.panel{box-shadow:none}
+.tabs button{font-weight:600;letter-spacing:.01em}
+.notice,.bar .note{padding:8px 12px;font-size:13px;background:var(--sf);border:1px solid var(--ln);border-left:3px solid var(--wn);border-radius:3px;color:var(--mu)}
+details>summary{font-weight:600}
+@media print{.top{background:#fff!important}}
+[data-theme=dark] .empty svg path{stroke:#fff}[data-theme=dark] .empty svg rect{fill:#fff}
+.empty svg{width:56px;height:56px}
+/* ---- clean / apple-style ---- */
+:root{--bg:#f5f5f7;--sf:#fff;--sf2:#f5f5f7;--tx:#1d1d1f;--mu:#6e6e73;--ln:rgba(0,0,0,.08);--lnb:rgba(0,0,0,.16);--ac:#d4160c;--num:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",system-ui,sans-serif;--wnbg:#fff7e6}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--sf:#1c1c1e;--sf2:#2c2c2e;--tx:#f5f5f7;--mu:#98989d;--ln:rgba(255,255,255,.1);--lnb:rgba(255,255,255,.2);--wnbg:#2a2214}}
+:root[data-theme="dark"]{--bg:#000;--sf:#1c1c1e;--sf2:#2c2c2e;--tx:#f5f5f7;--mu:#98989d;--ln:rgba(255,255,255,.1);--lnb:rgba(255,255,255,.2);--wnbg:#2a2214}
+body,button,input,select,textarea{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",system-ui,sans-serif}
+body{background:var(--bg);color:var(--tx);font-size:16px;line-height:1.47;letter-spacing:-.011em}
+.top{background:rgba(251,251,253,.78);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--ln);position:sticky;top:0;z-index:30}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .top{background:rgba(22,22,23,.78)}}
+:root[data-theme="dark"] .top{background:rgba(22,22,23,.78)}
+.top .logo{color:var(--tx)}.top h1{color:var(--tx);font:700 19px/1 var(--num);font-style:normal;transform:none;letter-spacing:-.03em}
+.topin{max-width:980px!important;min-height:48px;padding:0 22px}
+.top nav.tabs{margin:0 auto}
+.top .tabs button{color:var(--mu);border:0;border-radius:980px;min-height:32px;padding:0 14px;margin:0;font:500 14px var(--num);letter-spacing:-.01em}
+.top .tabs button:hover{color:var(--tx)}
+.top .tabs button.on{color:var(--tx);background:var(--sf2);border:0}
+.top .tools button{background:none;color:var(--mu);border:0;font-weight:500;padding:4px 8px}
+main{max-width:980px;margin:0 auto;padding:8px 22px 80px}
+h2{font:600 21px/1.2 var(--num);letter-spacing:-.02em;color:var(--tx);margin:48px 0 14px}
+h2::after,h2::before{display:none!important}
+.card,.tile,.f,.cr,.cc,.call,.verdict,.empty,.notice,.pv,.ctx,.pklist,.cmp,.panel{background:var(--sf);border:0!important;border-radius:20px;box-shadow:none}
+.ctx{background:none;padding:0;margin:20px 0 0;gap:6px 28px;color:var(--mu);font-size:14px}
+.ctx b,.ctx strong{color:var(--tx)}
+.verdict{padding:44px 40px;margin-top:20px;border-left:0}
+.verdict .big{font:700 clamp(34px,7vw,64px)/1.05 var(--num);letter-spacing:-.035em;margin:10px 0 14px}
+.verdict .k,.verdict p{color:var(--mu);font-size:19px;line-height:1.42;max-width:640px}
+.tiles{gap:16px;margin-top:16px}
+.tile{padding:26px 26px 24px}
+.tile .n{font:600 clamp(32px,5vw,48px)/1 var(--num);letter-spacing:-.03em}
+.tile .n small{font:500 17px var(--num);color:var(--mu)}
+.tile .l{font-size:15px;margin-top:10px;color:var(--mu)}
+.f{padding:24px 26px;margin:0 0 16px}
+.f h3{font:600 19px/1.25 var(--num);letter-spacing:-.02em}
+.tag{border-radius:980px;padding:2px 10px;font-size:12px;font-weight:600;letter-spacing:0;text-transform:none}
+button,.btn,label.btn,.btn.pri{border-radius:980px!important;font-weight:500;min-height:40px;padding:0 20px;letter-spacing:-.01em;box-shadow:none}
+button.alt,.alt{background:var(--sf2);color:var(--tx);border:0}
+button:not(.alt):not(.sm):not(.link):not(.tabs button){background:var(--ac);color:#fff;border:0}
+button.link{background:none;color:var(--ac);padding:0;min-height:0;border:0;text-decoration:none;font-weight:500}
+button.link:hover{text-decoration:underline}
+button.sm{min-height:34px;padding:0 16px}
+.top .tabs button:not(.on){background:none}
+input,select{border-radius:12px;border:1px solid var(--lnb);background:var(--sf)}
+details{border:0;border-top:1px solid var(--ln);margin-top:0}
+details>summary{padding:18px 2px;font:500 17px var(--num);color:var(--tx)}
+.empty{padding:72px 24px;text-align:center;border:0}
+.empty b{font:700 clamp(28px,5vw,44px)/1.08 var(--num);letter-spacing:-.03em;display:block;margin-bottom:10px}
+.empty svg{width:48px;height:48px;color:var(--tx)}
+.card.ctrl{padding:20px 24px}
+.notice{padding:14px 18px;font-size:15px;margin-top:14px}
+@media(max-width:700px){.top{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--sf)!important}.topin{padding:0 14px}main{padding:4px 14px 90px}.verdict{padding:28px 22px}.top .tabs{background:rgba(251,251,253,.85)!important;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:1px solid var(--ln)!important}.top .tabs button{border-radius:0;background:none!important;color:var(--mu)}.top .tabs button.on{color:var(--ac)}.tiles{grid-template-columns:1fr}}
+.beta{font-style:normal;font-size:10px;font-weight:700;letter-spacing:.02em;background:var(--ac);color:#fff;border-radius:980px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+.f p{margin:6px 0 0}.f p.do{font-weight:600}
+</style></head><body><div class="dropov" id="dropov">Drop lap files to load them</div>
+<header class="top"><div class="topin"><div class="mark"><svg class="logo" viewBox="0 0 100 100" width="30" height="30" aria-hidden="true"><g transform="skewX(-10)" transform-origin="50 50"><rect x="18" y="13.5" width="16" height="72.5" fill="currentColor"/><path d="M49.48 64.17 A22 22 0 1 1 73.85 57.64" fill="none" stroke="currentColor" stroke-width="15"/><circle cx="62.69" cy="64.75" r="7.2" fill="#d4160c"/></g></svg><h1>Pacely</h1></div><nav class="tabs noprint" id="navHold" role="tablist" aria-label="Sections"></nav>
+<div class="tools"><button class="alt sm" id="theme" aria-label="Switch light or dark">Light / Dark</button></div></div></header><main>
+<div id="ctrlHold" hidden><div class="card ctrl" style="margin-top:18px">
+<div class="row"><label class="btn" style="background:var(--ac);color:var(--acx)">Load lap file<input id="file" type="file" accept=".csv,.txt,.tsv,text/csv,text/plain,.xlsx,.xls" multiple hidden></label>
+<button class="alt" id="paste">Paste data</button><button class="alt" id="demo">Try sample sessions</button></div>
+<details class="set"><summary>Settings</summary>
+<div class="row" style="margin-top:8px"><label class="f2">Car speeds up as fuel burns (s per lap)<input id="fuel" type="number" step="0.01" value="0.03"></label>
+<label class="f2">Pit stop costs you (s)<input id="thr" type="number" step="1" value="" placeholder="25"></label></div>
+<div class="row" style="margin-top:12px"><button class="alt sm" id="forget">Reset saved file layouts</button></div>
+<p class="hint">Pacely remembers how your logger's columns map the first time you import a file, so the next file from that logger loads in one step.</p></details>
+<p class="hint" id="saveNote">Drop any lap file here, or paste it straight from Excel. It stays on this device.</p></div></div>
+<div id="out"></div>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const mean=a=>a.reduce((x,y)=>x+y,0)/a.length,sd=a=>{const m=mean(a);return Math.sqrt(mean(a.map(x=>(x-m)**2)))};
+const med=a=>{const s=[...a].sort((x,y)=>x-y),n=s.length;return n?(n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2):NaN};
+const fin=v=>typeof v==='number'&&isFinite(v);
+const sg=x=>{const t=x.toFixed(1);return (+t>0?'+':'')+(+t===0?'0.0':t)};
+function rng(s){return()=>(s=(s*1664525+1013904223)>>>0)/4294967296}
+function reg(x,y){const mx=mean(x),my=mean(y);let sxy=0,sxx=0,syy=0;x.forEach((v,i)=>{sxy+=(v-mx)*(y[i]-my);sxx+=(v-mx)**2;syy+=(y[i]-my)**2});const m=sxx?sxy/sxx:0;return{m,b:my-m*mx,r2:syy&&sxx?sxy*sxy/(sxx*syy):0}}
+function polyfit(x,y,d){const n=x.length,m=d+1,A=Array.from({length:m},()=>Array(m+1).fill(0));
+for(let i=0;i<n;i++){const p=[1];for(let k=1;k<=2*d;k++)p.push(p[k-1]*x[i]);for(let r=0;r<m;r++){for(let c=0;c<m;c++)A[r][c]+=p[r+c];A[r][m]+=p[r]*y[i]}}
+for(let i=0;i<m;i++){let mx=i;for(let r=i+1;r<m;r++)if(Math.abs(A[r][i])>Math.abs(A[mx][i]))mx=r;[A[i],A[mx]]=[A[mx],A[i]];const pv=A[i][i];if(Math.abs(pv)<1e-12)return null;for(let c=i;c<=m;c++)A[i][c]/=pv;for(let r=0;r<m;r++)if(r!==i){const f=A[r][i];for(let c=i;c<=m;c++)A[r][c]-=f*A[i][c]}}
+const co=A.map(r=>r[m]);const sse=x.reduce((s,xi,i)=>{let v=0;for(let k=0;k<=d;k++)v+=co[k]*xi**k;return s+(y[i]-v)**2},0);return{co,sse}}
+
+/* ---------- sample data ---------- */
+function demo(q={}){const k={deg:.09,noise:.5,us3:.025,us5:.012,bT4:14,bT2:2.5,seed:7,base:92,laps:14,...q},r=rng(k.seed),o=[],C=[['T1',78,95,40,1.9],['T2',112,70,22,2.3],['T3',64,110,55,1.6],['T4',140,60,14,2.8],['T5',92,85,35,2.1],['T6',70,100,48,1.7]];
+for(let l=1;l<=k.laps;l++){const t=k.base+k.deg*l-.03*l+(r()-.5)*k.noise;
+for(const[n,v,b,s,g]of C){const us=n=='T3'?1+k.us3*l:n=='T5'?1+k.us5*l:1+(r()-.5)*.01;
+o.push({lap:l,corner:n,t,v:v*(1-(n=='T3'?.004*k.us3/.025:.0008)*l)+(r()-.5)*.8,b:b+(n=='T4'?(r()-.5)*k.bT4:n=='T2'?(r()-.5)*k.bT2:(r()-.5)*2.5),st:s*us*(1+(r()-.5)*.03),g:g*(1+(r()-.5)*.02)})}}return o}
+function toSession(rows,name,extra={}){const seen=new Map();rows.forEach(r=>{if(!seen.has(r.lap))seen.set(r.lap,r.t)});
+return mk(name,[...seen].map(([lap,t])=>({lap,t})).sort((a,b)=>a.lap-b.lap),rows.map(r=>({lap:r.lap,corner:r.corner,v:r.v,b:r.b,st:r.st,g:r.g})),extra)}
+function mk(name,laps,cr,extra={}){return{id:(crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2)),name,laps,cr:cr||[],meta:{compound:'',trackTemp:'',airTemp:'',remaining:'',ignore:'',splits:'',stint:null},created:Date.now(),...extra}}
+function raceDemo(){const r=rng(3),laps=[];
+const stint=(from,n,base,deg,cliffAt)=>{for(let i=0;i<n;i++){const lap=from+i;laps.push({lap,t:base+deg*i+(i>cliffAt?.035*(i-cliffAt)**2:0)-.03*lap+(r()-.5)*.3})}};
+stint(1,14,92.4,.06,9);laps[0].t+=4.6;
+laps.push({lap:15,t:92.3+9.2});laps.push({lap:16,t:92.1+16.4});
+stint(17,14,91.3,.05,8);
+return mk('6 Race with pit stop',laps,[],{sample:true})}
+const SAMPLES=[
+{name:'1 Baseline setup',o:{}},
+{name:'2 Softer front springs',o:{us3:.008,us5:.006,deg:.12,seed:11}},
+{name:'3 Fresh tyres, low wear',o:{deg:.02,us3:.004,us5:.003,noise:.3,seed:5,base:91.6}},
+{name:'4 Driver error session',o:{noise:1.1,bT4:16,bT2:15,deg:.08,seed:21}},
+{name:'5 Hot day, heavy wear',o:{deg:.2,us3:.04,us5:.03,seed:33,base:92.8}}];
+
+/* ---------- storage ---------- */
+const DB={db:null,ok:false,
+open(){return new Promise(res=>{try{const r=indexedDB.open('pacely',1);r.onupgradeneeded=()=>r.result.createObjectStore('sessions',{keyPath:'id'});r.onsuccess=()=>{this.db=r.result;this.ok=true;res(true)};r.onerror=()=>res(false);r.onblocked=()=>res(false)}catch(e){res(false)}})},
+all(){return new Promise(res=>{if(!this.ok)return res([]);try{const q=this.db.transaction('sessions').objectStore('sessions').getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([])}catch(e){res([])}})},
+put(s){if(!this.ok)return;try{this.db.transaction('sessions','readwrite').objectStore('sessions').put(JSON.parse(JSON.stringify(s)))}catch(e){}},
+del(id){if(!this.ok)return;try{this.db.transaction('sessions','readwrite').objectStore('sessions').delete(id)}catch(e){}},
+clear(){if(!this.ok)return;try{this.db.transaction('sessions','readwrite').objectStore('sessions').clear()}catch(e){}}};
+const save=s=>{if(s&&!s.sample)DB.put(s)};
+
+/* ---------- CSV reading ---------- */
+const num=(v,dec)=>{if(v==null)return NaN;let s=String(v).trim();if(s==='')return NaN;if(dec)s=s.replace(',','.');return Number(s)};
+function parseLapTime(v,unit,dec){let s=String(v==null?'':v).trim();if(!s)return NaN;s=s.replace(/\s*(seconds|secs|sec|s)$/i,'').replace(/(\d)['’](\d)/,'$1:$2').replace(/["”]$/,'').trim();
+if(unit==='mmss'||(unit==='auto'&&/^\d+:\d/.test(s))){let m=s.match(/^(\d+):(\d{1,2}(?:[.,]\d+)?)$/);if(m)return +m[1]*60+ +m[2].replace(',','.');m=s.match(/^(\d+):(\d+):(\d+(?:[.,]\d+)?)$/);if(m)return +m[1]*3600+ +m[2]*60+ +m[3].replace(',','.');return NaN}
+const n=num(s,dec);return unit==='ms'?n/1000:n}
+function detectDelim(text){const lines=text.slice(0,20000).split(/\r?\n/).filter(l=>l.trim()).slice(0,60);let best=',',bs=0;
+for(const d of [',',';','\t']){const cnt={};lines.forEach(l=>{const c=l.split(d).length-1;if(c>0)cnt[c]=(cnt[c]||0)+1});let sc=0,top=0;for(const[c,n]of Object.entries(cnt)){if(n>top||(n==top&&+c>sc)){top=n;sc=+c}}const score=top*(sc>0?1:0)*Math.min(sc,3);if(score>bs){bs=score;best=d}}return best}
+function splitRows(text,d){text=text.replace(/^﻿/,'');const out=[];
+if(text.indexOf('"')<0){for(const ln of text.split(/\r?\n/)){if(ln.trim()==='')continue;out.push(ln.split(d))}return out}
+let row=[],cell='',q=false;for(let i=0;i<text.length;i++){const c=text[i];if(q){if(c=='"'){if(text[i+1]=='"'){cell+='"';i++}else q=false}else cell+=c}else if(c=='"')q=true;else if(c==d){row.push(cell);cell=''}else if(c=='\n'||c=='\r'){if(c=='\r'&&text[i+1]=='\n')i++;row.push(cell);cell='';if(row.some(x=>x.trim()!==''))out.push(row);row=[]}else cell+=c}
+if(cell!==''||row.length){row.push(cell);if(row.some(x=>x.trim()!==''))out.push(row)}return out}
+function locate(rows,dec){const isNum=v=>{let s=String(v).trim();if(s==='')return false;s=s.replace(/\s*(seconds|secs|sec|s)$/i,'');return !isNaN(num(s,dec))||/^\d+:\d{2}([.,]\d+)?$/.test(s)||/^\d+:\d+:\d{2}([.,]\d+)?$/.test(s)};
+const ratio=r=>{const c=r.filter(x=>String(x).trim()!=='');return c.length?c.filter(isNum).length/c.length:0};
+const hit=r=>{const c=r.filter(x=>String(x).trim()!=='');return c.length>=2&&c.filter(isNum).length>=2&&c.filter(isNum).length/c.length>=.3};
+let d=-1;for(let i=0;i<Math.min(rows.length-1,300);i++){if(rows[i].length>=2&&hit(rows[i])&&hit(rows[i+1])){d=i;break}}
+if(d<0)throw new Error('Could not find rows of numbers in this file.');
+let names,units=null;const w=rows[d].length;
+if(d>=2&&ratio(rows[d-1])<.3&&ratio(rows[d-2])<.3&&rows[d-2].length>=w*.8&&rows[d-1].length>=w*.8){names=rows[d-2];units=rows[d-1]}
+else if(d>=1&&ratio(rows[d-1])<.5&&rows[d-1].length>=w*.8){names=rows[d-1]}
+else names=rows[d].map((_,i)=>'Column '+(i+1));
+while(names.length<w)names.push('Column '+(names.length+1));
+return{names:names.slice(0,w).map(s=>String(s).trim()||'(blank)'),units:units&&units.slice(0,w).map(s=>String(s).trim()),data:rows.slice(d).filter(r=>r.length>=Math.max(2,w*.6))}}
+const EXACT=['lap','corner','lap_time','min_speed','brake_m','steer_deg','lat_g'];
+function guess(names,units,data,dec){const L=names.map(s=>s.toLowerCase().replace(/[^a-z0-9/²]+/g,' ').trim()),U=(units||[]).map(s=>(s||'').toLowerCase());
+const find=(...res)=>{for(const re of res){const i=L.findIndex(s=>re.test(s));if(i>=0)return i}return -1};
+const lower=names.map(s=>s.toLowerCase());
+if(EXACT.every(n=>lower.includes(n))){const m={};const ix=n=>lower.indexOf(n);m.lap=ix('lap');m.corner=ix('corner');m.lapTime=ix('lap_time');m.minSpeed=ix('min_speed');m.brakeM=ix('brake_m');m.steerDeg=ix('steer_deg');m.latG=ix('lat_g');
+return{shape:'table',map:m,units:{lapTime:'s',speed:'kmh',g:'g',time:'s',dist:'m'},exact:true}}
+const m={lap:find(/^(lap|lap ?no|lap ?num(ber)?|lap ?#|lapnum|lap count|laps?|runde|rundennummer|tours?|n tour|vuelta|giro|volta|ronde|kolo)$/),lapTime:find(/^lap ?time$/,/lap ?time/,/^laptime/,/rundenzeit|zeit pro runde|temps au tour|temps tour|tiempo( por)? vuelta|tempo( sul)? giro|tempo( por)? volta|rondetijd/,/^(time|tijd|zeit|temps|tiempo|tempo)$/),corner:find(/^(corner|turn|corner ?(name|id|no|number)|turn ?(no|number))$/,/corner|turn/),
+time:find(/^time( s| ms| sec| seconds)?$/,/^elapsed/,/^session time/,/^timestamp/),dist:find(/^distance/,/^dist/,/distance/,/odometer/),speed:find(/^(gps |ground |car |vehicle )?speed/,/speed/,/velocity/,/^vcar/),
+latG:find(/lat.*acc/,/lat.* g$/,/^g ?lat/,/^glat/,/lateral/,/acc.*lat/),steer:find(/steer/),brake:find(/brake.*(press|pos)/,/brake/)};
+m.minSpeed=find(/^min.*speed/,/^apex.*speed/);m.brakeM=find(/brake.*(point|dist|m$)/);m.steerDeg=m.steer;
+const uniq=i=>{const v=data.slice(0,3000).map(r=>String(r[i]==null?'':r[i]).trim()).filter(Boolean);return v.length?new Set(v).size/v.length:1};
+if(m.lapTime<0||(m.time<0&&true)){}
+if(m.lapTime<0){let best=-1,bs=1e9;names.forEach((n,i)=>{if(i===m.lap||i===m.time||i===m.speed)return;const v=data.slice(0,400).map(r=>parseLapTime(r[i],'auto',dec)).filter(x=>fin(x));if(v.length<Math.max(5,data.slice(0,400).length*.8))return;const mu=mean(v);if(!(mu>15&&mu<900))return;const sd=Math.sqrt(mean(v.map(x=>(x-mu)*(x-mu))));const cv=sd/mu;if(cv<.25&&cv<bs){bs=cv;best=i}});if(best>=0)m.lapTime=best}
+if(m.lap<0){names.forEach((n,i)=>{if(m.lap>=0||i===m.lapTime||i===m.time)return;const v=data.slice(0,300).map(r=>num(r[i],dec));if(v.length>=5&&v.every(fin)&&v.every((x,k)=>k===0||x===v[k-1]+1)&&v[0]<=2)m.lap=i})}
+let shape;if(m.corner>=0&&m.lap>=0&&m.lapTime>=0)shape='table';else if(m.time>=0&&m.speed>=0&&(m.lapTime<0||(data.length>500&&uniq(m.lapTime)<.2)))shape='series';else shape='laps';
+if(shape==='laps'&&m.lapTime<0&&m.time>=0)m.lapTime=m.time;
+if(shape==='table'){if(m.minSpeed<0)m.minSpeed=m.speed;}
+const col=i=>i>=0?data.map(r=>num(r[i],dec)).filter(fin):[];
+const spT=((U[m.speed]||'')+' '+(names[m.speed]||'')).toLowerCase(),gT=((U[m.latG]||'')+' '+(names[m.latG]||'')).toLowerCase(),dT=((U[m.dist]||'')+' '+(names[m.dist]||'')).toLowerCase();
+const u={lapTime:'auto',speed:/mph/.test(spT)?'mph':/m\/s|ms-1|m s/.test(spT)?'ms':'kmh',g:'g',time:'s',dist:'m'};
+const gc=col(shape==='table'?m.latG:m.latG);if(/m\/s|ms2|m s/.test(gT)||(gc.length&&Math.max(...gc.map(Math.abs))>8))u.g='ms2';
+const dc=col(m.dist);if(/\bkm\b|\(km\)|\[km\]/.test(dT)||(dc.length&&Math.max(...dc.map(Math.abs))<60))u.dist='km';
+const tc=col(m.time);if(tc.length>2){const dts=[];for(let i=1;i<Math.min(tc.length,2000);i++){const d=tc[i]-tc[i-1];if(d>0)dts.push(d)}if(med(dts)>=2)u.time='ms'}
+return{shape,map:m,units:u,exact:false}}
+const FIELDS={laps:[['lap','Lap number',0,'If your file has no lap column, laps are numbered 1, 2, 3 in order'],['lapTime','Lap time',1]],
+table:[['lap','Lap number',1],['corner','Corner name',1],['lapTime','Lap time',1],['minSpeed','Minimum speed',0],['brakeM','Braking point (metres)',0],['steerDeg','Steering angle',0],['latG','Lateral g',0]],
+series:[['time','Time',1],['lap','Lap number',0,'Or use distance below if it resets every lap'],['dist','Distance',0],['speed','Speed',1],['latG','Lateral acceleration',0],['steer','Steering angle',0],['brake','Brake pressure or position',0]]};
+const SHAPES={laps:'Lap times only',table:'Lap and corner table',series:'Telemetry over time'};
+const UNITS={laps:[['lapTime','Lap time unit',[['auto','Auto'],['s','Seconds'],['mmss','m:ss.000'],['ms','Milliseconds']]]],
+table:[['lapTime','Lap time unit',[['auto','Auto'],['s','Seconds'],['mmss','m:ss.000'],['ms','Milliseconds']]],['speed','Speed unit',[['kmh','km/h'],['mph','mph'],['ms','m/s']]],['g','Lateral g unit',[['g','g'],['ms2','m/s²']]]],
+series:[['time','Time unit',[['s','Seconds'],['ms','Milliseconds']]],['speed','Speed unit',[['kmh','km/h'],['mph','mph'],['ms','m/s']]],['g','Lateral g unit',[['g','g'],['ms2','m/s²']]],['dist','Distance unit',[['m','Metres'],['km','Kilometres']]]]};
+const SPF={kmh:1,mph:1.609344,ms:3.6};
+
+/* ---------- building a session from mapped columns ---------- */
+function build(imp){const{data,map,units,shape,dec}=imp,name=imp.name.replace(/\.[^.]+$/,'');
+const need=(k,label)=>{if(!(map[k]>=0))throw new Error(`Choose a column for "${label}".`)};
+const cell=(r,k)=>map[k]>=0?num(r[map[k]],dec):NaN;
+if(shape==='laps'){need('lapTime','Lap time');const laps=[];let n=0;const lu=resolveLT(data,map.lapTime,units.lapTime,dec);
+for(const r of data){const t=parseLapTime(r[map.lapTime],lu,dec);if(!fin(t)||t<=0)continue;n++;const lap=map.lap>=0?num(r[map.lap],dec):n;if(!fin(lap))continue;laps.push({lap:Math.round(lap),t})}
+if(laps.length<3)throw new Error(`Found only ${laps.length} usable lap times. Pacely needs at least 3.`);return mk(name,laps,[])}
+if(shape==='table'){need('lap','Lap number');need('corner','Corner name');need('lapTime','Lap time');const lu=resolveLT(data,map.lapTime,units.lapTime,dec),sf=SPF[units.speed]||1,gf=units.g==='ms2'?1/9.80665:1,rows=[];
+for(const r of data){const lap=cell(r,'lap'),t=parseLapTime(r[map.lapTime],lu,dec),c=String(r[map.corner]==null?'':r[map.corner]).trim();if(!fin(lap)||!fin(t)||!c)continue;
+const v=cell(r,'minSpeed')*sf,b=cell(r,'brakeM'),st=Math.abs(cell(r,'steerDeg')),g=Math.abs(cell(r,'latG'))*gf;
+rows.push({lap:Math.round(lap),corner:c,t,v:fin(v)?v:null,b:fin(b)?b:null,st:fin(st)?st:null,g:fin(g)?g:null})}
+const s=toSession(rows,name);if(s.laps.length<3)throw new Error(`Found only ${s.laps.length} laps. Pacely needs at least 3.`);return s}
+return fromSeries(imp,name)}
+function resolveLT(data,i,unit,dec){if(unit!=='auto')return unit;const cells=data.slice(0,200).map(r=>String(r[i]==null?'':r[i]).trim()).filter(Boolean);if(cells.some(c=>/^\d+:\d/.test(c)))return'mmss';const v=cells.map(c=>num(c,dec)).filter(fin);return v.length&&med(v)>1000?'ms':'s'}
+function fromSeries(imp,name){const{data,map,units,dec}=imp;if(!(map.time>=0))throw new Error('Choose a column for "Time".');if(!(map.speed>=0))throw new Error('Choose a column for "Speed".');
+if(!(map.lap>=0)&&!(map.dist>=0))throw new Error('Choose either a lap number column or a distance column that resets every lap, so Pacely can split the laps.');
+const ts=units.time==='ms'?.001:1,sf=SPF[units.speed]||1,gf=units.g==='ms2'?1/9.80665:1,df=units.dist==='km'?1000:1;
+const T=[],V=[],G=[],S=[],B=[],Dr=[],LN=[];
+for(const r of data){const t=num(r[map.time],dec)*ts,v=num(r[map.speed],dec)*sf;if(!fin(t)||!fin(v))continue;T.push(t);V.push(v);
+G.push(map.latG>=0?Math.abs(num(r[map.latG],dec))*gf:NaN);S.push(map.steer>=0?Math.abs(num(r[map.steer],dec)):NaN);B.push(map.brake>=0?Math.abs(num(r[map.brake],dec)):NaN);
+Dr.push(map.dist>=0?num(r[map.dist],dec)*df:NaN);LN.push(map.lap>=0?Math.round(num(r[map.lap],dec)):NaN)}
+const n=T.length;if(n<50)throw new Error('Too few rows of telemetry to find laps.');
+const dts=[];for(let i=1;i<n;i++){const d=T[i]-T[i-1];if(d>0)dts.push(d)}const dtM=med(dts)||.1;
+let D=Dr.slice();if(!(map.dist>=0)){D=[0];for(let i=1;i<n;i++){D.push(D[i-1]+Math.max(V[i],0)/3.6*Math.max(T[i]-T[i-1],0))}}
+else{let last=0;D=D.map(v=>{if(fin(v))last=v;return last})}
+let lapNo=LN.slice();
+if(!(map.lap>=0)){const mx=Math.max(...D.filter(fin));let l=1;lapNo=[1];for(let i=1;i<n;i++){if(D[i]<D[i-1]-.5*mx)l++;lapNo.push(l)}}
+else{let last=lapNo.find(fin)||1;lapNo=lapNo.map(v=>{if(fin(v))last=v;return last})}
+const gr=[];let s0=0;for(let i=1;i<=n;i++){if(i===n||lapNo[i]!==lapNo[s0]){gr.push({lap:lapNo[s0],i0:s0,i1:i-1});s0=i}}
+gr.forEach((g,k)=>{const nx=gr[k+1];g.dur=nx?T[nx.i0]-T[g.i0]:T[g.i1]-T[g.i0]+dtM;g.rel=[];let mx=0;for(let i=g.i0;i<=g.i1;i++){mx=Math.max(mx,D[i]-D[g.i0]);g.rel.push(mx)}g.len=g.rel[g.rel.length-1]});
+const ml=med(gr.map(g=>g.len).filter(v=>v>0)),md=med(gr.map(g=>g.dur));
+const kept=gr.filter(g=>g.len>=.9*ml&&g.dur>=.9*md);
+if(kept.length<5)throw new Error(`Found ${kept.length} complete lap${kept.length==1?'':'s'}. Pacely needs at least 5. Check the lap number or distance column.`);
+const laps=kept.map(g=>({lap:g.lap,t:g.dur})),L=ml,BIN=5,NB=Math.floor(L/BIN);
+const prof=g=>{const sc=L/g.len,P={v:new Float32Array(NB),g:new Float32Array(NB),s:new Float32Array(NB),b:new Float32Array(NB)};let k=0;
+for(let j=0;j<NB;j++){const pos=(j+.5)*BIN;while(k+1<g.rel.length&&g.rel[k+1]*sc<=pos)k++;const i=g.i0+k;P.v[j]=V[i];P.g[j]=G[i];P.s[j]=S[i];P.b[j]=B[i]}return P};
+const profs=kept.map(prof),best=kept.reduce((a,g,i)=>g.dur<kept[a].dur?i:a,0),rv=Array.from(profs[best].v);
+const sm=rv.map((_,j)=>{let s=0,c=0;for(let k=Math.max(0,j-2);k<=Math.min(NB-1,j+2);k++){s+=rv[k];c++}return s/c});
+let mins=[];for(let i=6;i<NB-6;i++){let isMin=true;for(let k=i-6;k<=i+6;k++)if(sm[k]<sm[i]){isMin=false;break}if(!isMin)continue;
+let lm=0,rm=0;for(let k=i;k>=Math.max(0,i-80);k--)lm=Math.max(lm,sm[k]);for(let k=i;k<=Math.min(NB-1,i+80);k++)rm=Math.max(rm,sm[k]);if(Math.min(lm,rm)-sm[i]>=15)mins.push(i)}
+const apex=[];for(const i of mins){const l=apex[apex.length-1];if(l!==undefined&&i-l<30){if(sm[i]<sm[l])apex[apex.length-1]=i}else apex.push(i)}
+let cr=[],note='';
+if(apex.length){const hasG=map.latG>=0,hasS=map.steer>=0,hasB=map.brake>=0;let thrB=0;
+if(hasB){const all=[];profs.forEach(p=>{for(let j=0;j<NB;j+=2)if(fin(p.b[j]))all.push(p.b[j])});all.sort((a,b)=>a-b);thrB=.15*(all[Math.floor(all.length*.95)]||0)}
+kept.forEach((g,gi)=>{const P=profs[gi];apex.forEach((ai,ci)=>{const lo=Math.max(0,ai-12),hi=Math.min(NB-1,ai+12);let mv=1e9,pg=0,ps=0;
+for(let j=lo;j<=hi;j++){if(P.v[j]<mv)mv=P.v[j];if(hasG&&P.g[j]>pg)pg=P.g[j];if(hasS&&P.s[j]>ps)ps=P.s[j]}
+let bm=null;if(hasB&&thrB>0){const sc=L/g.len,pa=(ai+.5)*BIN,n2=g.rel.length;let k=0;while(k+1<n2&&g.rel[k+1]*sc<=pa)k++;
+let jj=-1;for(let z=k;z>=0&&g.rel[z]*sc>=pa-400;z--)if(B[g.i0+z]>thrB){jj=z;break}
+if(jj>=0){while(jj-1>=0&&g.rel[jj-1]*sc>=pa-700&&B[g.i0+jj-1]>thrB)jj--;let pos=g.rel[jj]*sc;
+if(jj>0){const b0=B[g.i0+jj-1],b1=B[g.i0+jj],p0=g.rel[jj-1]*sc;if(fin(b0)&&b1>b0)pos=p0+(thrB-b0)/(b1-b0)*(g.rel[jj]*sc-p0)}
+bm=pa-pos}}
+cr.push({lap:g.lap,corner:'T'+(ci+1),v:mv,b:bm,st:hasS?ps:null,g:hasG?pg:null})})});
+note=`Found ${apex.length} corner${apex.length==1?'':'s'} automatically from the fastest lap and measured each one on all ${kept.length} laps.`}
+else note='No clear corners were found, so Pacely will judge tyre wear from lap times only.';
+const s=mk(name,laps,cr);s.note=note;return s}
+
+/* ---------- laps, stints ---------- */
+function parseLapList(str){const out=new Set();String(str||'').split(/[,\s;]+/).forEach(p=>{const m=p.match(/^(\d+)(?:-(\d+))?$/);if(m){const a=+m[1],b=m[2]?+m[2]:a;for(let i=Math.min(a,b);i<=Math.max(a,b)&&i-a<500;i++)out.add(i)}});return out}
+function flagLaps(laps){const out=laps.map(()=>null);if(laps.length<5)return out;
+laps.forEach((l,i)=>{const nb=[];for(let j=Math.max(0,i-3);j<=Math.min(laps.length-1,i+3);j++)if(j!==i)nb.push(laps[j].t);const m=med(nb);
+if(l.t>m*1.03&&l.t-m>2)out[i]='slow';else if(l.t<m*.95&&m-l.t>2)out[i]='fast'});return out}
+function buildStints(laps,flags,ign,spl){const st=[];let cur=[],run=0,prevIncl=-Infinity;
+laps.forEach((l,i)=>{if(ign.has(l.lap))return;if(flags[i]){run++;return}
+const gap=i>0&&l.lap-laps[i-1].lap>1;let sp=false;spl.forEach(x=>{if(x>prevIncl&&x<=l.lap)sp=true});
+if((run>=2||gap||sp)&&cur.length){st.push(cur);cur=[]}cur.push(l);prevIncl=l.lap;run=0});
+if(cur.length)st.push(cur);return st.map((ls,i)=>({i,laps:ls,first:ls[0].lap,last:ls[ls.length-1].lap,n:ls.length}))}
+function pickStint(stints,sel){if(sel!=null&&stints[sel])return sel;let k=-1;stints.forEach((s,i)=>{if(s.n>=5)k=i});if(k>=0)return k;let b=0;stints.forEach((s,i)=>{if(s.n>stints[b].n)b=i});return b}
+function runLaps(s,over){const laps=[...s.laps].sort((a,b)=>a.lap-b.lap),flags=flagLaps(laps),ign=parseLapList(s.meta.ignore),spl=parseLapList(s.meta.splits),stints=buildStints(laps,flags,ign,spl);
+if(!stints.length)throw new Error('No laps are left after ignoring laps. Clear the "Ignore laps" box.');
+const idx=pickStint(stints,over!=null?over:s.meta.stint),ignored=laps.map((l,i)=>({lap:l.lap,why:ign.has(l.lap)?'ignored by you':flags[i]==='slow'?'slow lap':flags[i]==='fast'?'unusually fast lap':null})).filter(x=>x.why);
+return{laps,flags,stints,idx,st:stints[idx],ignored}}
+
+/* ---------- analysis ---------- */
+const fmtL=(lo,hi)=>lo===Infinity?'no limit':hi===Infinity?`${lo}+`:lo===hi?`${lo}`:`${lo} to ${hi}`;
+function analyseStint(s,run,fuel,thr,rem){const st=run.st,LS=st.laps,n=LS.length;
+if(n<5)throw new Error(`Only ${n} clean lap${n==1?'':'s'} in this stint. Pacely needs at least 5 to judge tyre wear. Pick another stint, or ignore fewer laps.`);
+const x=LS.map(l=>l.lap-st.first),ct=LS.map(l=>l.t+fuel*l.lap),lt=LS.map(l=>l.t),xl=x[n-1];
+const lin=reg(x,ct),linSSE=ct.reduce((a,v,i)=>a+(v-(lin.m*x[i]+lin.b))**2,0);
+let q=null,useQuad=false;if(n>=7){q=polyfit(x,ct,2);if(q){const F=(linSSE-q.sse)/(q.sse/(n-3)+1e-12);useQuad=q.co[2]>0&&F>8&&q.co[2]*xl*xl>.15}}
+const f=useQuad?v=>q.co[0]+q.co[1]*v+q.co[2]*v*v:v=>lin.b+lin.m*v,f0=f(0);
+const lossNow=Math.max(f(xl)-f0,0),rateAvg=lin.m,rateNow=useQuad?q.co[1]+2*q.co[2]*xl:lin.m;
+const best=g=>{let C=0,bv=Infinity,bn=1;for(let N=1;N<=250;N++){C+=g(N-1);const v=(thr+C)/N;if(v<bv){bv=v;bn=N}}return bn>=250?Infinity:Math.max(0,bn-(xl+1))};
+const leftBy=m=>m>.005?best(k=>m*k):Infinity;
+const main=useQuad?best(k=>Math.max(f(k)-f0,0)):leftBy(lin.m),cands=[main,leftBy(lin.m)];
+if(n>=8){const r=Math.min(6,n),rr=reg(x.slice(-r),ct.slice(-r));cands.push(leftBy(rr.m))}
+const low=Math.min(...cands),high=Math.max(...cands);
+const resid=sd(ct.map((v,i)=>v-f(x[i])));
+const conf=n>=10&&(lin.r2>=.6||lin.m<=.005)?'High':n>=7&&(lin.r2>=.35||lin.m<=.005)?'Medium':'Low';
+const extra=rem?Math.max(f(xl+rem)-f(xl),0):0;
+const a={s,run,st,n,x,ct,lt,lin,q,useQuad,f,lossNow,rateAvg,rateNow,left:{low,high,main},conf,resid,fuel,thr,rem,extra,F:[],table:[]};
+const F=a.F,temp=parseFloat(s.meta.trackTemp);
+const rate=Math.max(rateAvg,rateNow),sev=rate>.1?'high':rate>.04?'med':'ok';
+F.push({sev,t:rateAvg>.005?`Tyres are losing about ${rateAvg.toFixed(2)} s every lap`:'Lap time is steady, tyres are holding',
+ev:`Over ${n} clean laps, fuel-corrected lap time is getting slower by ${Math.max(rateAvg,0).toFixed(2)} s per lap. About ${lossNow.toFixed(2)} s lost so far (fit quality ${lin.r2.toFixed(2)} out of 1).`,
+ac:low===Infinity?'No pit pressure from tyre wear on this data.':low<=0?`The tyres have lost enough time that a stop now pays for itself. Pit as soon as the strategy allows.`:`A stop pays for itself in about ${fmtL(low,high)} laps. Plan it inside that window.`});
+if(useQuad)F.push({sev:rateNow>.1?'high':'med',t:'Tyre wear is speeding up',ev:`The wear rate has grown from about ${Math.max(q.co[1],0).toFixed(2)} s per lap at the start of the stint to about ${Math.max(rateNow,0).toFixed(2)} s per lap now. Tyres often drop off quickly once this starts.`,ac:'Do not rely on the average rate. The laps estimate above already allows for the faster wear, so plan the stop at the early end of the range.'});
+if(rem){const lo=low,hi=high;let t,sv,ac;
+if(rem<=lo){sv='ok';t='Tyres should last to the flag';ac=`No stop is needed for tyre wear. If you stay out, the last lap will be about ${extra.toFixed(1)} s slower than now. Check the race situation too.`}
+else if(isFinite(hi)&&rem>hi){sv='high';t='A stop is needed: the tyres will not last to the flag';ac=`Pit within about ${lo} laps, and no later than about ${hi}. Staying out would make the last lap about ${extra.toFixed(1)} s slower than now.`}
+else{sv='med';t='Borderline: the tyres may not last to the flag';ac=`Pit if you can do it cheaply, for example under a safety car or with a big gap. The stop window is about ${lo} to ${isFinite(hi)?hi:'more than '+lo} laps from now.`}
+F.push({sev:sv,t,ev:`${rem} laps to go. A stop would start to pay for itself in about ${fmtL(lo,hi)} laps (stop cost ${thr.toFixed(0)} s).`,ac})}
+if(resid>.3)F.push({sev:'med',t:'Lap times are inconsistent',ev:`Laps vary by about ±${resid.toFixed(2)} s around the trend.`,ac:'Check traffic and track-limit incidents on the slow laps before trusting the other findings. You can ignore single laps under "Adjust laps and stints".'});
+cornerAnalysis(s,new Set(LS.map(l=>l.lap)),a,temp);
+if(!a.table.length&&s.cr.length===0){}
+else if(!F.some(f=>/corner problems|front grip|braking point/.test(f.t))&&a.table.length&&a.table.every(r=>r.st==='ok'))F.push({sev:'ok',t:'No corner problems found',ev:'Braking and front grip look stable in every corner.',ac:'Keep the current setup and keep watching tyre wear.'});
+return a}
+function cornerAnalysis(s,lapSet,a,temp){const F=a.F;
+for(const c of[...new Set(s.cr.map(r=>r.corner))]){const R=s.cr.filter(r=>r.corner===c&&lapSet.has(r.lap)).sort((p,q)=>p.lap-q.lap);
+if(R.length<5){a.table.push({c,st:'ok',dt:'Not enough laps to judge',nums:''});continue}
+const dt=[],nums=[];let uS='',bS='',st='ok';
+const U=R.filter(r=>fin(r.st)&&fin(r.g)&&r.g>.2);
+if(U.length>=5){const us=U.map(r=>r.st/r.g),u=reg(U.map(r=>r.lap),us),upl=u.m/mean(us)*100;uS=upl>.8&&u.r2>.5?'high':upl>.4&&u.r2>.4?'med':'';nums.push(`Steering trend ${sg(upl)}%/lap`);
+const V=R.filter(r=>fin(r.v)),vm=V.length>=5?reg(V.map(r=>r.lap),V.map(r=>r.v)).m*10:null;if(vm!==null)nums.unshift(`Min speed trend ${sg(vm)} km/h per 10 laps`);
+if(uS){let adv='Looks like front tyre wear or overheating. Consider front pressures, a little less front load, or an earlier stop, and confirm with driver feedback.';if(fin(temp)&&temp>=38)adv+=` It is a hot track (${temp} °C), so overheating is a likely cause.`;if(fin(temp)&&temp<=10)adv+=` It is a cold track (${temp} °C), so the tyres may not be reaching temperature.`;
+dt.push('Car pushing wide (front grip fading)');F.push({sev:uS,t:`${c}: the car is pushing wide, front grip is fading`,ev:`The driver needs ${upl.toFixed(1)}% more steering for the same cornering force each lap.`+(vm!==null?` Minimum speed is dropping ${Math.abs(vm).toFixed(1)} km/h every 10 laps.`:''),ac:adv})}}
+else{const V=R.filter(r=>fin(r.v));if(V.length>=5)nums.push(`Min speed trend ${sg(reg(V.map(r=>r.lap),V.map(r=>r.v)).m*10)} km/h per 10 laps`)}
+const Bk=R.filter(r=>fin(r.b));
+if(Bk.length>=5){const bs=sd(Bk.map(r=>r.b));bS=bs>5?'high':bs>3?'med':'';nums.push(`Brake spread ±${bs.toFixed(1)} m`);if(bS){dt.push('Braking point varies lap to lap');F.push({sev:bS,t:`${c}: braking point is inconsistent`,ev:`Brake point moves by about ±${bs.toFixed(1)} m from lap to lap.`,ac:'Probably driver technique or a missing reference marker. Give a coaching note rather than changing the setup.'})}}
+st=(uS==='high'||bS==='high')?'high':(uS||bS)?'med':'ok';
+a.table.push({c,st,dt:dt.length?dt.join('. '):(nums.length?'No problems found':'No data to judge this corner'),nums:nums.join(' · ')})}}
+function call(a){const{low,high}=a.left,rem=a.rem,thr=a.thr;let sev,head,why;
+if(rem){if(rem<=low){sev='ok';head='Tyres should last to the flag'}else if(isFinite(high)&&rem>high){sev='high';head=low<=0?'Pit as soon as you can':`Stop needed: pit within about ${low} lap${low==1?'':'s'}`}else{sev='med';head='Borderline: tyres may not last to the flag'}
+why=`${rem} laps to go. A stop starts to pay for itself in about ${fmtL(low,high)} laps (stop cost ${thr.toFixed(0)} s).`+(a.extra>.05?` Staying out makes the last lap about ${a.extra.toFixed(1)} s slower than now.`:'')}
+else{if(low===Infinity){sev='ok';head='Tyres are holding'}else if(low<=0){sev='high';head='Pit as soon as you can'}else if(low<=4){sev='high';head=`Pit within about ${low} lap${low==1?'':'s'}`}else if(low<=8){sev='med';head=`Plan your stop in the next ${low} laps`}else{sev='ok';head=`About ${low} laps of tyre life left`}
+why=low===Infinity?'No meaningful tyre wear in this data.':`Losing about ${Math.max(a.rateAvg,0).toFixed(2)} s per lap, ${a.lossNow.toFixed(1)} s so far.`+(isFinite(high)&&high>low?` A stop pays for itself in about ${fmtL(low,high)} laps (stop cost ${thr.toFixed(0)} s).`:'')}
+return{sev,head,why:why+' Based on tyre wear only, so check traffic and the race situation too.'}}
+const LAB={high:'▲ Act now',med:'◆ Watch',ok:'✓ OK'},CL={high:'▲ Problem',med:'◆ Watch',ok:'✓ Fine'};
+
+/* ---------- state ---------- */
+let sessions=[],tab='call',cmpSt={A:null,B:null},printing=false,view='single',cur=0,A=0,B=1,lastMsg='',msgs=[],imp=null,queue=[],armed=false;
+const fuel=()=>+$('#fuel').value||0,thr=n=>{const v=+$('#thr').value;return v>0?v:25};
+const remOf=s=>{const v=parseInt(s.meta.remaining,10);return v>0?v:0};
+function analyse(s,over){const r=runLaps(s,over);return analyseStint(s,r,fuel(),thr(r.st.n),remOf(s))}
+
+/* ---------- charts ---------- */
+function chartS(a){const W=600,H=240,p=42,st=a.st,fuelG=a.fuel,{low,high}=a.left,rem=a.rem;
+const ph=Math.max(2,rem?Math.min(rem,30):Math.min(25,(isFinite(high)?high:isFinite(low)?low+4:8)+2));
+const x0=st.first,x1=st.last+ph,raw=lap=>a.f(lap-st.first)-fuelG*lap,curve=[];for(let l=x0;l<=x1;l++)curve.push([l,raw(l)]);
+const ys=[...a.lt,...curve.map(c=>c[1])],mn=Math.min(...ys)-.3,mx=Math.max(...ys)+.3,X=l=>p+(l-x0)/(x1-x0)*(W-p-12),Y=v=>H-28-(v-mn)/(mx-mn)*(H-46);
+const poly=arr=>arr.map(c=>X(c[0]).toFixed(1)+','+Y(c[1]).toFixed(1)).join(' ');
+const done=curve.filter(c=>c[0]<=st.last),fut=curve.filter(c=>c[0]>=st.last);
+let band='';if(isFinite(low)){const b0=st.last+low,b1=Math.min(isFinite(high)?st.last+high:x1,x1);if(b0<=x1)band=`<rect class="band" x="${X(b0)}" y="12" width="${Math.max(X(b1)-X(b0),3)}" height="${H-40}"/><text class="t" x="${X(b0)+4}" y="26">Pit window</text>`}
+const flag=rem&&st.last+rem<=x1?`<line class="flag" x1="${X(st.last+rem)}" x2="${X(st.last+rem)}" y1="12" y2="${H-28}"/><text class="t" x="${X(st.last+rem)-30}" y="26">Flag</text>`:'';
+return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lap times for this stint with the fitted trend and the pit window. Higher means slower."><line class="axis" x1="${p}" x2="${W-12}" y1="${H-28}" y2="${H-28}"/><line class="axis" x1="${p}" x2="${p}" y1="12" y2="${H-28}"/>
+${[.25,.5,.75].map(k=>`<line class="grid" x1="${p}" x2="${W-12}" y1="${12+k*(H-40)}" y2="${12+k*(H-40)}"/>`).join('')}${band}${flag}
+<text class="t" x="2" y="20">${mx.toFixed(1)}s</text><text class="t" x="2" y="${H-32}">${mn.toFixed(1)}s</text><text class="t" x="${p}" y="${H-8}">Lap ${x0}</text><text class="t" x="${X(st.last)-20}" y="${H-8}">Lap ${st.last}</text>
+<polyline class="fitc" points="${poly(done)}"/><polyline class="fitp" points="${poly(fut)}"/>${st.laps.map(l=>`<circle class="dot s" cx="${X(l.lap)}" cy="${Y(l.t)}" r="4"/>`).join('')}</svg>`}
+function chart2(a,b){const W=600,H=220,p=40,n=Math.max(a.n,b.n),all=[...a.lt,...b.lt],mn=Math.min(...all)-.3,mx=Math.max(...all)+.3,X=i=>p+i/Math.max(n-1,1)*(W-p-10),Y=v=>H-26-(v-mn)/(mx-mn)*(H-44),P=ys=>ys.map((v,i)=>X(i).toFixed(1)+','+Y(v).toFixed(1)).join(' ');
+return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lap times of session A and session B by laps into the stint. Higher means slower."><line class="axis" x1="${p}" x2="${W-10}" y1="${H-26}" y2="${H-26}"/><line class="axis" x1="${p}" x2="${p}" y1="12" y2="${H-26}"/>
+${[.25,.5,.75].map(k=>`<line class="grid" x1="${p}" x2="${W-10}" y1="${12+k*(H-38)}" y2="${12+k*(H-38)}"/>`).join('')}
+<text class="t" x="2" y="20">${mx.toFixed(1)}s</text><text class="t" x="2" y="${H-30}">${mn.toFixed(1)}s</text><text class="t" x="${p+4}" y="22">Slower</text><text class="t" x="${p+4}" y="${H-32}">Faster</text><text class="t" x="${p}" y="${H-7}">Lap 1 of stint</text><text class="t" x="${W-92}" y="${H-7}">Lap ${n} of stint</text>
+<polyline class="traceB" points="${P(b.lt)}"/>${b.lt.map((v,i)=>`<rect class="mkB" x="${X(i)-4}" y="${Y(v)-4}" width="8" height="8"/>`).join('')}
+<polyline class="trace" points="${P(a.lt)}"/>${a.lt.map((v,i)=>`<circle class="dot" cx="${X(i)}" cy="${Y(v)}" r="4"/>`).join('')}</svg>`}
+
+/* ---------- views ---------- */
+const errHTML=(t,m)=>`<article class="f high"><span class="tag">▲ Error</span><h3>${esc(t)}</h3><dl><div><dt>What went wrong</dt><dd>${esc(m)}</dd></div></dl></article>`;
+const EMPTY='<div class="empty"><svg viewBox="0 0 100 100" width="56" height="56" aria-hidden="true" style="display:block;margin:0 auto 12px"><g transform="skewX(-10)" transform-origin="50 50"><rect x="18" y="13.5" width="16" height="72.5" fill="currentColor"/><path d="M49.48 64.17 A22 22 0 1 1 73.85 57.64" fill="none" stroke="currentColor" stroke-width="15"/><circle cx="62.69" cy="64.75" r="7.2" fill="#d4160c"/></g></svg><b>Race calls for small teams</b>Drop in your lap times from any logger or timing sheet. Pacely cleans them up and tells you when to pit. No setup needed.</div>';
+const sel=(id,opts,val,extra='')=>`<select ${id} ${extra}>${opts.map(([v,l])=>`<option value="${v}" ${String(v)===String(val)?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
+function stintBlock(s,a){const r=a.run,ig=r.ignored;
+return`<section class="stint"><div class="card"><div class="k" style="font-size:14px;font-weight:700;color:var(--mu)">Stint</div>
+${r.stints.length>1?`<div class="chips" style="margin-top:8px">${r.stints.map(t=>`<button class="chip ${t.i===r.idx?'on':''} ${t.n<5?'dim':''}" data-st="${t.i}">Stint ${t.i+1} · laps ${t.first}–${t.last}${t.n<5?' (too short)':''}</button>`).join('')}</div>`:''}
+<p class="sum">Analysing ${r.stints.length>1?`stint ${r.idx+1} of ${r.stints.length}`:'one stint'}: laps ${a.st.first}–${a.st.last}, ${a.n} clean laps.</p>
+${ig.length?`<p class="ign">Left out: ${ig.map(x=>`lap ${x.lap} (${x.why})`).join(', ')}.</p>`:''}
+<details class="set"><summary>Adjust laps and stints</summary><div class="grid2"><label class="fld">Ignore these laps<input type="text" id="ign" value="${esc(s.meta.ignore)}" placeholder="for example 1, 15-16"></label>
+<label class="fld">Start a new stint at lap<input type="text" id="spl" value="${esc(s.meta.splits)}" placeholder="for example 17"></label></div>
+<p class="hint">Pacely already leaves out in-laps, out-laps and unusually slow laps, and starts a new stint after a pit stop. Use these boxes if it gets one wrong.</p></details></div></section>`}
+function fieldsBlock(s){return`<div class="grid2"><label class="fld">Name<input type="text" id="sname" value="${esc(s.name)}"></label>
+<label class="fld">Tyre compound${sel('id="cmpd"',[['','Not set'],['Soft','Soft'],['Medium','Medium'],['Hard','Hard'],['Wet','Wet'],['Other','Other']],s.meta.compound)}</label>
+<label class="fld">Track temperature (°C)<input type="number" id="ttemp" value="${esc(s.meta.trackTemp)}" step="1"></label>
+<label class="fld">Air temperature (°C)<input type="number" id="atemp" value="${esc(s.meta.airTemp)}" step="1"></label></div>`}
+function detailsBlock(s,open){return`<details class="set noprint"${open?' open':''}><summary>Session details</summary>${fieldsBlock(s)}</details>`}
+function condText(s){const m=s.meta,p=[];if(m.compound)p.push(m.compound+' tyres');if(m.trackTemp!=='')p.push('track '+m.trackTemp+' °C');if(m.airTemp!=='')p.push('air '+m.airTemp+' °C');return p.join(', ')}
+function single(a){const s=sessions[cur],o={high:0,med:1,ok:2},c=call(a);a.F.sort((x,y)=>o[x.sev]-o[y.sev]);
+const top=a.F.filter(f=>f.sev!='ok').slice(0,2).map(f=>f.t);
+lastMsg=`Pacely (${s.name}): ${c.head}.`+(top.length?' '+top.join('. ')+'.':' No other problems found.');
+const cons=a.resid<.15?['Good','ok']:a.resid<.3?['Fair','med']:['Poor','high'];
+const ph=`<div class="printhead"><h1>Pacely report</h1><p><b>${esc(s.name)}</b> · ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}${condText(s)?' · '+esc(condText(s)):''}</p><p>Stint laps ${a.st.first}–${a.st.last} · fuel gain ${a.fuel} s/lap · pit stop cost ${a.thr.toFixed(0)} s</p></div>`,
+hero=`<section class="call ${c.sev}" aria-live="polite"><div class="k">${esc(s.name)}</div><div class="big">${esc(c.head)}</div><p class="why">${esc(c.why)}</p><p class="conf">Confidence: ${a.conf}</p>
+<div class="row noprint"><div class="inl"><label for="rem">Laps to go</label><input type="number" id="rem" min="0" step="1" value="${esc(s.meta.remaining)}" placeholder="optional"></div><button id="copy">Copy message for the pit wall</button></div></section>
+<div class="tiles"><div class="tile"><div class="n">${Math.max(a.rateAvg,0).toFixed(2)}<small> s</small></div><div class="l">Tyre loss per lap</div></div>
+<div class="tile"><div class="n">${a.left.low===Infinity?'–':fmtL(a.left.low,a.left.high)}<small> laps</small></div><div class="l">Before you should pit</div></div>
+<div class="tile"><div class="n"><span class="tag ${cons[1]}">${cons[0]}</span></div><div class="l">Lap consistency (±${a.resid.toFixed(2)} s)</div></div></div>`,
+fi=f=>`<article class="f ${f.sev}"><span class="tag">${LAB[f.sev]}</span><h3>${esc(f.t)}</h3><p class="do">${esc(f.ac)}</p><details class="why"${printing?' open':''}><summary>Why?</summary><p>${esc(f.ev)}</p></details></article>`,
+shown=printing?a.F:a.F.slice(0,3),more=printing?[]:a.F.slice(3),
+finds=`<h2>What to do</h2><div class="fgrid">${shown.map(fi).join('')}</div>${more.length?`<details class="set noprint"><summary>Show ${more.length} more</summary><div class="fgrid">${more.map(fi).join('')}</div></details>`:''}`,
+chart=`<h2>Lap times and pit window</h2><div class="card">${chartS(a)}<p class="hint" style="margin-top:6px">Each dot is a lap. The line is the trend. The shaded band is when to pit.${a.rem?' The vertical line is the flag.':''}</p></div>`,
+corners=a.table.length?`<h2>Corners</h2><div class="cor">${a.table.map(r=>`<div class="cr"><span class="nm">${esc(r.c)}</span><span class="tag ${r.st}">${CL[r.st]}</span><span class="dt">${esc(r.dt)}</span></div>`).join('')}</div>`:'',
+readn=(()=>{const q=SRC.get(s.id);if(!q||!q.map)return'';const nm=q.shape==='laps'&&q.map.lapTime>=0?` from the column "${esc(q.names[q.map.lapTime])}"`:'';return`<p class="readn noprint">Read ${s.laps.length} laps${nm}. <button class="link" id="fixcols">Not right? Fix columns</button></p>`})(),
+fine=`<details class="set noprint"><summary>Fine-tune stints and laps</summary>${stintBlock(s,a)}</details>`,
+ai=`<details class="set noprint"${(aiState[s.id]&&aiState[s.id].log.length)?' open':''}><summary>Ask AI about this session (optional)</summary>${aiBlock(s)}</details>`,
+note=s.note?`<p class="foot">${esc(s.note)}</p>`:'',
+disc=`<p class="foot">Pacely uses simple rules to flag trends, not certainties. Always confirm with driver feedback and the race situation.</p>`,
+prt=`<div class="ctl noprint"><button class="alt sm" id="print">Print or save as PDF</button></div>`;
+if(printing)return ph+hero+`<div class="dash"><div class="colL">${finds}</div><div class="colR">${chart}${corners}</div></div>`+note+disc;
+const P={call:ph+readn+hero+`<div class="dash"><div class="colL">${finds}</div><div class="colR">${chart}${corners}</div></div>`+fine+ai+prt+disc,
+files:`<h2>This session</h2><div class="card"><details class="set noprint" style="margin:0;border:0;padding:0"><summary>Name, tyre and temperature details</summary>${fieldsBlock(s)}</details><div class="ctl noprint" style="margin-top:12px"><button class="alt sm" id="print">Print or save as PDF</button><button class="alt sm" id="dl">Download as CSV</button><button class="alt sm" id="rm">${armed==='rm'?'Tap again to remove':'Remove this session'}</button><button class="alt sm" id="clr">${armed==='clr'?'Tap again to clear all':'Clear all sessions'}</button></div></div>${note}${disc}`};
+return `<div class="tabpane" role="tabpanel">${P[tab]||P.call}</div>`}
+const MET=[['Tyre loss per lap','tyre',v=>v.toFixed(2)+' s',.01,-1],['Laps before you should pit','left',v=>v===Infinity?'No limit':v+' laps',1,1],['Lap consistency','resid',v=>'±'+v.toFixed(2)+' s',.02,-1],['Best lap','best',v=>v.toFixed(2)+' s',.05,-1],['Average lap','avg',v=>v.toFixed(2)+' s',.05,-1],['Problems found (fewer is better)','probs',v=>String(v),0,-1]];
+const TXT={tyre:(w,l,d)=>`${w} loses ${d.toFixed(2)} s less per lap to tyre wear than ${l}.`,lost:(w,l,d)=>`${w} has lost ${d.toFixed(1)} s less to tyre wear so far.`,left:(w,l,d)=>`${w} lasts ${d===Infinity?'much longer':d+' more laps'} before hitting your time-loss limit than ${l}.`,resid:(w,l,d)=>`${w} has more consistent laps than ${l} (${d.toFixed(2)} s tighter).`,best:(w,l,d)=>`${w} has the faster best lap, by ${d.toFixed(2)} s.`,avg:(w,l,d)=>`${w} has the faster average lap, by ${d.toFixed(2)} s.`,probs:(w,l,d)=>`${w} has fewer problems than ${l}.`};
+function summ(a){return{tyre:Math.max(a.rateAvg,0),lost:a.lossNow,left:a.left.low,resid:a.resid,best:Math.min(...a.lt),avg:mean(a.lt),probs:a.F.reduce((n,f)=>n+(f.sev=='high'?2:f.sev=='med'?1:0),0)}}
+function compare(){const sa=sessions[A],sb=sessions[B],opt=i=>sessions.map((s,j)=>`<option value="${j}" ${j==i?'selected':''}>${esc(s.name)}</option>`).join('');
+const stOpts=(sx,k)=>{let r;try{r=runLaps(sx,cmpSt[k])}catch(e){return''}if(r.stints.length<2)return'';return r.stints.map(t=>`<option value="${t.i}" ${t.i===r.idx?'selected':''}>Stint ${t.i+1} · laps ${t.first}–${t.last}${t.n<5?' (too short)':` · ${t.n} clean`}</option>`).join('')};
+const stLab=(sx,k)=>{try{const r=runLaps(sx,cmpSt[k]);return r.stints.length>1?` (stint ${r.idx+1})`:''}catch(e){return''}};
+const head=`<div class="card noprint" style="margin-top:18px"><div class="pick"><div class="pk"><label>Session A<select id="selA">${opt(A)}</select></label>${stOpts(sa,'A')?`<label>Stint for A<select id="stA">${stOpts(sa,'A')}</select></label>`:''}</div><div class="pk"><label>Session B<select id="selB">${opt(B)}</select></label>${stOpts(sb,'B')?`<label>Stint for B<select id="stB">${stOpts(sb,'B')}</select></label>`:''}</div></div></div>
+<div class="printhead"><h1>Pacely comparison</h1><p>A: <b>${esc(sa.name)}${stLab(sa,'A')}</b> · B: <b>${esc(sb.name)}${stLab(sb,'B')}</b> · ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</p></div>`;
+let a,b;try{a=analyse(sa,cmpSt.A)}catch(e){return head+errHTML('Session A: could not analyse',e.message)}try{b=analyse(sb,cmpSt.B)}catch(e){return head+errHTML('Session B: could not analyse',e.message)}
+const x=summ(a),y=summ(b);let wa=0,wb=0;
+const rows=MET.map(([nm,k,f,tol,dir])=>{const u=x[k],v=y[k];let win='Same',d=0;if(u!==v){const sc=u===Infinity?-dir:v===Infinity?dir:dir*(v-u);d=(u===Infinity||v===Infinity)?Infinity:Math.abs(v-u);if(sc>tol)win='B';else if(sc<-tol)win='A'}if(win=='A')wa++;if(win=='B')wb++;return{nm,k,f,u,v,win,d}});
+const lead=wa>wb?'A':wb>wa?'B':null,ln=lead=='A'?sa.name+stLab(sa,'A'):sb.name+stLab(sb,'B');
+const ch=rows.filter(r=>r.win!='Same').map(r=>{const w=r.win,l=w=='A'?'B':'A';return`<li><span class="tag ok">✓ ${w} better</span><span>${TXT[r.k]('Session '+w,'session '+l,r.d)}</span></li>`});
+const warn=[];const ma=sa.meta,mb=sb.meta;if(ma.compound&&mb.compound&&ma.compound!==mb.compound)warn.push(`different tyre compounds (${ma.compound} and ${mb.compound})`);
+const ta=parseFloat(ma.trackTemp),tb=parseFloat(mb.trackTemp);if(fin(ta)&&fin(tb)&&Math.abs(ta-tb)>=8)warn.push(`track temperatures ${Math.abs(ta-tb).toFixed(0)} °C apart (${ta} and ${tb} °C)`);
+{const ma2=mean(a.lt),mb2=mean(b.lt);if(Math.abs(ma2-mb2)/Math.min(ma2,mb2)>.1)warn.push(`very different lap times (${ma2.toFixed(0)} s and ${mb2.toFixed(0)} s), so these may be from different tracks or cars`)}
+if(Math.abs(a.n-b.n)>=5)warn.push(`different stint lengths (${a.n} and ${b.n} laps)`);
+const ca=Object.fromEntries(a.table.map(r=>[r.c,r])),cb=Object.fromEntries(b.table.map(r=>[r.c,r])),cs=[...new Set([...a.table,...b.table].map(r=>r.c))];
+const cell=r=>r?`<span class="tag ${r.st}">${CL[r.st]}</span><small>${esc(r.dt)}</small>`:'–';
+return head+`${warn.length?`<div class="notice">Take care with this comparison: the sessions have ${warn.join(', and ')}.</div>`:''}
+<section class="verdict" aria-live="polite"><div class="k">Comparison</div><div class="big">${lead?`Session ${lead} looks stronger overall`:'Too close to call'}</div><p>${lead?`${esc(ln)} wins ${Math.max(wa,wb)} of ${MET.length} measures (${wa} for A, ${wb} for B).`:`Each session wins ${wa} of ${MET.length} measures.`}</p></section>
+<div class="dash cmpd"><div class="colL"><h2>What is different</h2><div class="card">${ch.length?`<ul class="chg">${ch.join('')}</ul>`:'<p style="margin:0">The two sessions are very similar on every measure.</p>'}</div>
+</div><div class="colR"><h2>Side by side</h2><div class="card" style="padding:8px 12px"><table class="cmp"><tr><th>Measure</th><th>A</th><th>B</th><th>Better</th></tr>${rows.map(r=>`<tr><td>${r.nm}</td><td class="${r.win=='A'?'win':''}">${r.f(r.u)}</td><td class="${r.win=='B'?'win':''}">${r.f(r.v)}</td><td>${r.win=='Same'?'Same':'✓ '+r.win}</td></tr>`).join('')}</table></div></div></div>
+<details class="set noprint"><summary>Show chart and corners</summary><h2>Lap times</h2><div class="card"><div class="lg"><span><i class="sw"></i>A: ${esc(sa.name)}${stLab(sa,'A')}</span><span><i class="sw b"></i>B: ${esc(sb.name)}${stLab(sb,'B')}</span></div>${chart2(a,b)}</div>
+${cs.length?`<h2>Corner by corner</h2><div class="cch"><span></span><span>A</span><span>B</span></div>${cs.map(c=>`<div class="cc"><span class="nm">${esc(c)}</span><div>${cell(ca[c])}</div><div>${cell(cb[c])}</div></div>`).join('')}`:''}</details>
+<div class="ctl noprint"><button class="alt sm" id="print">Print or save as PDF</button></div>
+<p class="foot">Pacely uses simple rules to flag trends, not certainties. Compare sessions with similar conditions, such as the same track and weather.</p>`}
+function pickCard(q){const gi=q.gi,cls=[...new Set(gi.groups.map(g=>g.cls).filter(Boolean))];
+return`<section class="card" style="margin-top:18px"><div style="font-weight:800;font-size:19px">${gi.groups.length} cars in this file</div><p class="hint" style="margin-top:4px">${esc(q.name)}. Tick the ones to load. Each becomes its own session you can compare.</p>${cls.length>1?`<label class="fld" style="margin-top:10px;max-width:260px">Class<select id="pickCls"><option value="">All classes</option>${cls.map(c=>`<option ${q.clsF===c?'selected':''}>${esc(c)}</option>`).join('')}</select></label>`:''}
+<div class="pklist">${gi.groups.map((g,i)=>(!q.clsF||g.cls===q.clsF)?`<label class="pkrow"><input type="checkbox" data-g="${i}" ${g.sel?'checked':''}><b>${esc(gName(gi,g))}</b><span>${g.rows.length} laps</span></label>`:'').join('')}</div>
+<div class="row" style="margin-top:12px"><button id="pickGo">Load selected</button><button class="alt" id="pickAll">Tick all shown</button><button class="alt" id="pickNone">Clear</button><button class="alt" id="impSkip">Skip this file</button></div>${q.err?`<p class="err" role="alert">${esc(q.err)}</p>`:''}</section>`}
+function importCard(){const q=imp;if(q.pick)return pickCard(q);F=FIELDS[q.shape],U=UNITS[q.shape],cols=[[-1,'(none)'],...q.names.map((n,i)=>[i,n+(q.colUnits&&q.colUnits[i]?' ['+q.colUnits[i]+']':'')])];
+const more=queue.length>1?` (file 1 of ${queue.length})`:'';
+return`<section class="card" style="margin-top:18px"><div style="font-weight:800;font-size:19px">Match the columns${more}</div><p class="hint" style="margin-top:4px">${esc(q.name)} · ${q.data.length.toLocaleString()} rows. Pacely guessed the columns below. Check them, then import.</p>
+<div class="mrow"><span>What is in this file?</span>${sel('id="shape"',Object.entries(SHAPES),q.shape)}</div>
+${F.map(([k,l,req,h])=>`<div class="mrow"><span>${l}${req?'':' <small>optional</small>'}${h?`<small>${h}</small>`:''}</span>${sel(`data-map="${k}"`,cols,q.map[k]==null?-1:q.map[k])}</div>`).join('')}
+${U.map(([k,l,o])=>`<div class="mrow"><span>${l}</span>${sel(`data-unit="${k}"`,o,q.units[k])}</div>`).join('')}
+<div class="pv"><table><tr>${q.names.slice(0,10).map(n=>`<th>${esc(n)}</th>`).join('')}</tr>${q.data.slice(0,4).map(r=>`<tr>${r.slice(0,10).map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>
+<label class="row" style="margin-top:12px;gap:8px;font-size:15px"><input type="checkbox" id="remember" ${q.remember?'checked':''}> Remember this mapping for files with the same columns</label>
+${q.err?`<p class="err" role="alert">${esc(q.err)}</p>`:''}
+<div class="row" style="margin-top:14px"><button id="impGo">Import</button><button class="alt" id="impSkip">Skip this file</button></div></section>`}
+const TABS=[['call','Race call'],['quali','Qualifying <i class="beta">Beta</i>'],['compare','Compare'],['files','Files']];
+const fmtT=t=>{const m=Math.floor(t/60);return m+':'+(t-m*60).toFixed(2).padStart(5,'0')};
+function navHTML(){return TABS.map(([k,l])=>`<button role="tab" aria-selected="${tab===k}" class="${tab===k?'on':''}" data-tab="${k}">${l}</button>`).join('')}
+function ctxHTML(){const s=sessions[cur];let ns='';try{ns=runLaps(s).stints.length}catch(e){}const best=s.laps.length?fmtT(Math.min(...s.laps.map(l=>l.t))):'–';
+return `<div class="ctx noprint"><label class="cs">Session${sessions.length>1?`<select id="selS">${sessions.map((x,i)=>`<option value="${i}" ${i==cur?'selected':''}>${esc(x.name)}</option>`).join('')}</select>`:`<b>${esc(s.name)}</b>`}</label><dl class="facts"><div><dt>Laps</dt><dd>${s.laps.length}</dd></div><div><dt>Best lap</dt><dd>${best}</dd></div>${ns?`<div><dt>Stints</dt><dd>${ns}</dd></div>`:''}${condText(s)?`<div><dt>Conditions</dt><dd class="sm">${esc(condText(s))}</dd></div>`:''}</dl></div>`}
+function bar(){const n=msgs.length?`<div class="notice ${msgs.some(m=>m.bad)?'bad':''}" role="alert">${msgs.map(m=>esc(m.t)).join('<br>')}</div>`:'';
+return `${n}${tab!=='compare'?ctxHTML():''}`}
+
+/* ---- qualifying (beta): lap times only ---- */
+function qAnalyse(s){const L=s.laps.filter(l=>fin(l.t)&&l.t>0).sort((a,b)=>a.lap-b.lap);
+if(L.length<3)throw new Error('Qualifying needs at least 3 lap times in the session.');
+const best=Math.min(...L.map(l=>l.t)),push=l=>l.t<=best*1.02,slow=l=>l.t>best*1.07;
+const runs=[];let cur=null,prev=null;
+for(const l of L){const brk=prev&&l.lap!==prev.lap+1;if(slow(l)||brk){cur=null}if(!slow(l)){if(!cur){cur={laps:[]};runs.push(cur)}cur.laps.push(l)}prev=l}
+runs.forEach(r=>{r.best=r.laps.reduce((a,l)=>l.t<a.t?l:a);r.pos=r.laps.indexOf(r.best)+1;r.n=r.laps.length;r.push=r.laps.filter(push).length});
+const pl=L.filter(push),bl=L.find(l=>l.t===best),avg=mean(pl.map(l=>l.t)),spread=pl.length>1?sd(pl.map(l=>l.t)):0;
+const useful=runs.filter(r=>r.n>=3),poss=useful.map(r=>r.pos).sort((a,b)=>a-b),med=poss.length?poss[Math.floor(poss.length/2)]:null;
+return{s,L,best,bl,runs,pl,avg,spread,med,push,slow}}
+function qChart(a){const W=600,H=220,p=56,{L,best}=a,V=L.filter(l=>l.t<=best*1.05);if(V.length<2)return'';
+const x0=Math.min(...V.map(l=>l.lap)),x1=Math.max(...V.map(l=>l.lap)),hi=best*1.05,X=v=>p+(v-x0)/Math.max(x1-x0,1)*(W-p-10),Y=t=>H-24-(t-best)/(hi-best)*(H-40);
+const dots=V.map(l=>`<circle cx="${X(l.lap).toFixed(1)}" cy="${Y(l.t).toFixed(1)}" r="${l===a.bl?6:3.5}" fill="${a.push(l)?'var(--ac)':'var(--lnb)'}" ${l===a.bl?'stroke="var(--tx)" stroke-width="2"':''}/>`).join('');
+return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lap times, push laps in red, best lap ringed" style="width:100%;height:auto"><line x1="${p}" y1="${Y(best*1.02)}" x2="${W-10}" y2="${Y(best*1.02)}" stroke="var(--ln)" stroke-dasharray="4 4"/><text x="${p-6}" y="${Y(best)+4}" text-anchor="end" font-size="11" fill="var(--mu)">${fmtT(best)}</text><text x="${p-6}" y="${Y(hi)+4}" text-anchor="end" font-size="11" fill="var(--mu)">+5%</text><text x="${p}" y="${H-6}" font-size="11" fill="var(--mu)">Lap ${x0}</text><text x="${W-10}" y="${H-6}" text-anchor="end" font-size="11" fill="var(--mu)">Lap ${x1}</text>${dots}</svg>`}
+function quali(){let rows=[];try{rows=sessions.map((s,i)=>{try{return{i,a:qAnalyse(s)}}catch(e){return null}}).filter(Boolean)}catch(e){}
+const a=rows.find(r=>r.i===cur);if(!a)return errHTML('Could not analyse this session','Qualifying needs at least 3 lap times in the session.');
+const q=a.a,{best,runs,pl,avg,spread,med}=q;rows.sort((x,y)=>x.a.best-y.a.best);const fast=rows[0].a.best,rank=rows.findIndex(r=>r.i===cur)+1;
+const F=[];
+const last=runs.filter(r=>r.n>=2&&r.pos===r.n&&r.push>=2);
+if(last.length)F.push({sev:'med',t:'The best lap came at the end of a run',m:'Lap times were still improving when the run finished, so one more push lap may have been faster.',d:'Next time, stay out one lap longer if the track and traffic allow it.'});
+if(med&&runs.filter(r=>r.n>=3).length>=2)F.push({sev:'ok',t:`The tyres peak around lap ${med} of a run`,m:`The best lap in each run came most often on lap ${med} of that run.`,d:med===1?'The tyres work straight away. Push from the first flying lap.':`Use ${med-1} lap${med==2?'':'s'} to bring the tyres up to temperature before pushing.`});
+if(pl.length>=3){const g=avg-best;F.push({sev:g>.5?'med':'ok',t:g>.5?'The best lap was well ahead of the other push laps':'Push laps were close together',m:`The average push lap was ${g.toFixed(2)} s slower than the best, with a spread of ±${spread.toFixed(2)} s.`,d:g>.5?'The pace is there but not repeatable. Look at what was different on the best lap: traffic, tyre age or line.':'Repeating the best lap is not the problem. Look for gains in the car or the line.'})}
+if(!F.length)F.push({sev:'ok',t:'Not enough push laps for more advice',m:'Pacely needs two or more runs, or three or more laps within 2% of the best.',d:'Load a longer session, or one that includes several runs.'});
+const tag={ok:'✓ Fine',med:'◆ Watch',high:'▲ Act now'};
+const gap=q.bl.t-fast;
+return `<div class="tabpane"><div class="notice" style="margin-top:20px"><b>Beta.</b> Qualifying uses lap times only for now. Sector times are not read yet, so there is no ideal lap.</div>
+<section class="verdict"><div class="k">${esc(q.s.name)}</div><div class="big">${fmtT(best)}</div><p>Best lap, lap ${q.bl.lap}${rows.length>1?`. ${rank===1?'Fastest of':'P'+rank+' of'} ${rows.length} loaded sessions${rank>1?`, ${gap.toFixed(3)} s off the fastest`:''}.`:'.'}</p></section>
+<div class="tiles"><div class="tile"><div class="n">${runs.length}</div><div class="l">Runs (a run is a group of laps between slow in and out laps)</div></div><div class="tile"><div class="n">${pl.length}</div><div class="l">Push laps (within 2% of the best)</div></div><div class="tile"><div class="n">${pl.length>1?'±'+spread.toFixed(2):'n/a'}<small>${pl.length>1?' s':''}</small></div><div class="l">Spread between push laps</div></div></div>
+<div class="fgrid"><div><h2>What to do</h2>${F.map(f=>`<article class="f ${f.sev}"><span class="tag">${tag[f.sev]}</span><h3>${esc(f.t)}</h3><p>${esc(f.m)}</p><p class="do">${esc(f.d)}</p></article>`).join('')}</div>
+<div><h2>Lap times</h2><div class="card">${qChart(q)}<p class="mu" style="margin:8px 0 0;font-size:14px">Red dots are push laps. The ringed dot is the best lap. Laps more than 5% off the best are not shown.</p></div></div></div>
+<h2>Runs</h2><div class="card" style="padding:8px 12px"><table class="cmp"><tr><th>Run</th><th>Laps</th><th>Push laps</th><th>Best lap</th><th>Best on lap</th></tr>${runs.map((r,i)=>`<tr><td>${i+1}</td><td>${r.n}</td><td>${r.push}</td><td class="${r.best===q.bl?'win':''}">${fmtT(r.best.t)}</td><td>${r.pos} of ${r.n}</td></tr>`).join('')}</table></div>
+${rows.length>1?`<h2>Sessions ranked by best lap</h2><div class="card" style="padding:8px 12px"><table class="cmp"><tr><th>Pos</th><th>Session</th><th>Best lap</th><th>Gap</th></tr>${rows.map((r,k)=>`<tr data-qs="${r.i}" style="cursor:pointer"><td>${k+1}</td><td>${r.i===cur?'<b>'+esc(r.a.s.name)+'</b>':esc(r.a.s.name)}</td><td>${fmtT(r.a.best)}</td><td>${k?'+'+(r.a.best-fast).toFixed(3)+' s':'Fastest'}</td></tr>`).join('')}</table></div>`:''}</div>`}
+function render(){const el=$('#out'),hold=$('#ctrlHold'),ctrl=document.querySelector('.card.ctrl');hold.append(ctrl);$('#navHold').innerHTML=sessions.length?navHTML():'';view=tab==='compare'?'compare':'single';let h=imp?importCard():'';
+if(!sessions.length){el.innerHTML='<div id="dataSlot"></div>'+h+(msgs.length&&!imp?`<div class="notice ${msgs.some(m=>m.bad)?'bad':''}" role="alert">${msgs.map(m=>esc(m.t)).join('<br>')}</div>`:'')+(imp?'':EMPTY);el.querySelector('#dataSlot').append(ctrl);wire();return}
+if(tab==='call'&&sessions[cur]&&sessions[cur].laps.length<5)tab='quali';let body;try{body=tab==='quali'?quali():tab==='compare'?(sessions.length>1?`<div class="tabpane">${compare()}</div>`:`<div class="empty"><b>Load a second session to compare</b>Go to the Data tab and load another file, or the sample sessions.</div>`):single(analyse(sessions[cur]))}catch(e){body=errHTML('Could not analyse this session',e.message)+detailsBlock(sessions[cur],true)}
+el.innerHTML=h+bar()+(tab==='files'?'<div id="dataSlot"></div>':'')+body;const sl=el.querySelector('#dataSlot');if(sl)sl.append(ctrl);wire()}
+function wire(){const el=$('#out');
+const fx=$('#fixcols');if(fx)fx.onclick=()=>{const q=SRC.get(sessions[cur].id);if(!q)return;const q2={...q,replaceId:sessions[cur].id,manual:true,pick:false,remember:true,err:''};queue.unshift(q2);imp=q2;render();window.scrollTo({top:0})};
+document.querySelectorAll('[data-qs]').forEach(r=>r.onclick=()=>{cur=+r.dataset.qs;render()});const sS=$('#selS');if(sS)sS.onchange=()=>{cur=+sS.value;msgs=[];armed=false;render()};
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;msgs=[];armed=false;render();window.scrollTo({top:0})});
+el.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{const s=sessions[cur];s.meta.stint=+b.dataset.st;save(s);render()});
+const c=$('#cmp');if(c)c.onclick=()=>{view=view=='compare'?'single':'compare';msgs=[];armed=false;render()};
+const cl=$('#clr');if(cl)cl.onclick=()=>{if(armed!=='clr'){armed='clr';render();return}DB.clear();sessions=[];cmpSt={A:null,B:null};tab='call';view='single';cur=0;A=0;B=1;msgs=[];armed=false;render()};
+const sA=$('#selA'),sB=$('#selB');if(sA){sA.onchange=()=>{A=+sA.value;cmpSt.A=null;render()};sB.onchange=()=>{B=+sB.value;cmpSt.B=null;render()};const tA=$('#stA'),tB=$('#stB');if(tA)tA.onchange=()=>{cmpSt.A=+tA.value;render()};if(tB)tB.onchange=()=>{cmpSt.B=+tB.value;render()}}
+const s=sessions[cur],bind=(id,fn)=>{const e=$('#'+id);if(e)e.onchange=()=>{fn(e.value.trim?e.value.trim():e.value);save(s);render()}};
+if(s&&view==='single'){bind('rem',v=>s.meta.remaining=v);bind('ign',v=>{s.meta.ignore=v;s.meta.stint=null});bind('spl',v=>{s.meta.splits=v;s.meta.stint=null});bind('sname',v=>s.name=v||s.name);bind('cmpd',v=>s.meta.compound=v);bind('ttemp',v=>s.meta.trackTemp=v);bind('atemp',v=>s.meta.airTemp=v)}
+const pr=$('#print');if(pr)pr.onclick=()=>{try{window.print()}catch(e){toast('Printing is not available here. Open Pacely in your browser to print.')}};
+const dl=$('#dl');if(dl)dl.onclick=()=>download(s);
+const rm=$('#rm');if(rm)rm.onclick=()=>{if(armed!=='rm'){armed='rm';render();return}DB.del(s.id);sessions.splice(cur,1);cur=Math.max(0,cur-1);A=0;B=Math.min(1,sessions.length-1);cmpSt={A:null,B:null};armed=false;if(sessions.length<2&&tab==='compare')tab='call';render()};
+if(s&&view==='single'){const ex=$('#aiExplain');if(ex)ex.onclick=()=>aiRun(s,AI_EXPLAIN,'Explain this session');
+document.querySelectorAll('.aiq').forEach(b=>b.onclick=()=>aiRun(s,b.dataset.q));
+const ask=()=>{const i=$('#aiq');if(i&&i.value.trim())aiRun(s,i.value.trim())};const ab=$('#aiAsk');if(ab)ab.onclick=ask;const ai=$('#aiq');if(ai)ai.onkeydown=e=>{if(e.key==='Enter')ask()}}
+const cp=$('#copy');if(cp)cp.onclick=async()=>{let ok=false;try{await navigator.clipboard.writeText(lastMsg);ok=true}catch(e){}toast(ok?'Copied: '+lastMsg:'Could not copy. Message: '+lastMsg)};
+if(imp)wireImport()}
+function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.append(e);setTimeout(()=>e.remove(),4000)}
+function download(s){const hasC=s.cr.length>0;let csv;const f=v=>v==null||!fin(v)?'':(+v.toFixed(3));
+if(hasC){const t=new Map(s.laps.map(l=>[l.lap,l.t]));csv='lap,corner,lap_time,min_speed,brake_m,steer_deg,lat_g\n'+s.cr.filter(r=>t.has(r.lap)).map(r=>[r.lap,r.corner,f(t.get(r.lap)),f(r.v),f(r.b),f(r.st),f(r.g)].join(',')).join('\n')+'\n'}
+else csv='lap,lap_time\n'+s.laps.map(l=>l.lap+','+f(l.t)).join('\n')+'\n';
+try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=(s.name.replace(/[^\w-]+/g,'-')||'session')+'.csv';document.body.append(a);a.click();a.remove()}catch(e){toast('Download is not available here.')}}
+function wireImport(){const q=imp,ng=()=>{q.err='';render()};
+if(q.pick){const gs=q.gi.groups,shown=g=>!q.clsF||g.cls===q.clsF;document.querySelectorAll('[data-g]').forEach(e=>e.onchange=()=>{gs[+e.dataset.g].sel=e.checked});const pc=$('#pickCls');if(pc)pc.onchange=()=>{q.clsF=pc.value;render()};$('#pickAll').onclick=()=>{gs.forEach(g=>{if(shown(g))g.sel=true});render()};$('#pickNone').onclick=()=>{gs.forEach(g=>g.sel=false);render()};$('#impSkip').onclick=()=>{queue.shift();advance()};$('#pickGo').onclick=()=>{const ch=gs.filter(g=>g.sel&&shown(g));if(!ch.length){q.err='Tick at least one car.';render();return}try{const notes=[];loadGroups(q,ch,notes);queue.shift();advance();if(notes.length){msgs.push({t:notes.join(' ')});render()}}catch(e){q.err=e.message;render()}};return}
+$('#shape').onchange=e=>{q.shape=e.target.value;ng()};
+document.querySelectorAll('[data-map]').forEach(e=>e.onchange=()=>{q.map[e.dataset.map]=+e.value;q.err=''});
+document.querySelectorAll('[data-unit]').forEach(e=>e.onchange=()=>{q.units[e.dataset.unit]=e.value;q.err=''});
+$('#remember').onchange=e=>q.remember=e.target.checked;
+$('#impSkip').onclick=()=>{queue.shift();advance()};
+$('#impGo').onclick=()=>{try{const notes=[];if(q.replaceId){const i=sessions.findIndex(x=>x.id===q.replaceId);if(i>=0){DB.del(q.replaceId);SRC.delete(q.replaceId);sessions.splice(i,1)}}const s=build(q);addSession(s);SRC.set(s.id,{...q,replaceId:null,manual:true});if(q.remember)remember(q);queue.shift();advance()}catch(e){q.err=e.message;render()}}}
+
+function groupInfo(q){if(q.shape!=='laps'||q.nosplit)return null;const L=q.names.map(n=>n.toLowerCase().replace(/[^a-z0-9#]+/g,' ').trim());
+const pats=[/^(car |vehicle |start |race )?(number|no|num|#)$/,/^car( id| name)?$/,/^vehicle/,/^(entry|entrant|competitor)/,/^team( name)?$/];
+const skip=new Set([q.map.lap,q.map.lapTime]);
+for(const re of pats){const i=L.findIndex((n,k)=>re.test(n)&&!skip.has(k));if(i<0)continue;const g=new Map();q.data.forEach(r=>{const k=String(r[i]==null?'':r[i]).trim();if(!k)return;if(!g.has(k))g.set(k,[]);g.get(k).push(r)});
+const big=[...g.entries()].filter(([k,v])=>v.length>=3);if(big.length>=2&&big.length<=150&&big.length>=g.size*.6){
+const col=n=>L.findIndex(x=>n.test(x)),ti=col(/^team|^entrant|^entry/),mi=col(/^manufacturer|^make|^car ?model/),ci=col(/^class|^category/);
+return{col:i,isNum:/number|no|num|#/.test(L[i]),groups:big.map(([k,rows])=>{const r0=rows[0];return{key:k,rows,team:ti>=0?String(r0[ti]||'').trim():'',make:mi>=0?String(r0[mi]||'').trim():'',cls:ci>=0?String(r0[ci]||'').trim():'',sel:true}})}}}
+return null}
+function gName(gi,g){const k=gi.isNum&&/^\d+$/.test(g.key)?'#'+g.key:g.key;const x=[g.team||g.make].filter(Boolean)[0];return k+(x&&x!==g.key?' '+x:'')+(g.cls?` (${g.cls})`:'')}
+const SRC=new Map();
+function loadQ(q,notes){const gi=q.group===undefined?groupInfo(q):null;
+if(gi){q.gi=gi;if(gi.groups.length>8){gi.groups.forEach(g=>g.sel=false);q.pick=true;return 'pick'}return loadGroups(q,gi.groups,notes)}
+const ss=build(q);addSession(ss);SRC.set(ss.id,q);return 'ok'}
+function loadGroups(q,gs,notes){let n=0,bad=0;for(const g of gs){try{const q2={...q,data:g.rows,nosplit:true,name:gName(q.gi,g),pick:false};const ss=build(q2);ss.name=q2.name;addSession(ss);SRC.set(ss.id,q2);n++}catch(e){bad++}}
+if(!n)throw new Error('None of the cars in this file had enough laps (at least 5).');notes.push(`Loaded ${n} cars from ${q.name}.`+(bad?` ${bad} skipped (too few laps).`:''));return 'ok'}
+function remember(q){try{localStorage.setItem('pacely-map:'+q.sig,JSON.stringify({shape:q.shape,map:q.map,units:q.units}))}catch(e){}}
+function addSession(s){const n=sessions.filter(x=>x.name===s.name||x.name.startsWith(s.name+' (')).length;if(n)s.name=`${s.name} (${n+1})`;sessions.push(s);cur=sessions.length-1;view='single';tab='call';save(s);return s}
+function prepare(name,text){const d=detectDelim(text),dec=d===';',rows=splitRows(text,d),loc=locate(rows,dec),g=guess(loc.names,loc.units,loc.data,dec),sig=loc.names.join('|').slice(0,300);
+const q={name,names:loc.names,colUnits:loc.units,data:loc.data,dec,sig,shape:g.shape,map:g.map,units:g.units,remember:true,auto:g.exact};
+try{const sv=JSON.parse(localStorage.getItem('pacely-map:'+sig)||'null');if(sv&&sv.shape&&sv.map){q.shape=sv.shape;q.map=sv.map;q.units={...q.units,...sv.units};q.auto=true}}catch(e){}
+return q}
+function advance(){imp=null;const notes=[];while(queue.length){const q=queue[0];let r='fail';if(!q.manual){try{r=loadQ(q,notes)}catch(e){if(q.auto)msgs.push({t:`${q.name}: ${e.message}`,bad:true});r=q.auto?'bad':'fail'}}if(r==='ok'||r==='bad'){queue.shift();continue}if(r==='pick'){imp=q;break}q.manual=true;imp=q;break}if(notes.length)msgs.push({t:notes.join(' ')});render()}
+async function handleFiles(files){msgs=[];armed=false;for(const f of files){try{if(/\.(xlsx?|xlsm|ods|numbers)$/i.test(f.name))throw new Error('That is a spreadsheet file. In Excel choose File, Save As, CSV, then load the CSV (or select the cells, copy them and press Ctrl+V here).');const buf=await f.arrayBuffer();const u=new Uint8Array(buf.slice(0,4));if(u[0]===0x50&&u[1]===0x4b)throw new Error('That looks like a zipped or Excel file, not a CSV. Save it as CSV first, or copy the cells and press Ctrl+V here.');let text;try{text=new TextDecoder('utf-8',{fatal:true}).decode(buf)}catch(e){text=new TextDecoder('windows-1252').decode(buf)}const q=prepare(f.name,text);queue.push(q)}catch(e){msgs.push({t:`${f.name}: ${e.message}`,bad:true})}}advance();if(sessions.length&&!imp)window.scrollTo({top:0})}
+function handleText(text,name){msgs=[];armed=false;try{queue.push(prepare(name||'Pasted data',text))}catch(e){msgs.push({t:`${name||'Pasted data'}: ${e.message}`,bad:true})}advance();if(sessions.length&&!imp)window.scrollTo({top:0})}
+
+/* ---------- optional AI helper (test) ---------- */
+const aiState={};
+const AI_SYSTEM="You are the assistant inside Pacely, a race-data app for club and mid-tier motorsport teams. Answer using ONLY the session facts provided. Never invent numbers, laps, corners or causes that are not in the facts. If the facts do not answer the question, say so and say what extra data would help. Use plain, direct English that a driver or team boss understands. No markdown, no bullet symbols, no emojis. Keep answers under 110 words unless asked for more. Give advice as suggestions to confirm with the driver and the race situation, not as certainties.";
+const inf=v=>v===Infinity?'no limit':v;
+function aiContext(a,s){const m=s.meta;return JSON.stringify({session:s.name,conditions:{compound:m.compound||null,trackTempC:m.trackTemp||null,airTempC:m.airTemp||null,lapsToGo:a.rem||null},settings:{pitStopCostSeconds:a.thr,fuelGainSecondsPerLap:a.fuel},
+stint:{firstLap:a.st.first,lastLap:a.st.last,cleanLaps:a.n,leftOutLaps:a.run.ignored.map(x=>x.lap+' ('+x.why+')')},raceCall:call(a),
+numbers:{tyreLossPerLapAverage:+a.rateAvg.toFixed(3),tyreLossPerLapNow:+a.rateNow.toFixed(3),lostSoFarSeconds:+a.lossNow.toFixed(2),lapsUntilStopPaysOff:{low:inf(a.left.low),high:inf(a.left.high)},lapTimeScatterSeconds:+a.resid.toFixed(3),confidence:a.conf,wearAccelerating:a.useQuad},
+findings:a.F.map(f=>({severity:f.sev,title:f.t,whatWeSee:f.ev,whatToDo:f.ac})),corners:a.table.map(r=>({corner:r.c,status:r.st,note:r.dt,numbers:r.nums})),cleanLapTimes:a.st.laps.map(l=>[l.lap,+l.t.toFixed(3)])})}
+async function askAI(messages,onText,signal){
+try{if(window.claude&&window.claude.use){const sm=await window.claude.use('sample');if(sm){const input=[{role:'user',content:AI_SYSTEM+'\n\n'+messages[0].content}];const r=await sm(input,{onText:({text})=>onText(text),signal,cache:false,modelTier:'quick'});return r.text}}}catch(e){if(e&&e.code&&e.code!=='unavailable')throw e}
+if(!/^https?:$/.test(location.protocol))throw{code:'local'};
+const res=await fetch('/.netlify/functions/ask',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({system:AI_SYSTEM,messages}),signal});
+if(!res.ok){let m='';try{m=(await res.json()).error}catch(e){}throw{code:'http',status:res.status,message:m}}
+const j=await res.json();onText(j.text);return j.text}
+function aiErr(e){if(!e)return'Something went wrong.';if(e.name==='AbortError')return'That took too long, so it was cancelled. Try again.';if(e.code==='local')return'AI works once Pacely is hosted with the AI function switched on. See the README.';
+if(e.code==='not_granted')return'Permission to use Claude was declined. Tap the button again and allow it.';if(e.code==='rate_limited'||e.status===429)return'Too many requests right now. Wait a minute and try again.';
+if(e.code==='http'){if(e.status===404)return'AI is not set up on this site yet. See the README to switch it on.';return e.message||'The AI service did not respond.'}
+if(navigator.onLine===false)return'AI needs an internet connection.';return e.message||'The AI service did not respond.'}
+function aiBlock(s){const st=aiState[s.id]||{log:[]},last=st.log.length-1;
+return`<section class="ai noprint"><div class="card" style="margin-top:10px">
+<p class="hint" style="margin-top:0">An optional assistant that explains the results above in plain English. It only uses this session's numbers and it can be wrong, so check it against the data. Using it sends this session's numbers, not your files, to Claude.</p>
+<div class="row" style="margin-top:12px"><button id="aiExplain" ${st.busy?'disabled':''}>Explain this session</button></div>
+<div class="chips" style="margin-top:12px">${['Why is the car pushing wide?','When should I pit?','What should I tell the driver?'].map(q=>`<button class="chip aiq" data-q="${esc(q)}" ${st.busy?'disabled':''}>${esc(q)}</button>`).join('')}</div>
+<div class="row" style="margin-top:12px;flex-wrap:nowrap"><input type="text" id="aiq" placeholder="Ask about this session" style="flex:1;min-width:0"><button class="alt" id="aiAsk" ${st.busy?'disabled':''}>Ask</button></div>
+<div id="aiLog" aria-live="polite">${st.log.map((x,i)=>`<div class="aiu">${esc(x.q)}</div>${x.err?`<p class="err" role="alert">${esc(x.err)}</p>`:`<div class="aia" ${st.busy&&i===last?'id="aiCur"':''}>${esc(x.a)||'Thinking…'}</div>`}`).join('')}</div></div></section>`}
+async function aiRun(s,q,label){const st=aiState[s.id]=aiState[s.id]||{log:[]};if(st.busy)return;let a;try{a=analyse(s)}catch(e){return}
+const item={q:label||q,a:'',err:''};const prev=st.log.filter(x=>x.a).slice(-2).map(x=>`Q: ${x.q}\nA: ${x.a}`).join('\n\n');
+st.log.push(item);if(st.log.length>8)st.log.shift();st.busy=true;render();
+const content=`Session facts (JSON):\n${aiContext(a,s)}\n\n${prev?'Earlier in this conversation:\n'+prev+'\n\n':''}${q}`,ac=new AbortController(),to=setTimeout(()=>ac.abort(),45000);
+try{await askAI([{role:'user',content}],t=>{item.a=t;const e=$('#aiCur');if(e)e.textContent=t},ac.signal)}catch(e){item.err=aiErr(e)}
+clearTimeout(to);st.busy=false;if(sessions[cur]===s&&view==='single')render()}
+const AI_EXPLAIN="Write a short engineer's summary of this session for the team: what is happening, the single most important thing to do, and one thing to tell the driver. Under 110 words.";
+
+/* ---------- wiring ---------- */
+$('#demo').onclick=()=>{msgs=[];armed=false;const first=sessions.length;SAMPLES.forEach(x=>{const s=toSession(demo(x.o),x.name,{sample:true});addSession(s)});addSession(raceDemo());
+A=first;B=first+1;cmpSt={A:null,B:null};cur=first;view='single';tab='call';render()};
+{const ov=$('#dropov');let dc=0;const hasF=e=>e.dataTransfer&&[...e.dataTransfer.types].includes('Files');
+addEventListener('dragenter',e=>{if(hasF(e)){e.preventDefault();dc++;ov.classList.add('on')}});
+addEventListener('dragover',e=>{if(hasF(e))e.preventDefault()});
+addEventListener('dragleave',e=>{if(hasF(e)){dc=Math.max(0,dc-1);if(!dc)ov.classList.remove('on')}});
+addEventListener('drop',e=>{if(!hasF(e))return;e.preventDefault();dc=0;ov.classList.remove('on');const fs=[...e.dataTransfer.files].filter(f=>/\.(csv|txt)$/i.test(f.name)||/text/.test(f.type));if(fs.length)handleFiles(fs)})}
+addEventListener('paste',e=>{const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;const x=(e.clipboardData&&e.clipboardData.getData('text'))||'';if(x.split(/\r?\n/).filter(l=>l.trim()).length>=5){e.preventDefault();handleText(x,'Pasted data')}});
+const pb=$('#paste');if(pb)pb.onclick=async()=>{try{const x=await navigator.clipboard.readText();if(x.trim())handleText(x,'Pasted data');else toast('Nothing to paste. Copy your cells first.')}catch(e){toast('Press Ctrl+V (or Cmd+V) anywhere on this page to paste.')}};
+$('#file').onchange=async e=>{const fs=[...e.target.files];e.target.value='';if(fs.length)await handleFiles(fs)};
+['fuel','thr'].forEach(i=>$('#'+i).onchange=()=>sessions.length&&render());
+$('#forget').onclick=()=>{try{Object.keys(localStorage).filter(k=>k.startsWith('pacely-map:')).forEach(k=>localStorage.removeItem(k))}catch(e){}toast('Saved column mappings cleared.')};
+addEventListener('beforeprint',()=>{if(sessions.length&&tab!=='compare'){printing=true;render()}});addEventListener('afterprint',()=>{if(printing){printing=false;render()}});
+$('#theme').onclick=()=>{const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme=='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('pacely-theme',r.dataset.theme)}catch(e){}};
+try{const t=localStorage.getItem('pacely-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
+render();
+DB.open().then(async ok=>{$('#saveNote').textContent=ok?'Drop any lap file here, or paste it straight from Excel. It stays on this device.':'Saving is not available in this browser, so sessions are lost when you close the page. Load two or more to compare them.';
+if(!ok)return;const saved=(await DB.all()).sort((a,b)=>a.created-b.created);if(saved.length&&!sessions.length){sessions=saved;cur=sessions.length-1;A=0;B=Math.min(1,sessions.length-1);render()}});
+</script></main></body></html>
