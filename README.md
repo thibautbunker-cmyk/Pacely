@@ -9,7 +9,7 @@ The whole app is one file, `index.html`. Sessions are saved in the browser on yo
 - **Import:** Excel (.xlsx) or CSV/TSV/TXT, drag and drop, or paste straight from Excel. Every visible sheet with lap data becomes a session. Timing sheets with many cars split into one session per car. Older .xls files need saving as .xlsx or CSV first.
 - **Race call:** tyre loss per lap, pit window, a laps-to-go check (0 means the race is finished), stints split at pit stops, fuel effect per session, and corner-by-corner problems.
 - **Qualifying:** runs, push laps, where the tyres peak, and an ideal lap from sector times (S1, S2, S3 columns).
-- **Telemetry:** one lap explained channel by channel against your fastest lap: speed, time gap, throttle, braking, gear, RPM, longitudinal and lateral g, steering. With a track map from GPS or X/Y position, a lap anatomy strip and a corner-by-corner table.
+- **Telemetry:** one lap explained channel by channel against your fastest lap, plus a theoretical best lap from your best mini-sectors: speed, time gap, throttle, braking, gear, RPM, longitudinal and lateral g, steering. With a track map from GPS or X/Y position, a lap anatomy strip and a corner-by-corner table.
 - **Compare:** two sessions side by side, with a telemetry overlay and where the time is won or lost corner by corner.
 - **AI engineer:** on the Race call, Qualifying and Telemetry tabs. A one-click debrief and plain-English answers based only on the numbers on that page.
 - **Export:** save any report as PDF, download a session as CSV.

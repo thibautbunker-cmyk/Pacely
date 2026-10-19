@@ -40,3 +40,16 @@ test('fast corners are found from the shape of the track', async ({ page }) => {
   expect(r.n).toBe(14);
   expect(r.note).toContain('6 of them fast corners found from the shape of the track');
 });
+
+test('theoretical best lap is close to the fastest lap, also in races', async ({ page }) => {
+  await openApp(page);
+  for (const f of ['f1-2020-silverstone-fp2-44-hamilton-telemetry.csv', 'f1-2022-bahrain-race-16-leclerc-telemetry.csv',
+    'f1-2020-belgium-race-44-hamilton-telemetry.csv', 'f1-2020-italy-race-10-gasly-telemetry.csv', 'f1-2021-saudi-arabia-race-44-hamilton-telemetry.csv'])
+    await loadFile(page, sample(f));
+  const gaps = await page.evaluate(() => sessions.map(s => { const m = miniBest(s); return m.fast - m.ideal; }));
+  expect(gaps[0]).toBeGreaterThan(0.2); expect(gaps[0]).toBeLessThan(0.7);
+  for (const g of gaps) { expect(g).toBeGreaterThanOrEqual(0); expect(g).toBeLessThan(1.5); }
+  await tab(page, 'tele');
+  await expect(page.locator('h2', { hasText: 'Theoretical best lap' })).toBeVisible();
+  await expect(page.locator('.mbs i')).not.toHaveCount(0);
+});
