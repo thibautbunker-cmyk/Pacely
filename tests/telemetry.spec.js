@@ -32,3 +32,11 @@ test('sessions without telemetry show the empty state', async ({ page }) => {
   await openApp(page); await openSamples(page); await pick(page, '1 Baseline'); await tab(page, 'tele');
   await expect(page.locator('.empty')).toContainText('No telemetry in this session');
 });
+
+test('fast corners are found from the shape of the track', async ({ page }) => {
+  await openApp(page);
+  await loadFile(page, sample('f1-2020-silverstone-fp2-44-hamilton-telemetry.csv'));
+  const r = await page.evaluate(() => ({ n: sessions[0].tr.apex.length, note: sessions[0].note }));
+  expect(r.n).toBe(14);
+  expect(r.note).toContain('6 of them fast corners found from the shape of the track');
+});

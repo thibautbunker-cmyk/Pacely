@@ -459,6 +459,12 @@ const sm=rv.map((_,j)=>{let s=0,c=0;for(let k=Math.max(0,j-2);k<=Math.min(NB-1,j
 let mins=[];for(let i=6;i<NB-6;i++){let isMin=true;for(let k=i-6;k<=i+6;k++)if(sm[k]<sm[i]){isMin=false;break}if(!isMin)continue;
 let lm=0,rm=0;for(let k=i;k>=Math.max(0,i-80);k--)lm=Math.max(lm,sm[k]);for(let k=i;k<=Math.min(NB-1,i+80);k++)rm=Math.max(rm,sm[k]);if(Math.min(lm,rm)-sm[i]>=10)mins.push(i)}
 const apex=[];for(const i of mins){const l=apex[apex.length-1];if(l!==undefined&&i-l<20){if(sm[i]<sm[l])apex[apex.length-1]=i}else apex.push(i)}
+let tmap=null;{const P=profs[best],xy=map.posX>=0&&map.posY>=0&&!(map.lat>=0&&map.lon>=0),ok=xy?j=>fin(P.px[j])&&fin(P.py[j]):j=>fin(P.la[j])&&fin(P.lo[j])&&Math.abs(P.la[j])<=90&&Math.abs(P.lo[j])<=180&&(P.la[j]||P.lo[j]),idx=[...Array(NB).keys()].filter(ok);
+if(idx.length>NB*.8){const la0=xy?0:mean(idx.map(j=>P.la[j])),lo0=xy?0:mean(idx.map(j=>P.lo[j])),kx=111320*Math.cos(la0*Math.PI/180),raw=[...Array(NB).keys()].map(j=>ok(j)?(xy?[P.px[j],P.py[j]]:[(P.lo[j]-lo0)*kx,(P.la[j]-la0)*110540]):null);
+for(let j=0;j<NB;j++)if(!raw[j])raw[j]=raw[j-1]||raw.find(Boolean);const sm=raw.map((_,j)=>{let sx=0,sy=0,c=0;for(let q=j-2;q<=j+2;q++){const p2=raw[(q+NB)%NB];sx+=p2[0];sy+=p2[1];c++}return[sx/c,sy/c]});
+const xs=sm.map(p2=>p2[0]),ys=sm.map(p2=>p2[1]);if(Math.max(...xs)-Math.min(...xs)+Math.max(...ys)-Math.min(...ys)>100)tmap={x:xs.map(v=>Math.round(v*10)/10),y:ys.map(v=>Math.round(v*10)/10)}}}
+let bendN=0;if(tmap){const K=mapCurv(tmap.x,tmap.y,BIN),N2=K.length;let j=0;while(j<N2){if(Math.abs(K[j])<1/400){j++;continue}let k=j,turn=0,pk=j;while(k<N2&&Math.abs(K[k])>=1/400&&Math.sign(K[k])===Math.sign(K[j])){turn+=Math.abs(K[k])*BIN;if(Math.abs(K[k])>Math.abs(K[pk]))pk=k;k++}
+if(turn>=.45&&Math.abs(K[pk])>=1/250&&!apex.some(a=>Math.abs(a-pk)<25)){apex.push(pk);bendN++}j=k}apex.sort((a,b)=>a-b)}
 let cr=[],note='';
 if(apex.length){const hasG=map.latG>=0,hasS=map.steer>=0,hasB=map.brake>=0&&250/3.6*dtM<=6;let thrB=0;
 if(hasB){const all=[];profs.forEach(p=>{for(let j=0;j<NB;j+=2)if(fin(p.b[j]))all.push(p.b[j])});all.sort((a,b)=>a-b);thrB=.15*(all[Math.floor(all.length*.95)]||0)}
@@ -470,15 +476,12 @@ if(jj>=0){while(jj-1>=0&&g.rel[jj-1]*sc>=pa-700&&B[g.i0+jj-1]>thrB)jj--;let pos=
 if(jj>0){const b0=B[g.i0+jj-1],b1=B[g.i0+jj],p0=g.rel[jj-1]*sc;if(fin(b0)&&b1>b0)pos=p0+(thrB-b0)/(b1-b0)*(g.rel[jj]*sc-p0)}
 bm=pa-pos}}
 cr.push({lap:g.lap,corner:'T'+(ci+1),v:mv,b:bm,st:hasS?ps:null,g:hasG?pg:null})})});
-note=`Found ${apex.length} corner${apex.length==1?'':'s'} automatically from the fastest lap and measured each one on all ${kept.length} laps.`+(map.brake>=0&&!hasB?` Braking points are not measured, because this file records about every ${Math.round(250/3.6*dtM)} m at 250 km/h, too far apart to place them reliably.`:'')}
+note=`Found ${apex.length} corner${apex.length==1?'':'s'} automatically from the fastest lap${bendN?`, ${bendN} of them fast corners found from the shape of the track`:''}, and measured each one on all ${kept.length} laps.`+(map.brake>=0&&!hasB?` Braking points are not measured, because this file records about every ${Math.round(250/3.6*dtM)} m at 250 km/h, too far apart to place them reliably.`:'')}
 else note='No clear corners were found, so Pacely will judge tyre wear from lap times only.';
 const r1=x=>Math.round(x*10)/10,r2=x=>Math.round(x*100)/100,keep=(P,k,f)=>Array.from(P[k],x=>fin(x)?f(x):null);
 const tr={bin:BIN,len:L,nb:NB,apex,ch:{g:map.latG>=0,s:map.steer>=0,b:map.brake>=0,th:map.throttle>=0,gr:map.gear>=0,rpm:map.rpm>=0},laps:{}};
 kept.forEach((g,gi)=>{const P=profs[gi],o={v:keep(P,'v',r1)};if(tr.ch.g)o.g=keep(P,'g',r2);if(tr.ch.s)o.s=keep(P,'s',r1);if(tr.ch.b)o.b=keep(P,'b',r1);if(tr.ch.th)o.th=keep(P,'th',x=>Math.round(Math.max(0,Math.min(100,x))));if(tr.ch.gr)o.gr=keep(P,'gr',x=>Math.round(x));if(tr.ch.rpm)o.rpm=keep(P,'rpm',x=>Math.round(x/10)*10);tr.laps[g.lap]=o});
-{const P=profs[best],xy=map.posX>=0&&map.posY>=0&&!(map.lat>=0&&map.lon>=0),ok=xy?j=>fin(P.px[j])&&fin(P.py[j]):j=>fin(P.la[j])&&fin(P.lo[j])&&Math.abs(P.la[j])<=90&&Math.abs(P.lo[j])<=180&&(P.la[j]||P.lo[j]),idx=[...Array(NB).keys()].filter(ok);
-if(idx.length>NB*.8){const la0=xy?0:mean(idx.map(j=>P.la[j])),lo0=xy?0:mean(idx.map(j=>P.lo[j])),kx=111320*Math.cos(la0*Math.PI/180),raw=[...Array(NB).keys()].map(j=>ok(j)?(xy?[P.px[j],P.py[j]]:[(P.lo[j]-lo0)*kx,(P.la[j]-la0)*110540]):null);
-for(let j=0;j<NB;j++)if(!raw[j])raw[j]=raw[j-1]||raw.find(Boolean);const sm=raw.map((_,j)=>{let sx=0,sy=0,c=0;for(let q=j-2;q<=j+2;q++){const p2=raw[(q+NB)%NB];sx+=p2[0];sy+=p2[1];c++}return[sx/c,sy/c]});
-const xs=sm.map(p2=>p2[0]),ys=sm.map(p2=>p2[1]);if(Math.max(...xs)-Math.min(...xs)+Math.max(...ys)-Math.min(...ys)>100)tr.map={x:xs.map(v=>Math.round(v*10)/10),y:ys.map(v=>Math.round(v*10)/10)}}}
+if(tmap)tr.map=tmap;
 const s=mk(name,laps,cr);s.note=note;s.tr=tr;return s}
 
 /* ---------- laps, stints ---------- */
@@ -665,8 +668,9 @@ const cornerAt=(apex,N,j)=>{let k=0;for(let i=0;i<apex.length;i++){const lo=i?(a
 const teleSel={};
 const ffill=a=>{if(!a)return null;const r=a.slice();let l=null;for(let i=0;i<r.length;i++){if(r[i]==null)r[i]=l;else l=r[i]}let n=null;for(let i=r.length-1;i>=0;i--){if(r[i]==null)r[i]=n;else n=r[i]}return r.map(x=>x==null?0:x)};
 const pct=(a,q)=>{const s=a.filter(fin).slice().sort((x,y)=>x-y);return s.length?s[Math.min(s.length-1,Math.floor(q*s.length))]:0};
-function curv(T){if(T._k)return T._k;const M=T.map,N=T.nb,B=T.bin,h=[];for(let j=0;j<N;j++){const a=(j-2+N)%N,b=(j+2)%N;h.push(Math.atan2(M.y[b]-M.y[a],M.x[b]-M.x[a]))}
-const k=h.map((_,j)=>{let d=h[(j+1)%N]-h[(j-1+N)%N];while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;return d/(2*B)});return T._k=k.map((_,j)=>{let s2=0;for(let q=-3;q<=3;q++)s2+=k[(j+q+N)%N];return s2/7})}
+function mapCurv(X,Y,B){const N=X.length,h=[];for(let j=0;j<N;j++){const a=(j-2+N)%N,b=(j+2)%N;h.push(Math.atan2(Y[b]-Y[a],X[b]-X[a]))}
+const k=h.map((_,j)=>{let d=h[(j+1)%N]-h[(j-1+N)%N];while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;return d/(2*B)});return k.map((_,j)=>{let s2=0;for(let q=-3;q<=3;q++)s2+=k[(j+q+N)%N];return s2/7})}
+function curv(T){return T._k||(T._k=mapCurv(T.map.x,T.map.y,T.bin))}
 function lapChan(T,P,t){const N=T.nb,B=T.bin,v=ffill(P.v),dt=v.map(x=>B/Math.max(x,5)*3.6),k=t/dt.reduce((a,c)=>a+c,0),tt=dt.map(x=>x*k),cum=[];let a=0;tt.forEach(x=>{a+=x;cum.push(a)});
 const ms=v.map(x=>x/3.6),a0=v.map((_,j)=>{const j0=Math.max(0,j-1),j1=Math.min(N-1,j+1);return(ms[j1]**2-ms[j0]**2)/(2*B*(j1-j0))/9.81}),ax=a0.map((_,j)=>{let s=0,c=0;for(let q=Math.max(0,j-2);q<=Math.min(N-1,j+2);q++){s+=a0[q];c++}return s/c});
 const b=T.ch.b?ffill(P.b):null,gEst=!T.ch.g&&!!T.map,g=T.ch.g?ffill(P.g):gEst?(K=>ffill(P.v).map((x,j)=>Math.min(8,(x/3.6)**2*Math.abs(K[j])/9.81)))(curv(T)):null,st=T.ch.s?ffill(P.s):null,th=T.ch.th&&P.th?ffill(P.th):null,gr=T.ch.gr&&P.gr?ffill(P.gr):null,rpm=T.ch.rpm&&P.rpm?ffill(P.rpm):null,bPk=b?pct(b,.95):0,gPk=g?pct(g,.95):0,top=Math.max(...v);
