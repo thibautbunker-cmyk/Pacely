@@ -10,7 +10,7 @@ Everything runs in the browser from a single file, `index.html`. Sessions are sa
 - Reads lap-time lists, lap-and-corner tables, or raw telemetry over time
 - Race call: tyre loss per lap, pit window, laps-to-go check, corner-by-corner problems
 - Qualifying: runs, push laps, where the tyres peak, and an ideal lap from sector times (S1, S2, S3 columns)
-- Telemetry: one lap explained channel by channel with a GPS track map (speed, time gap, throttle, braking, gear, RPM, longitudinal and lateral g, steering) against your fastest lap, with a lap anatomy strip and a corner-by-corner table
+- Telemetry: one lap explained channel by channel with a track map from GPS or X/Y position (speed, time gap, throttle, braking, gear, RPM, longitudinal and lateral g, steering) against your fastest lap, with a lap anatomy strip and a corner-by-corner table
 - Compare two sessions side by side, with a telemetry overlay (speed, gap, throttle, brake, gear, RPM, steering by distance) and where the time is won or lost corner by corner
 - Print or save a report as PDF, download a session as CSV
 - Optional AI explanation of a session (see below)
