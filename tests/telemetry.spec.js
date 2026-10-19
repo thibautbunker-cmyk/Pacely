@@ -73,3 +73,20 @@ test('driver sheet: corners to work on against your best through each corner', a
   await expect(page.locator('.chan').first()).toBeVisible();
   expect(errs).toEqual([]);
 });
+
+test('speed units: mph setting converts every speed on the page and is remembered', async ({ page }) => {
+  await openApp(page); await openSamples(page); await pick(page, '9 Telemetry'); await tab(page, 'tele');
+  const top = parseInt(await page.locator('.tiles.six .tile .n').first().innerText());
+  await tab(page, 'files');
+  await page.evaluate(() => { document.getElementById('units').closest('details').open = true; });
+  await page.selectOption('#units', 'mph'); await tab(page, 'tele');
+  const out = page.locator('#out');
+  await expect(out).not.toContainText('km/h');
+  await expect(out).toContainText('mph');
+  const topM = parseInt(await page.locator('.tiles.six .tile .n').first().innerText());
+  expect(Math.abs(topM - top / 1.609344)).toBeLessThanOrEqual(1);
+  await page.click('#sheetGo');
+  await expect(out).not.toContainText('km/h');
+  await page.reload(); await openSamples(page); await pick(page, '9 Telemetry'); await tab(page, 'tele');
+  await expect(page.locator('#out')).toContainText('mph');
+});

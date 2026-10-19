@@ -14,6 +14,7 @@ The whole app is one file, `index.html`. Sessions are saved in the browser on yo
 - **Driver sheet:** from the Telemetry tab, a one-page sheet for the driver with the three corners where the lap loses most against their own best through each corner, what to change there (brake point, apex speed, throttle, gear), a track map, and the corners to keep doing. Saves as PDF.
 - **Compare:** two sessions side by side, with a telemetry overlay and where the time is won or lost corner by corner.
 - **AI engineer:** on the Race call, Qualifying and Telemetry tabs. A one-click debrief and plain-English answers based only on the numbers on that page.
+- **Units:** speeds in km/h or mph (Settings on the Files tab). The choice is remembered on this device.
 - **Export:** save any report as PDF, download a session as CSV.
 
 ## Running it
