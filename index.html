@@ -870,7 +870,7 @@ return `<div class="tabpane"><div class="printhead"><h1>Pacely qualifying</h1><p
 <section class="verdict"><div class="k">${esc(q.s.name)}</div><div class="big">${fmtT(best)}</div><p>Best lap, lap ${q.bl.lap}${sec&&sec.gap>.0005?`. Ideal lap ${fmtS(sec.ideal)}`:''}${rows.length>1?`. ${rank===1?'Fastest of':'P'+rank+' of'} ${rows.length} loaded sessions${rank>1?`, ${gap.toFixed(3)} s off the fastest`:''}.`:'.'}</p></section>
 <div class="tiles">${tiles}<div class="tile"><div class="n">${pl.length}</div><div class="l">Push laps (within 2% of the best)</div></div>${sec?'':`<div class="tile"><div class="n">${pl.length>1?'±'+spread.toFixed(2):'n/a'}<small>${pl.length>1?' s':''}</small></div><div class="l">Spread between push laps</div></div>`}</div>
 <div class="fgrid"><div><h2>What to do</h2>${F.map(f=>`<article class="f ${f.sev}"><span class="tag">${tag[f.sev]}</span><h3>${esc(f.t)}</h3><p>${esc(f.m)}</p><p class="do">${esc(f.d)}</p></article>`).join('')}</div>
-<div><h2>Lap times</h2><div class="card">${qChart(q)}<p class="mu" style="margin:8px 0 0;font-size:14px">Red dots are push laps. The ringed dot is the best lap. Laps more than 5% off the best are not shown.</p></div></div></div>
+<div><h2>Lap times</h2><div class="card">${qChart(q)}<p class="mu" style="margin:8px 0 0;font-size:14px">Blue dots are push laps. The ringed dot is the best lap. Laps more than 5% off the best are not shown.</p></div></div></div>
 ${secTable}
 <h2>Runs</h2><div class="card tbl"><table class="cmp"><tr><th>Run</th><th>Laps</th><th>Push laps</th><th>Best lap</th><th>Best on lap</th></tr>${runs.map((r,i)=>`<tr><td>${i+1}</td><td>${r.n}</td><td>${r.push}</td><td class="${r.best===q.bl?'win':''}">${fmtT(r.best.t)}</td><td>${r.pos} of ${r.n}</td></tr>`).join('')}</table></div>
 ${rows.length>1?`<h2>Sessions ranked by best lap</h2><div class="card tbl"><table class="cmp"><tr><th>Pos</th><th>Session</th><th>Best lap</th>${anySec?'<th>Ideal lap</th>':''}<th>Gap</th></tr>${rows.map((r,k)=>`<tr data-qs="${r.i}" style="cursor:pointer"><td>${k+1}</td><td>${r.i===cur?'<b>'+esc(r.a.s.name)+'</b>':esc(r.a.s.name)}</td><td>${fmtT(r.a.best)}</td>${anySec?`<td>${r.a.sec?fmtS(r.a.sec.ideal):'–'}</td>`:''}<td>${k?'+'+(r.a.best-fast).toFixed(3)+' s':'Fastest'}</td></tr>`).join('')}</table></div>`:''}<div class="ctl noprint"><button class="alt sm" id="print">Save as PDF</button></div>${q.s.note&&!(!sec&&/sector/.test(q.s.note))?`<p class="foot">${esc(q.s.note)}</p>`:''}</div>`}
@@ -945,10 +945,10 @@ const pats=[/^(car |vehicle |start |race )?(number|no|num|#)$/,/^car( id| name)?
 const skip=new Set([q.map.lap,q.map.lapTime]);
 for(const re of pats){const i=L.findIndex((n,k)=>re.test(n)&&!skip.has(k));if(i<0)continue;const g=new Map();q.data.forEach(r=>{const k=String(r[i]==null?'':r[i]).trim();if(!k)return;if(!g.has(k))g.set(k,[]);g.get(k).push(r)});
 const big=[...g.entries()].filter(([k,v])=>v.length>=3);if(big.length>=2&&big.length<=150&&big.length>=g.size*.6){
-const col=n=>L.findIndex(x=>n.test(x)),ti=col(/^team|^entrant|^entry/),mi=col(/^manufacturer|^make|^car ?model/),ci=col(/^class|^category/);
-return{col:i,isNum:/number|no|num|#/.test(L[i]),groups:big.map(([k,rows])=>{const r0=rows[0];return{key:k,rows,team:ti>=0?String(r0[ti]||'').trim():'',make:mi>=0?String(r0[mi]||'').trim():'',cls:ci>=0?String(r0[ci]||'').trim():'',sel:true}})}}}
+const col=n=>L.findIndex(x=>n.test(x)),di=col(/^driver( code| name| abbreviation| abbr)?$/),ti=col(/^team|^entrant|^entry/),mi=col(/^manufacturer|^make|^car ?model/),ci=col(/^class|^category/);
+return{col:i,isNum:/number|no|num|#/.test(L[i]),groups:big.map(([k,rows])=>{const r0=rows[0];return{key:k,rows,drv:di>=0&&di!==i?String(r0[di]||'').trim():'',team:ti>=0?String(r0[ti]||'').trim():'',make:mi>=0?String(r0[mi]||'').trim():'',cls:ci>=0?String(r0[ci]||'').trim():'',sel:true}})}}}
 return null}
-function gName(gi,g){const k=gi.isNum&&/^\d+$/.test(g.key)?'#'+g.key:g.key;const x=[g.team||g.make].filter(Boolean)[0];return k+(x&&x!==g.key?' '+x:'')+(g.cls?` (${g.cls})`:'')}
+function gName(gi,g){const k=gi.isNum&&/^\d+$/.test(g.key)?'#'+g.key:g.key;const x=[g.team||g.make].filter(Boolean)[0];return k+(g.drv&&g.drv!==g.key?' '+g.drv:'')+(x&&x!==g.key?' '+x:'')+(g.cls?` (${g.cls})`:'')}
 const SRC=new Map();
 function loadQ(q,notes){const gi=q.group===undefined?groupInfo(q):null;
 if(gi){q.gi=gi;if(gi.groups.length>8){gi.groups.forEach(g=>g.sel=false);q.pick=true;return 'pick'}return loadGroups(q,gi.groups,notes)}
