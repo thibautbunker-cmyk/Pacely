@@ -13,7 +13,7 @@ Everything runs in the browser from a single file, `index.html`. Sessions are sa
 - Telemetry: one lap explained channel by channel with a track map from GPS or X/Y position (speed, time gap, throttle, braking, gear, RPM, longitudinal and lateral g, steering) against your fastest lap, with a lap anatomy strip and a corner-by-corner table
 - Compare two sessions side by side, with a telemetry overlay (speed, gap, throttle, brake, gear, RPM, steering by distance) and where the time is won or lost corner by corner
 - Print or save a report as PDF, download a session as CSV
-- Optional AI explanation of a session (see below)
+- Optional AI engineer on the Race call, Qualifying and Telemetry tabs: a one-click debrief and plain-English answers based only on the numbers on that page (see below)
 
 ## Running it
 

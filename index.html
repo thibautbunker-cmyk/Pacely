@@ -615,7 +615,7 @@ chart=`<h2>Lap times and pit window</h2><div class="card">${chartS(a)}<p class="
 corners=a.table.length?`<h2>Corners</h2><div class="cor">${a.table.map(r=>`<div class="cr"><span class="nm">${esc(r.c)}</span><span class="tag ${r.st}">${CL[r.st]}</span><span class="dt">${esc(r.dt)}</span></div>`).join('')}</div>`:'',
 readn=(()=>{const q=SRC.get(s.id);if(!q||!q.map)return'';const nm=q.shape==='laps'&&q.map.lapTime>=0?` from the column "${esc(q.names[q.map.lapTime])}"`:'';return`<p class="readn noprint">Read ${s.laps.length} laps${nm}. <button class="link" id="fixcols">Not right? Fix columns</button></p>`})(),
 fine=`<details class="set noprint"><summary>Fine-tune stints and laps</summary>${stintBlock(s,a)}</details>`,
-ai=`<details class="set noprint"${(aiState[s.id]&&aiState[s.id].log.length)?' open':''}><summary>Ask AI about this session (optional)</summary>${aiBlock(s)}</details>`,
+ai=aiSection(s,'call'),
 note=s.note?`<p class="foot">${esc(s.note)}</p>`:'',
 disc=`<p class="foot">Pacely uses simple rules to flag trends, not certainties. Always confirm with driver feedback and the race situation.</p>`,
 prt=`<div class="ctl noprint"><button class="alt sm" id="print">Save as PDF</button></div>`;
@@ -743,6 +743,13 @@ XH.tch={N,len,map:T.map?mapGeo(T.map).pts:null,out:'txr',idle:'Move over or touc
 const tl=(n,l)=>`<div class="tile"><div class="n">${n}</div><div class="l">${l}</div></div>`;
 const PH=[['t','On throttle','ph-t'],['b','Braking','ph-b'],['c',L.th?'Part throttle or coasting':'Cornering','ph-c']];
 const bt=lt(o.best),opts=[...o.ks].sort((x,y)=>x-y).map(k=>`<option value="${k}" ${k===o.lap?'selected':''}>Lap ${k} · ${fmtS(lt(k))}${k===o.best?' · fastest':lt(k)>bt*1.25?' · slow lap':''}</option>`).join('');
+const pctOf=k=>+(share(k)/tTot*100).toFixed(1),r3=x=>x==null?null:+x.toFixed(3),ftp=+(L.th?L.th.reduce((a2,x,j)=>a2+(x>=95?L.tt[j]:0),0)/tTot*100:0).toFixed(1),IK={v:'speed',d:'timeGap',th:'throttle',b:'braking',gr:'gear',rpm:'engineSpeed',a:'longitudinalG',g:'corneringForce',s:'steering'};
+AICTX['tele:'+s.id]=JSON.stringify({session:s.name,lap:o.lap,lapTime:fmtS(o.t),fastestLapOfSession:isBest,reference:R?{description:refName,lap:refLap,lapTime:fmtS(R.t),thisLapMinusReferenceSeconds:r3(L.t-R.t)}:null,
+channels:{throttle:!!L.th,brake:!!L.b,brakeIsOnOff:!!(L.b&&Math.max(...L.b)<=1.05),gear:!!L.gr,rpm:!!L.rpm,lateralG:L.g?(L.gEst?'estimated from track shape':'measured'):false,steering:!!L.st,trackMap:!!T.map},
+trackLengthM:Math.round(len),topSpeedKmh:Math.round(L.top),averageSpeedKmh:Math.round(len/o.t*3.6),fullThrottlePctOfLapTime:L.th?ftp:null,lapPhasesPctOfLapTime:{onThrottle:pctOf('t'),braking:pctOf('b'),[L.th?'partThrottleOrCoasting':'cornering']:pctOf('c')},
+peakBrakingG:r3(-pkB),peakAccelerationG:r3(pkA),peakCorneringG:L.g?r3(Math.max(...C.map(c=>c.pk),0)):null,
+corners:C.map((c,i)=>({corner:c.n,brakingStartsBeforeApexM:c.bp==null?null:Math.round(c.bp),trailBraking:c.trail,entryKmh:Math.round(c.entry),minimumKmh:Math.round(c.min),exitKmh:Math.round(c.exit),fullThrottleAfterApexM:c.full==null?null:Math.round(c.full),lowestGear:c.gmin,lowestRpmOnExit:c.arpm==null?null:Math.round(c.arpm),peakCorneringG:L.g?r3(c.pk):null,cornerTimeS:r3(c.time),vsReferenceS:CR?r3(dC[i].d):null})),
+findingsByChannel:Object.fromEntries(Object.entries(I).filter(([k,v])=>v&&v.length).map(([k,v])=>[IK[k]||k,v]))});
 return`<div class="tabpane"><div class="printhead"><h1>Pacely telemetry</h1><p><b>${esc(s.name)}</b> · lap ${o.lap} · ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</p></div>
 <div class="lapbar"><label class="fld noprint">Lap<select id="tlap">${opts}</select></label><div><div class="k">Lap ${o.lap}</div><div class="lt">${fmtS(o.t)}</div><div class="dl">${R?`${isBest?'Fastest lap. ':''}${sg(L.t-R.t)} s to ${refName}`:'Only one complete lap'}</div></div></div>
 <div class="tiles six">${tl(Math.round(L.top)+'<small>km/h</small>','Top speed')}${L.th?tl((L.th.reduce((a2,x,j)=>a2+(x>=95?L.tt[j]:0),0)/tTot*100).toFixed(0)+'<small>%</small>','Full throttle'):tl(Math.round(len/o.t*3.6)+'<small>km/h</small>','Average speed')}${slow?tl(Math.round(slow.min)+'<small>km/h</small>',`Slowest corner (${slow.n})`):''}${tl((share('b')/tTot*100).toFixed(0)+'<small>%</small>','Time on the brakes')}${tl(f1(-pkB)+'<small>g</small>','Peak braking')}${L.g?tl(f2(Math.max(...C.map(c=>c.pk),0))+'<small>g</small>','Peak cornering'):tl(f2(pkA)+'<small>g</small>','Peak acceleration')}</div>
@@ -755,6 +762,7 @@ return`<div class="tabpane"><div class="printhead"><h1>Pacely telemetry</h1><p><
 <h2>Corner by corner</h2><div class="card tbl"><table class="cmp"><tr><th>Corner</th><th>Brakes at</th><th>Entry</th><th>Minimum</th><th>Exit</th>${L.th?'<th>Full throttle</th>':''}${L.gr?'<th>Gear</th>':''}${L.g?'<th>Peak g</th>':''}<th>Time</th>${CR?'<th>vs ref</th>':''}</tr>
 ${C.map((c,i)=>`<tr><td><b>${c.n}</b></td><td>${c.bp==null?'–':Math.round(c.bp)+' m'}</td><td>${Math.round(c.entry)}</td><td>${Math.round(c.min)}</td><td>${Math.round(c.exit)}</td>${L.th?`<td>${c.full==null?'–':'+'+Math.round(c.full)+' m'}</td>`:''}${L.gr?`<td>${c.gmin}</td>`:''}${L.g?`<td>${f2(c.pk)}</td>`:''}<td>${c.time.toFixed(2)}</td>${CR?`<td class="${dC[i].d<-.005?'win':''}">${sg(dC[i].d)}</td>`:''}</tr>`).join('')}</table></div>
 <p class="foot">Speeds in km/h. "Brakes at" is how far before the apex braking starts, "Full throttle" is how far after the apex the throttle reaches 95%, and "Gear" is the lowest gear through the corner. Time is from halfway between the previous corner and this one to halfway to the next. Corners are found automatically from the fastest lap. Longitudinal g is worked out from speed, so it is smoothed. Confirm with driver feedback.</p>
+${aiSection(s,'tele')}
 <div class="ctl noprint"><button class="alt sm" id="print">Save as PDF</button></div></div>`}
 
 function overlay(sa,sb){if(!sa.tr||!sb.tr){const any=sessions.some(x=>x.tr);return any?`<p class="foot noprint">The telemetry overlay appears when both sessions come from telemetry files${sessions.filter(x=>x.tr).length>=2?', for example the two telemetry sample sessions':''}.</p>`:''}
@@ -870,7 +878,13 @@ const gap=q.bl.t-fast;
 const tiles=sec?`<div class="tile"><div class="n">${fmtS(sec.ideal)}</div><div class="l">Ideal lap (your best sectors added up)</div></div><div class="tile"><div class="n">${sec.gap>0?sec.gap.toFixed(3):'0.000'}<small> s</small></div><div class="l">Time to find from your best lap</div></div>`
 :`<div class="tile"><div class="n">${runs.length}</div><div class="l">Runs (a run is a group of laps between slow in and out laps)</div></div>`;
 const secTable=sec?`<h2>Sectors</h2><div class="card tbl"><table class="cmp"><tr><th>Sector</th><th>Best</th><th>On best lap</th><th>Lost on best lap</th><th>Push lap average off best</th></tr>${sec.rows.map(r=>`<tr><td>S${r.i+1} <small style="color:var(--mu)">(best on lap ${r.bestLap})</small></td><td class="win">${fmtS(r.best)}</td><td>${r.onBest==null?'–':fmtS(r.onBest)}</td><td>${r.lossBest==null?'–':'+'+r.lossBest.toFixed(3)}</td><td>${r.avgLoss==null?'–':'+'+r.avgLoss.toFixed(3)}</td></tr>`).join('')}<tr><td><b>Lap</b></td><td class="win">${fmtS(sec.ideal)}</td><td>${fmtS(q.bl.t)}</td><td>${sec.gap>0?'+'+sec.gap.toFixed(3):'0.000'}</td><td></td></tr></table></div>`:'';
-const anySec=rows.some(r=>r.a.sec);
+const anySec=rows.some(r=>r.a.sec),r3=x=>x==null?null:+x.toFixed(3);
+AICTX['quali:'+q.s.id]=JSON.stringify({session:q.s.name,bestLap:{time:fmtS(best),lap:q.bl.lap},pushLapsWithin2PctOfBest:pl.length,pushLapAverageOffBestS:pl.length?r3(avg-best):null,pushLapSpreadS:pl.length>1?r3(spread):null,
+runs:runs.map((r,i)=>({run:i+1,laps:r.n,pushLaps:r.push,bestLap:fmtS(r.best.t),bestCameOnLapOfRun:r.pos})),
+sectors:sec?{idealLap:fmtS(sec.ideal),bestLapMinusIdealS:r3(sec.gap),rows:sec.rows.map(r=>({sector:'S'+(r.i+1),bestS:r3(r.best),setOnLap:r.bestLap,onBestLapS:r3(r.onBest),lostOnBestLapS:r3(r.lossBest),pushLapAverageOffBestS:r3(r.avgLoss)}))}:'No sector times in this file',
+findings:F.map(f=>({severity:f.sev,title:f.t,whatWeSee:f.m,whatToDo:f.d})),
+ranking:rows.length>1?{position:rank,of:rows.length,gapToFastestS:r3(gap),top5:rows.slice(0,5).map(r=>({session:r.a.s.name,bestLap:fmtS(r.a.best)}))}:null,
+lapTimes:q.L.map(l=>[l.lap,r3(l.t)])});
 return `<div class="tabpane"><div class="printhead"><h1>Pacely qualifying</h1><p><b>${esc(q.s.name)}</b> · ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}${condText(q.s)?' · '+esc(condText(q.s)):''}</p></div>${sec?'':`<div class="notice" style="margin-top:20px">${q.s.note&&/sector/.test(q.s.note)?esc(q.s.note):'No sector times in this session. Load a timing sheet with sector columns (for example S1, S2, S3) to see your ideal lap and where the time is lost.'}</div>`}
 <section class="verdict"><div class="k">${esc(q.s.name)}</div><div class="big">${fmtT(best)}</div><p>Best lap, lap ${q.bl.lap}${sec&&sec.gap>.0005?`. Ideal lap ${fmtS(sec.ideal)}`:''}${rows.length>1?`. ${rank===1?'Fastest of':'P'+rank+' of'} ${rows.length} loaded sessions${rank>1?`, ${gap.toFixed(3)} s off the fastest`:''}.`:'.'}</p></section>
 <div class="tiles">${tiles}<div class="tile"><div class="n">${pl.length}</div><div class="l">Push laps (within 2% of the best)</div></div>${sec?'':`<div class="tile"><div class="n">${pl.length>1?'±'+spread.toFixed(2):'n/a'}<small>${pl.length>1?' s':''}</small></div><div class="l">Spread between push laps</div></div>`}</div>
@@ -878,7 +892,8 @@ return `<div class="tabpane"><div class="printhead"><h1>Pacely qualifying</h1><p
 <div><h2>Lap times</h2><div class="card">${qChart(q)}<p class="mu" style="margin:8px 0 0;font-size:14px">Blue dots are push laps. The ringed dot is the best lap. Laps more than 5% off the best are not shown.</p></div></div></div>
 ${secTable}
 <h2>Runs</h2><div class="card tbl"><table class="cmp"><tr><th>Run</th><th>Laps</th><th>Push laps</th><th>Best lap</th><th>Best on lap</th></tr>${runs.map((r,i)=>`<tr><td>${i+1}</td><td>${r.n}</td><td>${r.push}</td><td class="${r.best===q.bl?'win':''}">${fmtT(r.best.t)}</td><td>${r.pos} of ${r.n}</td></tr>`).join('')}</table></div>
-${rows.length>1?`<h2>Sessions ranked by best lap</h2><div class="card tbl"><table class="cmp"><tr><th>Pos</th><th>Session</th><th>Best lap</th>${anySec?'<th>Ideal lap</th>':''}<th>Gap</th></tr>${rows.map((r,k)=>`<tr data-qs="${r.i}" style="cursor:pointer"><td>${k+1}</td><td>${r.i===cur?'<b>'+esc(r.a.s.name)+'</b>':esc(r.a.s.name)}</td><td>${fmtT(r.a.best)}</td>${anySec?`<td>${r.a.sec?fmtS(r.a.sec.ideal):'–'}</td>`:''}<td>${k?'+'+(r.a.best-fast).toFixed(3)+' s':'Fastest'}</td></tr>`).join('')}</table></div>`:''}<div class="ctl noprint"><button class="alt sm" id="print">Save as PDF</button></div>${q.s.note&&!(!sec&&/sector/.test(q.s.note))?`<p class="foot">${esc(q.s.note)}</p>`:''}</div>`}
+${rows.length>1?`<h2>Sessions ranked by best lap</h2><div class="card tbl"><table class="cmp"><tr><th>Pos</th><th>Session</th><th>Best lap</th>${anySec?'<th>Ideal lap</th>':''}<th>Gap</th></tr>${rows.map((r,k)=>`<tr data-qs="${r.i}" style="cursor:pointer"><td>${k+1}</td><td>${r.i===cur?'<b>'+esc(r.a.s.name)+'</b>':esc(r.a.s.name)}</td><td>${fmtT(r.a.best)}</td>${anySec?`<td>${r.a.sec?fmtS(r.a.sec.ideal):'–'}</td>`:''}<td>${k?'+'+(r.a.best-fast).toFixed(3)+' s':'Fastest'}</td></tr>`).join('')}</table></div>`:''}${aiSection(q.s,'quali')}
+<div class="ctl noprint"><button class="alt sm" id="print">Save as PDF</button></div>${q.s.note&&!(!sec&&/sector/.test(q.s.note))?`<p class="foot">${esc(q.s.note)}</p>`:''}</div>`}
 function render(){const el=$('#out'),hold=$('#ctrlHold'),ctrl=document.querySelector('.card.ctrl');hold.append(ctrl);$('#navHold').innerHTML=sessions.length?navHTML():'';view=tab==='compare'?'compare':'single';let h=imp?importCard():'';
 if(!sessions.length){el.innerHTML='<div id="dataSlot"></div>'+h+(msgs.length&&!imp?`<div class="notice ${msgs.some(m=>m.bad)?'bad':''}" role="alert">${msgs.map(m=>esc(m.t)).join('<br>')}</div>`:'')+(imp?'':EMPTY);el.querySelector('#dataSlot').append(ctrl);wire();return}
 if(tab==='call'&&sessions[cur]&&sessions[cur].laps.length<5)tab='quali';let body;try{xwSet();for(const k in XH)delete XH[k];body=tab==='quali'?quali():tab==='tele'?tele():tab==='files'&&!printing?`<div class="tabpane" role="tabpanel">${filesPane(sessions[cur])}</div>`:tab==='compare'?(sessions.length>1?`<div class="tabpane">${compare()}</div>`:`<div class="empty"><b>Load a second session to compare</b>Go to the Data tab and load another file, or the sample sessions.</div>`):single(analyse(sessions[cur]))}catch(e){body=errHTML('Could not analyse this session',e.message)+detailsBlock(sessions[cur],true)}
@@ -899,9 +914,9 @@ wireXH();const tl=$('#tlap');if(tl)tl.onchange=()=>{teleSel[sessions[cur].id]=+t
 document.querySelectorAll('[data-gos]').forEach(b=>b.onclick=()=>{cur=+b.dataset.gos;render()});document.querySelectorAll('[data-mapm]').forEach(b=>b.onclick=()=>{mapMode=b.dataset.mapm;render()});document.querySelectorAll('[data-godemo]').forEach(b=>b.onclick=()=>$('#demo').click());
 const dl=$('#dl');if(dl)dl.onclick=()=>download(s);
 const rm=$('#rm');if(rm)rm.onclick=()=>{if(armed!=='rm'){armed='rm';render();return}DB.del(s.id);sessions.splice(cur,1);cur=Math.max(0,cur-1);A=0;B=Math.min(1,sessions.length-1);cmpSt={A:null,B:null};armed=false;if(sessions.length<2&&tab==='compare')tab='call';render()};
-if(s&&view==='single'){const ex=$('#aiExplain');if(ex)ex.onclick=()=>aiRun(s,AI_EXPLAIN,'Explain this session');
-document.querySelectorAll('.aiq').forEach(b=>b.onclick=()=>aiRun(s,b.dataset.q));
-const ask=()=>{const i=$('#aiq');if(i&&i.value.trim())aiRun(s,i.value.trim())};const ab=$('#aiAsk');if(ab)ab.onclick=ask;const ai=$('#aiq');if(ai)ai.onkeydown=e=>{if(e.key==='Enter')ask()}}
+if(s&&view==='single'){const ak=(document.querySelector('.ai[data-kind]')||{dataset:{kind:'call'}}).dataset.kind,ex=$('#aiExplain');if(ex)ex.onclick=()=>aiRun(s,AIK[ak].explain,AIK[ak].label,ak);
+document.querySelectorAll('.aiq').forEach(b=>b.onclick=()=>aiRun(s,b.dataset.q,null,ak));
+const ask=()=>{const i=$('#aiq');if(i&&i.value.trim())aiRun(s,i.value.trim(),null,ak)};const ab=$('#aiAsk');if(ab)ab.onclick=ask;const ai=$('#aiq');if(ai)ai.onkeydown=e=>{if(e.key==='Enter')ask()}}
 const cp=$('#copy');if(cp)cp.onclick=async()=>{let ok=false;try{await navigator.clipboard.writeText(lastMsg);ok=true}catch(e){}toast(ok?'Copied: '+lastMsg:'Could not copy. Message: '+lastMsg)};
 if(imp)wireImport()}
 /* ---------- print: the browser's print dialog, or a PDF made in the page inside the Claude viewer ---------- */
@@ -993,20 +1008,25 @@ function aiErr(e){if(!e)return'Something went wrong.';if(e.name==='AbortError')r
 if(e.code==='not_granted')return'Permission to use Claude was declined. Tap the button again and allow it.';if(e.code==='rate_limited'||e.status===429)return'Too many requests right now. Wait a minute and try again.';
 if(e.code==='http'){if(e.status===404)return'AI is not set up on this site yet. See the README to switch it on.';return e.message||'The AI service did not respond.'}
 if(navigator.onLine===false)return'AI needs an internet connection.';return e.message||'The AI service did not respond.'}
-function aiBlock(s){const st=aiState[s.id]||{log:[]},last=st.log.length-1;
-return`<section class="ai noprint"><div class="card" style="margin-top:10px">
-<p class="hint" style="margin-top:0">An optional assistant that explains the results above in plain English. It only uses this session's numbers and it can be wrong, so check it against the data. Using it sends this session's numbers, not your files, to Claude.</p>
-<div class="row" style="margin-top:12px"><button id="aiExplain" ${st.busy?'disabled':''}>Explain this session</button></div>
-<div class="chips" style="margin-top:12px">${['Why is the car pushing wide?','When should I pit?','What should I tell the driver?'].map(q=>`<button class="chip aiq" data-q="${esc(q)}" ${st.busy?'disabled':''}>${esc(q)}</button>`).join('')}</div>
-<div class="row" style="margin-top:12px;flex-wrap:nowrap"><input type="text" id="aiq" placeholder="Ask about this session" style="flex:1;min-width:0"><button class="alt" id="aiAsk" ${st.busy?'disabled':''}>Ask</button></div>
+function aiBlock(s,kind){const K=AIK[kind],st=aiState[s.id+':'+kind]||{log:[]},last=st.log.length-1;
+return`<section class="ai noprint" data-kind="${kind}"><div class="card">
+<p class="hint" style="margin-top:0">Ask questions about ${K.what} in plain English. The answers use only the numbers on this page and can be wrong, so check them against the data. Using it sends these numbers, not your files, to Claude.</p>
+<div class="row" style="margin-top:14px"><button id="aiExplain" ${st.busy?'disabled':''}>${K.label}</button></div>
+<div class="chips">${K.chips.map(q=>`<button class="chip aiq" data-q="${esc(q)}" ${st.busy?'disabled':''}>${esc(q)}</button>`).join('')}</div>
+<div class="row" style="margin-top:12px;flex-wrap:nowrap"><input type="text" id="aiq" placeholder="${K.ph}" style="flex:1;min-width:0"><button class="alt" id="aiAsk" ${st.busy?'disabled':''}>Ask</button></div>
 <div id="aiLog" aria-live="polite">${st.log.map((x,i)=>`<div class="aiu">${esc(x.q)}</div>${x.err?`<p class="err" role="alert">${esc(x.err)}</p>`:`<div class="aia" ${st.busy&&i===last?'id="aiCur"':''}>${esc(x.a)||'Thinking…'}</div>`}`).join('')}</div></div></section>`}
-async function aiRun(s,q,label){const st=aiState[s.id]=aiState[s.id]||{log:[]};if(st.busy)return;let a;try{a=analyse(s)}catch(e){return}
+const aiSection=(s,kind)=>`<h2 class="noprint">AI engineer <small>optional</small></h2>${aiBlock(s,kind)}`;
+async function aiRun(s,q,label,kind){kind=kind||'call';const st=aiState[s.id+':'+kind]=aiState[s.id+':'+kind]||{log:[]};if(st.busy)return;let facts;
+if(kind==='call'){let a;try{a=analyse(s)}catch(e){return}facts=aiContext(a,s)}else{facts=AICTX[kind+':'+s.id];if(!facts)return}
 const item={q:label||q,a:'',err:''};const prev=st.log.filter(x=>x.a).slice(-2).map(x=>`Q: ${x.q}\nA: ${x.a}`).join('\n\n');
 st.log.push(item);if(st.log.length>8)st.log.shift();st.busy=true;render();
-const content=`Session facts (JSON):\n${aiContext(a,s)}\n\n${prev?'Earlier in this conversation:\n'+prev+'\n\n':''}${q}`,ac=new AbortController(),to=setTimeout(()=>ac.abort(),45000);
+const content=`${AIK[kind].facts} (JSON):\n${facts}\n\n${prev?'Earlier in this conversation:\n'+prev+'\n\n':''}${q}`,ac=new AbortController(),to=setTimeout(()=>ac.abort(),45000);
 try{await askAI([{role:'user',content}],t=>{item.a=t;const e=$('#aiCur');if(e)e.textContent=t},ac.signal)}catch(e){item.err=aiErr(e)}
 clearTimeout(to);st.busy=false;if(sessions[cur]===s&&view==='single')render()}
 const AI_EXPLAIN="Write a short engineer's summary of this session for the team: what is happening, the single most important thing to do, and one thing to tell the driver. Under 110 words.";
+const AICTX={},AIK={call:{what:'this race session',facts:'Session facts',label:'Explain this session',explain:AI_EXPLAIN,chips:['Why is the car pushing wide?','When should I pit?','What should I tell the driver?'],ph:'Ask about this session'},
+quali:{what:'this qualifying session',facts:'Qualifying facts',label:'Debrief this session',explain:"Write a short qualifying debrief for the driver and engineer: where the lap time is, the biggest gain still available, and one thing to try on the next run. Under 110 words.",chips:['Where is my lap time?','How do I reach my ideal lap?','When do the tyres work best?'],ph:'Ask about this qualifying session'},
+tele:{what:'this lap',facts:'Lap telemetry facts',label:'Debrief this lap',explain:"Write a short engineer's debrief of this lap: where it is strong, where it loses time against the reference lap and why, and the single most useful change for the driver. Under 110 words.",chips:['Where am I losing time?','How is my braking?','What should I tell the driver?'],ph:'Ask about this lap'}};
 
 /* ---------- wiring ---------- */
 $('#demo').onclick=()=>{msgs=[];armed=false;const first=sessions.length;SAMPLES.forEach(x=>{const s=toSession(demo(x.o),x.name,{sample:true});addSession(s)});addSession(raceDemo());addSession(qualiDemo());addSession(teleDemo('8 Telemetry, driver A',41,{coast:[0,20,0,20,20,20]}));addSession(teleDemo('9 Telemetry, driver B',43,{dv:[2,0,-1,0,-5,0],dec:[0,0,9,0,0,0],ramp:[40,40,55,40,75,40],lug:[0,0,0,0,1,0]}));
