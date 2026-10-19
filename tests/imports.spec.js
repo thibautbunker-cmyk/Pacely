@@ -62,3 +62,27 @@ test('real F1 telemetry with GPS-free X/Y position: lap times match the official
   const r = await page.evaluate(() => { const s = sessions[0], t = Object.fromEntries(s.laps.map(l => [l.lap, +l.t.toFixed(3)])); return { lap2: t[2], lap5: t[5], lap8: t[8], map: !!s.tr.map, ch: s.tr.ch }; });
   expect(r).toMatchObject({ lap2: 85.911, lap5: 86.273, lap8: 85.606, map: true, ch: { th: true, b: true, gr: true, rpm: true, g: false } });
 });
+
+test('sessions are grouped by event: picker, quali ranking and removing an event', async ({ page }) => {
+  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  await openApp(page);
+  await loadFile(page, sample('f1-2024-spain-qualifying.csv'));
+  await loadFile(page, sample('f1-2023-azerbaijan-qualifying.csv'));
+  await loadFile(page, sample('f1-2020-silverstone-fp2-44-hamilton-telemetry.csv'));
+  const ev = await page.evaluate(() => evGroups().map(g => [g.label, g.items.length]));
+  expect(ev).toEqual([['F1 2024 spain qualifying', 20], ['F1 2023 azerbaijan qualifying', 18], ['F1 2020 silverstone FP2 44 hamilton telemetry', 1]]);
+  expect(await page.evaluate(() => sessions[sessions.length - 1].name)).toBe('F1 2020 silverstone FP2 44 hamilton telemetry');
+  await expect(page.locator('#selS optgroup')).toHaveCount(3);
+  await page.evaluate(() => { cur = sessions.findIndex(s => s.name.includes('NOR')); render(); });
+  await page.click('[data-tab=quali]');
+  const ranked = page.locator('h2:has-text("Sessions ranked") + .card tr');
+  await expect(ranked).toHaveCount(21);
+  await page.click('[data-qscope=all]');
+  await expect(ranked).toHaveCount(40);
+  await page.click('[data-tab=files]');
+  await expect(page.locator('.evg')).toHaveCount(3);
+  await page.click('[data-rmev="1"]'); await page.click('[data-rmev="1"]');
+  await expect(page.locator('.evg')).toHaveCount(2);
+  expect(await page.evaluate(() => [sessions.length, sessions[cur].name])).toEqual([21, '#4 NOR McLaren']);
+  expect(errs).toEqual([]);
+});

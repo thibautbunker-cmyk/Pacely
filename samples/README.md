@@ -18,7 +18,7 @@ Columns: `Number`, `Driver`, `Team`, `Lap`, `Lap Time` (m:ss.000), `S1`, `S2`, `
 2. Pacely finds 20 cars and asks which to load. Choose **Tick all shown**, then **Load selected**.
 3. Open **Qualifying** and pick a driver from the session list.
 
-Load one event at a time (or use **Clear all sessions** on the Files tab first), because the ranking table compares every loaded session.
+Each file becomes its own event. The ranking table compares the cars in the same event, and **All loaded** compares every session. The Files tab lists the events and can remove a whole event at once.
 
 ## Race timing
 

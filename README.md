@@ -6,7 +6,7 @@ The whole app is one file, `index.html`. Sessions are saved in the browser on yo
 
 ## Features
 
-- **Import:** Excel (.xlsx) or CSV/TSV/TXT, drag and drop, or paste straight from Excel. Every visible sheet with lap data becomes a session. Tyre compound, tyre age and pit in/out columns are read when present. Timing sheets with many cars split into one session per car. Older .xls files need saving as .xlsx or CSV first.
+- **Import:** Excel (.xlsx) or CSV/TSV/TXT, drag and drop, or paste straight from Excel. Every visible sheet with lap data becomes a session. Tyre compound, tyre age and pit in/out columns are read when present. Timing sheets with many cars split into one session per car. Sessions are grouped by event (the file they came from), file names are tidied into readable session names, and the Files tab can remove a whole event. Older .xls files need saving as .xlsx or CSV first.
 - **Race call:** tyre loss per lap, pit window, a laps-to-go check (0 means the race is finished), stints split at pit stops and tyre changes, wear and pace compared by tyre compound, fuel effect per session, and corner-by-corner problems.
 - **Race picture:** load a timing sheet with every car (position and race time columns) and the race call shows your position, the gaps ahead and behind and how fast they change, where you would rejoin if you pitted now (pit loss measured from the stops in the file), undercut threats and chances, a lap chart, and how each of your stops went against nearby cars. Pick any lap with "As of lap".
 - **Qualifying:** runs, push laps, where the tyres peak, and an ideal lap from sector times (S1, S2, S3 columns), and the tyres used on each run.
