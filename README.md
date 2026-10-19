@@ -6,7 +6,7 @@ Everything runs in the browser from a single file, `index.html`. Sessions are sa
 
 ## Features
 
-- Load CSV/TSV/TXT files, drag and drop, or paste straight from Excel
+- Load Excel (.xlsx) or CSV/TSV/TXT files, drag and drop, or paste straight from Excel. Every visible sheet with lap data becomes a session; older .xls files need saving as .xlsx or CSV first
 - Reads lap-time lists, lap-and-corner tables, or raw telemetry over time
 - Race call: tyre loss per lap, pit window, laps-to-go check, corner-by-corner problems
 - Qualifying: runs, push laps, where the tyres peak, and an ideal lap from sector times (S1, S2, S3 columns)

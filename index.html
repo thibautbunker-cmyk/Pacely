@@ -269,7 +269,7 @@ details>summary{padding:18px 2px;font:500 17px var(--num);color:var(--tx)}
 <header class="top"><div class="topin"><div class="mark"><svg class="logo" viewBox="0 0 100 100" width="30" height="30" aria-hidden="true"><g transform="skewX(-10)" transform-origin="50 50"><rect x="18" y="13.5" width="16" height="72.5" fill="currentColor"/><path d="M49.48 64.17 A22 22 0 1 1 73.85 57.64" fill="none" stroke="currentColor" stroke-width="15"/><circle cx="62.69" cy="64.75" r="7.2" fill="#d4160c"/></g></svg><h1>Pacely</h1></div><nav class="tabs noprint" id="navHold" role="tablist" aria-label="Sections"></nav>
 <div class="tools"><button class="alt sm" id="theme" aria-label="Switch light or dark">Light / Dark</button></div></div></header><main>
 <div id="ctrlHold" hidden><div class="card ctrl" style="margin-top:18px">
-<div class="row"><label class="btn" style="background:var(--ac);color:var(--acx)">Load lap file<input id="file" type="file" accept=".csv,.txt,.tsv,text/csv,text/plain,.xlsx,.xls" multiple hidden></label>
+<div class="row"><label class="btn" style="background:var(--ac);color:var(--acx)">Load lap file<input id="file" type="file" accept=".csv,.txt,.tsv,text/csv,text/plain,.xlsx,.xlsm,.xls" multiple hidden></label>
 <button class="alt" id="paste">Paste data</button><button class="alt" id="demo">Try sample sessions</button></div>
 <details class="set"><summary>Settings</summary>
 <div class="row" style="margin-top:8px"><label class="f2">Car speeds up as fuel burns (s per lap)<input id="fuel" type="number" step="0.01" value="0.03"></label>
@@ -338,6 +338,37 @@ function splitRows(text,d){text=text.replace(/^﻿/,'');const out=[];
 if(text.indexOf('"')<0){for(const ln of text.split(/\r?\n/)){if(ln.trim()==='')continue;out.push(ln.split(d))}return out}
 let row=[],cell='',q=false;for(let i=0;i<text.length;i++){const c=text[i];if(q){if(c=='"'){if(text[i+1]=='"'){cell+='"';i++}else q=false}else cell+=c}else if(c=='"')q=true;else if(c==d){row.push(cell);cell=''}else if(c=='\n'||c=='\r'){if(c=='\r'&&text[i+1]=='\n')i++;row.push(cell);cell='';if(row.some(x=>x.trim()!==''))out.push(row);row=[]}else cell+=c}
 if(cell!==''||row.length){row.push(cell);if(row.some(x=>x.trim()!==''))out.push(row)}return out}
+/* ---------- Excel (.xlsx) reading: unzip with the browser, then read the sheet XML ---------- */
+async function unzip(buf){const u=new Uint8Array(buf),dv=new DataView(buf),files=new Map();let e=-1;
+for(let i=u.length-22;i>=Math.max(0,u.length-65558);i--)if(dv.getUint32(i,true)===0x06054b50){e=i;break}
+if(e<0)throw new Error('This Excel file looks damaged. Open it in Excel and save it again.');
+let p=dv.getUint32(e+16,true);const n=dv.getUint16(e+10,true),td=new TextDecoder();
+for(let k=0;k<n&&dv.getUint32(p,true)===0x02014b50;k++){const meth=dv.getUint16(p+10,true),cs=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),xl=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
+files.set(td.decode(u.subarray(p+46,p+46+nl)),{meth,cs,lo});p+=46+nl+xl+cl}
+return async name=>{const f=files.get(name);if(!f)return null;const d=f.lo+30+dv.getUint16(f.lo+26,true)+dv.getUint16(f.lo+28,true),raw=u.subarray(d,d+f.cs);
+if(f.meth===0)return td.decode(raw);if(f.meth!==8)throw new Error('This Excel file uses a compression Pacely cannot read. Save it as CSV.');
+if(typeof DecompressionStream==='undefined')throw new Error('This browser cannot open Excel files. Save the file as CSV, or update your browser.');
+return await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text()}}
+const unent=s=>s.replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos);/gi,(m,e)=>e[0]==='#'?String.fromCodePoint(e[1]==='x'||e[1]==='X'?parseInt(e.slice(2),16):+e.slice(1)):{amp:'&',lt:'<',gt:'>',quot:'"',apos:"'"}[e.toLowerCase()]),XT=(d,t)=>[...d.getElementsByTagNameNS('*',t)],xml=s=>new DOMParser().parseFromString(s,'application/xml');
+function timeFmt(id,code){if([18,19,20,21,45,46,47].includes(id))return true;if(!code)return false;const c=code.replace(/"[^"]*"|\\.|\[(?![hms]+\])[^\]]*\]/gi,'');return /[hs]/i.test(c)&&!/[yd]/i.test(c)}
+async function readXlsx(buf){const get=await unzip(buf),wbX=await get('xl/workbook.xml');if(!wbX)throw new Error('This file is not an Excel workbook. Save it as CSV and load that.');
+const wb=xml(wbX),rels=xml(await get('xl/_rels/workbook.xml.rels')||'<r/>'),tgt={};XT(rels,'Relationship').forEach(r=>{tgt[r.getAttribute('Id')]=r.getAttribute('Target')});
+const ssX=await get('xl/sharedStrings.xml'),SS=ssX?XT(xml(ssX),'si').map(si=>XT(si,'t').map(t=>t.textContent).join('')):[];
+const stX=await get('xl/styles.xml'),isTime=[];if(stX){const st=xml(stX),codes={};XT(st,'numFmt').forEach(f=>{codes[+f.getAttribute('numFmtId')]=f.getAttribute('formatCode')});
+const xfs=XT(st,'cellXfs')[0];if(xfs)[...xfs.children].forEach(x=>{const id=+x.getAttribute('numFmtId')||0;isTime.push(timeFmt(id,codes[id]))})}
+const col=r=>{let c=0;for(const ch of r.replace(/\d+$/,''))c=c*26+ch.charCodeAt(0)-64;return c-1},out=[];
+for(const sh of XT(wb,'sheet')){if(sh.getAttribute('state')&&sh.getAttribute('state')!=='visible')continue;
+const rid=sh.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id')||sh.getAttribute('r:id');let t=tgt[rid];if(!t)continue;
+t=t.startsWith('/')?t.slice(1):'xl/'+t.replace(/^\.\//,'');const sx=await get(t);if(!sx)continue;const rows=[];
+for(const rm of sx.matchAll(/<(?:\w+:)?row\b[^>]*>([\s\S]*?)<\/(?:\w+:)?row>/g)){const cells=[];let ci=0;
+for(const cm of rm[1].matchAll(/<(?:\w+:)?c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/(?:\w+:)?c>)/g)){const at=k=>{const x=cm[1].match(new RegExp('\\b'+k+'="([^"]*)"'));return x?x[1]:null};
+const r=at('r');if(r)ci=col(r);const ty=at('t'),body=cm[2]||'',vm=body.match(/<(?:\w+:)?v>([\s\S]*?)<\/(?:\w+:)?v>/),v=vm?vm[1]:null;let s='';
+if(ty==='s')s=SS[+v]||'';else if(ty==='inlineStr')s=unent([...body.matchAll(/<(?:\w+:)?t\b[^>]*>([\s\S]*?)<\/(?:\w+:)?t>/g)].map(x=>x[1]).join(''));else if(ty==='str'||ty==='e')s=unent(v||'');else if(ty==='b')s=v==='1'?'TRUE':'FALSE';
+else if(v!=null&&v!==''){const x=Number(v);s=isTime[+at('s')||0]?String(Math.round(x*864e6)/1e4):String(x)}
+while(cells.length<ci)cells.push('');cells[ci++]=s}
+if(cells.some(x=>String(x).trim()!==''))rows.push(cells)}
+if(rows.length)out.push({name:sh.getAttribute('name')||'Sheet',rows})}
+return out}
 function locate(rows,dec){const isNum=v=>{let s=String(v).trim();if(s==='')return false;s=s.replace(/\s*(seconds|secs|sec|s)$/i,'');return !isNaN(num(s,dec))||/^\d+:\d{2}([.,]\d+)?$/.test(s)||/^\d+:\d+:\d{2}([.,]\d+)?$/.test(s)};
 const ratio=r=>{const c=r.filter(x=>String(x).trim()!=='');return c.length?c.filter(isNum).length/c.length:0};
 const hit=r=>{const c=r.filter(x=>String(x).trim()!=='');return c.length>=2&&c.filter(isNum).length>=2&&c.filter(isNum).length/c.length>=.3};
@@ -738,12 +769,17 @@ function loadGroups(q,gs,notes){let n=0,bad=0;for(const g of gs){try{const q2={.
 if(!n)throw new Error('None of the cars in this file had enough laps (at least 5).');notes.push(`Loaded ${n} cars from ${q.name}.`+(bad?` ${bad} skipped (too few laps).`:''));return 'ok'}
 function remember(q){try{localStorage.setItem('pacely-map:'+q.sig,JSON.stringify({shape:q.shape,map:q.map,units:q.units}))}catch(e){}}
 function addSession(s){const n=sessions.filter(x=>x.name===s.name||x.name.startsWith(s.name+' (')).length;if(n)s.name=`${s.name} (${n+1})`;sessions.push(s);cur=sessions.length-1;view='single';tab='call';save(s);return s}
-function prepare(name,text){const d=detectDelim(text),dec=d===';',rows=splitRows(text,d),loc=locate(rows,dec),g=guess(loc.names,loc.units,loc.data,dec),sig=loc.names.join('|').slice(0,300);
+function prepare(name,text){const d=detectDelim(text);return prepareRows(name,splitRows(text,d),d===';')}
+function prepareRows(name,rows,dec){const loc=locate(rows,dec),g=guess(loc.names,loc.units,loc.data,dec),sig=loc.names.join('|').slice(0,300);
 const q={name,names:loc.names,colUnits:loc.units,data:loc.data,dec,sig,shape:g.shape,map:g.map,units:g.units,remember:true,auto:g.exact};
 try{const sv=JSON.parse(localStorage.getItem('pacely-map:'+sig)||'null');if(sv&&sv.shape&&sv.map){q.shape=sv.shape;q.map=sv.map;q.units={...q.units,...sv.units};q.auto=true}}catch(e){}
 return q}
 function advance(){imp=null;const notes=[];while(queue.length){const q=queue[0];let r='fail';if(!q.manual){try{r=loadQ(q,notes)}catch(e){if(q.auto)msgs.push({t:`${q.name}: ${e.message}`,bad:true});r=q.auto?'bad':'fail'}}if(r==='ok'||r==='bad'){queue.shift();continue}if(r==='pick'){imp=q;break}q.manual=true;imp=q;break}if(notes.length)msgs.push({t:notes.join(' ')});render()}
-async function handleFiles(files){msgs=[];armed=false;for(const f of files){try{if(/\.(xlsx?|xlsm|ods|numbers)$/i.test(f.name))throw new Error('That is a spreadsheet file. In Excel choose File, Save As, CSV, then load the CSV (or select the cells, copy them and press Ctrl+V here).');const buf=await f.arrayBuffer();const u=new Uint8Array(buf.slice(0,4));if(u[0]===0x50&&u[1]===0x4b)throw new Error('That looks like a zipped or Excel file, not a CSV. Save it as CSV first, or copy the cells and press Ctrl+V here.');let text;try{text=new TextDecoder('utf-8',{fatal:true}).decode(buf)}catch(e){text=new TextDecoder('windows-1252').decode(buf)}const q=prepare(f.name,text);queue.push(q)}catch(e){msgs.push({t:`${f.name}: ${e.message}`,bad:true})}}advance();if(sessions.length&&!imp)window.scrollTo({top:0})}
+async function queueXlsx(fname,buf){const sheets=await readXlsx(buf),base=fname.replace(/\.[^.]+$/,''),qs=[];let err='';
+for(const sh of sheets){try{qs.push(prepareRows(sheets.length>1?`${base} – ${sh.name}.xlsx`:fname,sh.rows,false))}catch(e){err=e.message}}
+if(!qs.length)throw new Error(sheets.length?(sheets.length>1?'None of the sheets has rows of lap data.':err):'The workbook is empty.');queue.push(...qs)}
+async function handleFiles(files){msgs=[];armed=false;for(const f of files){try{if(/\.xls$/i.test(f.name))throw new Error('That is an old Excel file (.xls). In Excel choose File, Save As, Excel Workbook (.xlsx) or CSV, then load that.');if(/\.(ods|numbers)$/i.test(f.name))throw new Error('Pacely reads Excel (.xlsx) and CSV files. Export this spreadsheet as one of those, or copy the cells and press Ctrl+V here.');
+const buf=await f.arrayBuffer();const u=new Uint8Array(buf.slice(0,4));if(u[0]===0x50&&u[1]===0x4b){await queueXlsx(f.name,buf);continue}let text;try{text=new TextDecoder('utf-8',{fatal:true}).decode(buf)}catch(e){text=new TextDecoder('windows-1252').decode(buf)}const q=prepare(f.name,text);queue.push(q)}catch(e){msgs.push({t:`${f.name}: ${e.message}`,bad:true})}}advance();if(sessions.length&&!imp)window.scrollTo({top:0})}
 function handleText(text,name){msgs=[];armed=false;try{queue.push(prepare(name||'Pasted data',text))}catch(e){msgs.push({t:`${name||'Pasted data'}: ${e.message}`,bad:true})}advance();if(sessions.length&&!imp)window.scrollTo({top:0})}
 
 /* ---------- optional AI helper (test) ---------- */
@@ -786,7 +822,7 @@ A=first;B=first+1;cmpSt={A:null,B:null};cur=first;view='single';tab='call';rende
 addEventListener('dragenter',e=>{if(hasF(e)){e.preventDefault();dc++;ov.classList.add('on')}});
 addEventListener('dragover',e=>{if(hasF(e))e.preventDefault()});
 addEventListener('dragleave',e=>{if(hasF(e)){dc=Math.max(0,dc-1);if(!dc)ov.classList.remove('on')}});
-addEventListener('drop',e=>{if(!hasF(e))return;e.preventDefault();dc=0;ov.classList.remove('on');const fs=[...e.dataTransfer.files].filter(f=>/\.(csv|txt)$/i.test(f.name)||/text/.test(f.type));if(fs.length)handleFiles(fs)})}
+addEventListener('drop',e=>{if(!hasF(e))return;e.preventDefault();dc=0;ov.classList.remove('on');const fs=[...e.dataTransfer.files].filter(f=>/\.(csv|txt|tsv|xlsx|xlsm|xls|ods|numbers)$/i.test(f.name)||/text/.test(f.type));if(fs.length)handleFiles(fs)})}
 addEventListener('paste',e=>{const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;const x=(e.clipboardData&&e.clipboardData.getData('text'))||'';if(x.split(/\r?\n/).filter(l=>l.trim()).length>=5){e.preventDefault();handleText(x,'Pasted data')}});
 const pb=$('#paste');if(pb)pb.onclick=async()=>{try{const x=await navigator.clipboard.readText();if(x.trim())handleText(x,'Pasted data');else toast('Nothing to paste. Copy your cells first.')}catch(e){toast('Press Ctrl+V (or Cmd+V) anywhere on this page to paste.')}};
 $('#file').onchange=async e=>{const fs=[...e.target.files];e.target.value='';if(fs.length)await handleFiles(fs)};
