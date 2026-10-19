@@ -214,7 +214,7 @@ details>summary{font-weight:600}
 @media print{.top{background:#fff!important}}
 html.pdf{--bg:#fff;--sf:#fff;--sf2:#eee;--tx:#111;--mu:#555;--ln:#ccc;--ac:#c40a0a;--wn:#a85f00;--wnbg:#fff4e0;--bd:#c40a0a;--bdbg:#fde8e6;--ok:#17743f;--okbg:#e6f5ec;color-scheme:light}html.pdf body{background:#fff}html.pdf .hero,html.pdf .dash,html.pdf .fgrid,html.pdf .cor{display:block!important}
 html.pdf .top,html.pdf .ctx,html.pdf .card.ctrl,html.pdf .chips,html.pdf .ctl,html.pdf .noprint,html.pdf button,html.pdf .notice,html.pdf .stint details,html.pdf details.set{display:none!important}
-html.pdf summary{display:block;list-style:none}html.pdf .printhead{display:block;margin:10px 0 0}html.pdf .printhead p{margin:4px 0;color:var(--mu)}html.pdf .printonly{display:block}
+html.pdf summary{display:block;list-style:none}html.pdf .ovx{display:none!important}html.pdf .printhead{display:block;margin:10px 0 0}html.pdf .printhead p{margin:4px 0;color:var(--mu)}html.pdf .printonly{display:block}
 [data-theme=dark] .empty svg path{stroke:#fff}[data-theme=dark] .empty svg rect{fill:#fff}
 .empty svg{width:56px;height:56px}
 /* ---- clean / apple-style ---- */
@@ -268,6 +268,8 @@ details>summary{padding:18px 2px;font:500 17px var(--num);color:var(--tx)}
 @media(max-width:700px){.top{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--sf)!important}.topin{padding:0 14px}main{padding:4px 14px 90px}.verdict{padding:28px 22px}.top .tabs{background:rgba(251,251,253,.85)!important;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:1px solid var(--ln)!important}.top .tabs button{border-radius:0;background:none!important;color:var(--mu)}.top .tabs button.on{color:var(--ac)}.tiles{grid-template-columns:1fr}}
 .beta{font-style:normal;font-size:10px;font-weight:700;letter-spacing:.02em;background:var(--ac);color:#fff;border-radius:980px;padding:1px 6px;margin-left:4px;vertical-align:1px}
 .f p{margin:6px 0 0}.f p.do{font-weight:600}
+.ovc{margin-top:14px}.ovt{font-size:13px;font-weight:600;color:var(--mu);margin-bottom:2px}.ovx{stroke:var(--tx);stroke-width:1;opacity:.6}#ovl svg{touch-action:pan-y}.ovr{margin:8px 0 0;font-size:14px;color:var(--mu);font-variant-numeric:tabular-nums;min-height:1.5em}
+@media print{.ovx{display:none!important}}
 </style></head><body><div class="dropov" id="dropov">Drop lap files to load them</div>
 <header class="top"><div class="topin"><div class="mark"><svg class="logo" viewBox="0 0 100 100" width="30" height="30" aria-hidden="true"><g transform="skewX(-10)" transform-origin="50 50"><rect x="18" y="13.5" width="16" height="72.5" fill="currentColor"/><path d="M49.48 64.17 A22 22 0 1 1 73.85 57.64" fill="none" stroke="currentColor" stroke-width="15"/><circle cx="62.69" cy="64.75" r="7.2" fill="#d4160c"/></g></svg><h1>Pacely</h1></div><nav class="tabs noprint" id="navHold" role="tablist" aria-label="Sections"></nav>
 <div class="tools"><button class="alt sm" id="theme" aria-label="Switch light or dark">Light / Dark</button></div></div></header><main>
@@ -314,6 +316,12 @@ const add=v=>{const s=v.map(x=>+x.toFixed(3));lap++;laps.push({lap,t:s.reduce((a
 for(let k=1;k<=n;k++){const ty=k==2?0:k==1?.12:.07*(k-2);add(B.map((b,i)=>b+(evo+ty)/3+(r()-.5)*(i==1?.5:.12)))}
 add(B.map((b,i)=>b*(i==2?1.25:1.06)))});
 return mk('7 Qualifying with sectors',laps,[],{sample:true})}
+function teleDemo(name,seed,q={}){const r=rng(seed),L=3600,C=[[350,80],[900,120],[1500,65],[2200,140],[2900,95],[3350,110]].map(([d,v],i)=>({d,v:(v+(q.dv&&q.dv[i]||0))/3.6,dec:(q.dec&&q.dec[i])||12,R:((v/3.6)**2)/(1.6*9.81)}));
+const vAt=pos=>{let v=240/3.6;for(const c of C)for(const k of[-L,0,L]){const x=pos-(c.d+k);v=Math.min(v,Math.sqrt(c.v*c.v+2*(x<0?c.dec:6)*Math.abs(x)))}return v};
+const rows=[],dt=.05;let t=0,d=0;for(let lap=1;lap<=6;lap++){const jit=(r()-.5)*.6;d=0;while(d<L){const v=vAt(d)*(1+jit/100)+(r()-.5)*.25,ahead=vAt(d+8);
+const c=C.reduce((a,c)=>Math.abs(c.d-d)<Math.abs(a.d-d)?c:a),near=Math.abs(c.d-d)<70,g=near?Math.min(1.7,v*v/(c.R*9.81)):.05+(r()*.05),st=near?Math.min(220,2600/c.R)*(1-Math.abs(c.d-d)/70):r()*1.5;
+rows.push([t.toFixed(2),lap,d.toFixed(1),(v*3.6).toFixed(1),g.toFixed(2),st.toFixed(1),(ahead<v-.05?Math.min(90,(v-ahead)*55):0).toFixed(1)]);t+=dt;d+=v*dt}}
+const s=build({name,data:rows,dec:false,shape:'series',map:{time:0,lap:1,dist:2,speed:3,latG:4,steer:5,brake:6},units:{time:'s',speed:'kmh',g:'g',dist:'m'}});s.sample=true;return s}
 const SAMPLES=[
 {name:'1 Baseline setup',o:{}},
 {name:'2 Softer front springs',o:{us3:.008,us5:.006,deg:.12,seed:11}},
@@ -475,7 +483,10 @@ bm=pa-pos}}
 cr.push({lap:g.lap,corner:'T'+(ci+1),v:mv,b:bm,st:hasS?ps:null,g:hasG?pg:null})})});
 note=`Found ${apex.length} corner${apex.length==1?'':'s'} automatically from the fastest lap and measured each one on all ${kept.length} laps.`}
 else note='No clear corners were found, so Pacely will judge tyre wear from lap times only.';
-const s=mk(name,laps,cr);s.note=note;return s}
+const r1=x=>Math.round(x*10)/10,r2=x=>Math.round(x*100)/100,keep=(P,k,f)=>Array.from(P[k],x=>fin(x)?f(x):null);
+const tr={bin:BIN,len:L,nb:NB,apex,ch:{g:map.latG>=0,s:map.steer>=0,b:map.brake>=0},laps:{}};
+kept.forEach((g,gi)=>{const P=profs[gi],o={v:keep(P,'v',r1)};if(tr.ch.g)o.g=keep(P,'g',r2);if(tr.ch.s)o.s=keep(P,'s',r1);if(tr.ch.b)o.b=keep(P,'b',r1);tr.laps[g.lap]=o});
+const s=mk(name,laps,cr);s.note=note;s.tr=tr;return s}
 
 /* ---------- laps, stints ---------- */
 function parseLapList(str){const out=new Set();String(str||'').split(/[,\s;]+/).forEach(p=>{const m=p.match(/^(\d+)(?:-(\d+))?$/);if(m){const a=+m[1],b=m[2]?+m[2]:a;for(let i=Math.min(a,b);i<=Math.max(a,b)&&i-a<500;i++)out.add(i)}});return out}
@@ -550,7 +561,7 @@ return{sev,head,why:why+' Based on tyre wear only, so check traffic and the race
 const LAB={high:'▲ Act now',med:'◆ Watch',ok:'✓ OK'},CL={high:'▲ Problem',med:'◆ Watch',ok:'✓ Fine'};
 
 /* ---------- state ---------- */
-let sessions=[],tab='call',cmpSt={A:null,B:null},printing=false,view='single',cur=0,A=0,B=1,lastMsg='',msgs=[],imp=null,queue=[],armed=false;
+let sessions=[],tab='call',cmpSt={A:null,B:null},cmpOv={A:null,B:null},OV=null,printing=false,view='single',cur=0,A=0,B=1,lastMsg='',msgs=[],imp=null,queue=[],armed=false;
 const fuel=()=>+$('#fuel').value||0,thr=n=>{const v=+$('#thr').value;return v>0?v:25};
 const remOf=s=>{const v=parseInt(s.meta.remaining,10);return v>0?v:0};
 function analyse(s,over){const r=runLaps(s,over);return analyseStint(s,r,fuel(),thr(r.st.n),remOf(s))}
@@ -623,12 +634,47 @@ return `<h2>This session</h2><div class="card"><details class="set noprint" styl
 const MET=[['Tyre loss per lap','tyre',v=>v.toFixed(2)+' s',.01,-1],['Laps before you should pit','left',v=>v===Infinity?'No limit':v+' laps',1,1],['Lap consistency','resid',v=>'±'+v.toFixed(2)+' s',.02,-1],['Best lap','best',v=>v.toFixed(2)+' s',.05,-1],['Average lap','avg',v=>v.toFixed(2)+' s',.05,-1],['Problems found (fewer is better)','probs',v=>String(v),0,-1]];
 const TXT={tyre:(w,l,d)=>`${w} loses ${d.toFixed(2)} s less per lap to tyre wear than ${l}.`,lost:(w,l,d)=>`${w} has lost ${d.toFixed(1)} s less to tyre wear so far.`,left:(w,l,d)=>`${w} lasts ${d===Infinity?'much longer':d+' more laps'} before hitting your time-loss limit than ${l}.`,resid:(w,l,d)=>`${w} has more consistent laps than ${l} (${d.toFixed(2)} s tighter).`,best:(w,l,d)=>`${w} has the faster best lap, by ${d.toFixed(2)} s.`,avg:(w,l,d)=>`${w} has the faster average lap, by ${d.toFixed(2)} s.`,probs:(w,l,d)=>`${w} has fewer problems than ${l}.`};
 function summ(a){return{tyre:Math.max(a.rateAvg,0),lost:a.lossNow,left:a.left.low,resid:a.resid,best:Math.min(...a.lt),avg:mean(a.lt),probs:a.F.reduce((n,f)=>n+(f.sev=='high'?2:f.sev=='med'?1:0),0)}}
+/* ---- telemetry overlay (Compare) ---- */
+function ovLap(s,want){const T=s.tr,lt=new Map(s.laps.map(l=>[l.lap,l.t])),ks=Object.keys(T.laps).map(Number).filter(k=>lt.has(k));if(!ks.length)return null;
+const best=ks.reduce((a,k)=>lt.get(k)<lt.get(a)?k:a,ks[0]),lap=want!=null&&T.laps[want]&&lt.has(want)?want:best;return{lap,best,ks,t:lt.get(lap),P:T.laps[lap],T}}
+function cumT(P,T,dur){const c=[0];let acc=0;for(let j=0;j<T.nb;j++){acc+=T.bin/Math.max(P.v[j]||0,5)*3.6;c.push(acc)}const k=dur/acc;return c.map(x=>x*k)}
+function ovSeries(o,k,N){const a=o.P[k];if(!a)return null;const n=o.T.nb;return Array.from({length:N},(_,j)=>{const v=a[Math.min(n-1,Math.floor((j+.5)/N*n))];return v==null?null:v})}
+function ovChart(id,title,N,ser,{h=150,zero=false,fmt=v=>v.toFixed(0),top='',bot='',marks=null}={}){const W=600,p=46,X=j=>p+j/(N-1)*(W-p-10);
+const all=ser.flatMap(x=>x.y).filter(v=>v!=null&&isFinite(v));if(!all.length)return'';let mn=Math.min(...all),mx=Math.max(...all);if(zero){const m=Math.max(Math.abs(mn),Math.abs(mx),.05);mn=-m;mx=m}if(mx-mn<1e-6){mx+=1;mn-=1}
+const pad=(mx-mn)*.06;if(!zero){mn=mn>=0?Math.max(0,mn-pad):mn-pad;mx+=pad}const Y=v=>12+(1-(v-mn)/(mx-mn))*(h-30);
+const line=(y,cls)=>{let d='',on=false;y.forEach((v,j)=>{if(v==null){on=false;return}d+=(on?'L':'M')+X(j).toFixed(1)+','+Y(v).toFixed(1);on=true});return`<path class="${cls}" d="${d}"/>`};
+const mks=marks?marks.map(m=>`<line class="grid" x1="${X(m.j)}" x2="${X(m.j)}" y1="12" y2="${h-18}"/><text class="t" x="${X(m.j)+3}" y="22">${esc(m.n)}</text>`).join(''):'';
+return`<div class="ovc"><div class="ovt">${title}</div><svg viewBox="0 0 ${W} ${h}" role="img" aria-label="${esc(title)} by distance, session A solid, session B dashed" data-ov="${id}">
+<line class="axis" x1="${p}" x2="${W-10}" y1="${h-18}" y2="${h-18}"/>${zero?`<line class="axis" x1="${p}" x2="${W-10}" y1="${Y(0)}" y2="${Y(0)}"/>`:''}${mks}
+<text class="t" x="2" y="${Y(mx)+10}">${top||fmt(mx)}</text><text class="t" x="2" y="${Y(mn)-2}">${bot||fmt(mn)}</text>
+${ser.map(x=>line(x.y,x.cls)).join('')}<line class="ovx" x1="0" x2="0" y1="12" y2="${h-18}" style="display:none"/></svg></div>`}
+function overlay(sa,sb){if(!sa.tr||!sb.tr){const any=sessions.some(x=>x.tr);return any?`<p class="foot noprint">The telemetry overlay appears when both sessions come from telemetry files${sessions.filter(x=>x.tr).length>=2?', for example the two telemetry sample sessions':''}.</p>`:''}
+const a=ovLap(sa,cmpOv.A),b=ovLap(sb,cmpOv.B);if(!a||!b)return'';const N=a.T.nb,len=a.T.len;
+const cA=cumT(a.P,a.T,a.t),cB=cumT(b.P,b.T,b.t),tAt=(c,n,fr)=>{const x=fr*n,i=Math.min(n-1,Math.floor(x));return c[i]+(c[i+1]-c[i])*(x-i)};
+const d=Array.from({length:N},(_,j)=>{const fr=(j+1)/N;return tAt(cB,b.T.nb,fr)-tAt(cA,N,fr)});
+const vA=ovSeries(a,'v',N),vB=ovSeries(b,'v',N),both=k=>a.T.ch[k]&&b.T.ch[k],bA=both('b')?ovSeries(a,'b',N):null,bB=both('b')?ovSeries(b,'b',N):null,sA=both('s')?ovSeries(a,'s',N):null,sB=both('s')?ovSeries(b,'s',N):null;
+const marks=a.T.apex.map((j,i)=>({j,n:'T'+(i+1)}));OV={N,len,vA,vB,d,bA,bB,sA,sB};
+const ap=a.T.apex,seg=ap.map((j,i)=>{const lo=i?Math.round((ap[i-1]+j)/2):0,hi=i<ap.length-1?Math.round((j+ap[i+1])/2):N-1;return{n:'T'+(i+1),g:d[hi]-(lo?d[lo-1]:0)}});
+const ranked=[...seg].sort((x,y)=>Math.abs(y.g)-Math.abs(x.g)).filter(x=>Math.abs(x.g)>=.02).slice(0,4);
+const lens=Math.abs(a.T.len-b.T.len)/Math.min(a.T.len,b.T.len)>.04?`<div class="notice">These laps are different lengths (${Math.round(a.T.len)} m and ${Math.round(b.T.len)} m), so the traces may not line up. Compare laps from the same track.</div>`:'';
+const lo=(o,id,lab)=>`<label class="fld">${lab}<select id="${id}">${o.ks.sort((x,y)=>x-y).map(k=>`<option value="${k}" ${k===o.lap?'selected':''}>Lap ${k} · ${fmtT(lapT(o,k))}${k===o.best?' (fastest)':''}</option>`).join('')}</select></label>`;
+const fin1=d[N-1],who=fin1>0?'A':'B';
+return`<h2>Telemetry overlay</h2>${lens}<div class="card" id="ovl"><div class="pick noprint">${lo(a,'ovA','Lap for A')}${lo(b,'ovB','Lap for B')}</div>
+<div class="lg" style="margin-top:12px"><span><i class="sw"></i>A: ${esc(sa.name)}, lap ${a.lap}</span><span><i class="sw b"></i>B: ${esc(sb.name)}, lap ${b.lap}</span></div>
+<p class="ovr noprint" id="ovr">Move over or touch the charts to read the values at any point of the lap.</p>
+${ovChart('v','Speed (km/h)',N,[{y:vB,cls:'traceB'},{y:vA,cls:'trace'}],{h:190,marks})}
+${ovChart('d','Gap, B to A (s)',N,[{y:d,cls:'trace'}],{h:120,zero:true,fmt:v=>(v>0?'+':'')+v.toFixed(2),top:'B behind',bot:'B ahead'})}
+${bA?ovChart('b','Brake',N,[{y:bB,cls:'traceB'},{y:bA,cls:'trace'}],{h:100}):''}
+${sA?ovChart('s','Steering (°)',N,[{y:sB,cls:'traceB'},{y:sA,cls:'trace'}],{h:100}):''}
+<p class="hint">Session ${who} is ${Math.abs(fin1).toFixed(3)} s quicker over these two laps. Distance runs left to right, ${Math.round(len).toLocaleString()} m in total. Corners are marked T1, T2 and so on.</p></div>
+${ranked.length?`<h2>Where the time goes</h2><div class="card"><ul class="chg">${ranked.map(x=>`<li><span class="tag ${x.g>0?'ok':'high'}">${x.g>0?'A':'B'} gains ${Math.abs(x.g).toFixed(2)} s</span><span>Around ${x.n}: ${x.g>0?`session B loses ${x.g.toFixed(2)} s to A`:`session B gains ${(-x.g).toFixed(2)} s on A`} from the previous corner to the next. Check the speed and brake traces there.</span></li>`).join('')}</ul></div>`:''}`}
+const lapT=(o,k)=>{const s=sessions.find(x=>x.tr===o.T);const l=s&&s.laps.find(l=>l.lap===k);return l?l.t:0};
 function compare(){const sa=sessions[A],sb=sessions[B],opt=i=>sessions.map((s,j)=>`<option value="${j}" ${j==i?'selected':''}>${esc(s.name)}</option>`).join('');
 const stOpts=(sx,k)=>{let r;try{r=runLaps(sx,cmpSt[k])}catch(e){return''}if(r.stints.length<2)return'';return r.stints.map(t=>`<option value="${t.i}" ${t.i===r.idx?'selected':''}>Stint ${t.i+1} · laps ${t.first}–${t.last}${t.n<5?' (too short)':` · ${t.n} clean`}</option>`).join('')};
 const stLab=(sx,k)=>{try{const r=runLaps(sx,cmpSt[k]);return r.stints.length>1?` (stint ${r.idx+1})`:''}catch(e){return''}};
 const head=`<div class="card noprint" style="margin-top:18px"><div class="pick"><div class="pk"><label>Session A<select id="selA">${opt(A)}</select></label>${stOpts(sa,'A')?`<label>Stint for A<select id="stA">${stOpts(sa,'A')}</select></label>`:''}</div><div class="pk"><label>Session B<select id="selB">${opt(B)}</select></label>${stOpts(sb,'B')?`<label>Stint for B<select id="stB">${stOpts(sb,'B')}</select></label>`:''}</div></div></div>
 <div class="printhead"><h1>Pacely comparison</h1><p>A: <b>${esc(sa.name)}${stLab(sa,'A')}</b> · B: <b>${esc(sb.name)}${stLab(sb,'B')}</b> · ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</p></div>`;
-let a,b;try{a=analyse(sa,cmpSt.A)}catch(e){return head+errHTML('Session A: could not analyse',e.message)}try{b=analyse(sb,cmpSt.B)}catch(e){return head+errHTML('Session B: could not analyse',e.message)}
+OV=null;const ov=overlay(sa,sb);let a,b;try{a=analyse(sa,cmpSt.A)}catch(e){return head+errHTML('Session A: could not analyse',e.message)+ov}try{b=analyse(sb,cmpSt.B)}catch(e){return head+errHTML('Session B: could not analyse',e.message)+ov}
 const x=summ(a),y=summ(b);let wa=0,wb=0;
 const rows=MET.map(([nm,k,f,tol,dir])=>{const u=x[k],v=y[k];let win='Same',d=0;if(u!==v){const sc=u===Infinity?-dir:v===Infinity?dir:dir*(v-u);d=(u===Infinity||v===Infinity)?Infinity:Math.abs(v-u);if(sc>tol)win='B';else if(sc<-tol)win='A'}if(win=='A')wa++;if(win=='B')wb++;return{nm,k,f,u,v,win,d}});
 const lead=wa>wb?'A':wb>wa?'B':null,ln=lead=='A'?sa.name+stLab(sa,'A'):sb.name+stLab(sb,'B');
@@ -643,6 +689,7 @@ return head+`${warn.length?`<div class="notice">Take care with this comparison: 
 <section class="verdict" aria-live="polite"><div class="k">Comparison</div><div class="big">${lead?`Session ${lead} looks stronger overall`:'Too close to call'}</div><p>${lead?`${esc(ln)} wins ${Math.max(wa,wb)} of ${MET.length} measures (${wa} for A, ${wb} for B).`:`Each session wins ${wa} of ${MET.length} measures.`}</p></section>
 <div class="dash cmpd"><div class="colL"><h2>What is different</h2><div class="card">${ch.length?`<ul class="chg">${ch.join('')}</ul>`:'<p style="margin:0">The two sessions are very similar on every measure.</p>'}</div>
 </div><div class="colR"><h2>Side by side</h2><div class="card" style="padding:8px 12px"><table class="cmp"><tr><th>Measure</th><th>A</th><th>B</th><th>Better</th></tr>${rows.map(r=>`<tr><td>${r.nm}</td><td class="${r.win=='A'?'win':''}">${r.f(r.u)}</td><td class="${r.win=='B'?'win':''}">${r.f(r.v)}</td><td>${r.win=='Same'?'Same':'✓ '+r.win}</td></tr>`).join('')}</table></div></div></div>
+${ov}
 <details class="set noprint"><summary>Show chart and corners</summary><h2>Lap times</h2><div class="card"><div class="lg"><span><i class="sw"></i>A: ${esc(sa.name)}${stLab(sa,'A')}</span><span><i class="sw b"></i>B: ${esc(sb.name)}${stLab(sb,'B')}</span></div>${chart2(a,b)}</div>
 ${cs.length?`<h2>Corner by corner</h2><div class="cch"><span></span><span>A</span><span>B</span></div>${cs.map(c=>`<div class="cc"><span class="nm">${esc(c)}</span><div>${cell(ca[c])}</div><div>${cell(cb[c])}</div></div>`).join('')}`:''}</details>
 <div class="ctl noprint"><button class="alt sm" id="print">Print or save as PDF</button></div>
@@ -730,10 +777,16 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.
 el.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{const s=sessions[cur];s.meta.stint=+b.dataset.st;save(s);render()});
 const c=$('#cmp');if(c)c.onclick=()=>{view=view=='compare'?'single':'compare';msgs=[];armed=false;render()};
 const cl=$('#clr');if(cl)cl.onclick=()=>{if(armed!=='clr'){armed='clr';render();return}DB.clear();sessions=[];cmpSt={A:null,B:null};tab='call';view='single';cur=0;A=0;B=1;msgs=[];armed=false;render()};
-const sA=$('#selA'),sB=$('#selB');if(sA){sA.onchange=()=>{A=+sA.value;cmpSt.A=null;render()};sB.onchange=()=>{B=+sB.value;cmpSt.B=null;render()};const tA=$('#stA'),tB=$('#stB');if(tA)tA.onchange=()=>{cmpSt.A=+tA.value;render()};if(tB)tB.onchange=()=>{cmpSt.B=+tB.value;render()}}
+const sA=$('#selA'),sB=$('#selB');if(sA){sA.onchange=()=>{A=+sA.value;cmpSt.A=null;cmpOv.A=null;render()};sB.onchange=()=>{B=+sB.value;cmpSt.B=null;cmpOv.B=null;render()};const tA=$('#stA'),tB=$('#stB');if(tA)tA.onchange=()=>{cmpSt.A=+tA.value;render()};if(tB)tB.onchange=()=>{cmpSt.B=+tB.value;render()}}
 const s=sessions[cur],bind=(id,fn)=>{const e=$('#'+id);if(e)e.onchange=()=>{fn(e.value.trim?e.value.trim():e.value);save(s);render()}};
 if(s&&view==='single'){bind('rem',v=>s.meta.remaining=v);bind('ign',v=>{s.meta.ignore=v;s.meta.stint=null});bind('spl',v=>{s.meta.splits=v;s.meta.stint=null});bind('sname',v=>s.name=v||s.name);bind('cmpd',v=>s.meta.compound=v);bind('ttemp',v=>s.meta.trackTemp=v);bind('atemp',v=>s.meta.airTemp=v)}
 const pr=$('#print');if(pr)pr.onclick=printReport;
+const oA=$('#ovA'),oB=$('#ovB');if(oA){oA.onchange=()=>{cmpOv.A=+oA.value;render()};oB.onchange=()=>{cmpOv.B=+oB.value;render()}}
+const ovl=$('#ovl');if(ovl&&OV){const o=OV,f1=v=>v==null?'–':v.toFixed(0),rd=$('#ovr'),hide=()=>{ovl.querySelectorAll('.ovx').forEach(l=>l.style.display='none')};
+ovl.onpointermove=e=>{const sv=e.target.closest&&e.target.closest('svg[data-ov]');if(!sv)return;const r=sv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*600,j=Math.max(0,Math.min(o.N-1,Math.round((x-46)/(544)*(o.N-1))));
+ovl.querySelectorAll('.ovx').forEach(l=>{const X=46+j/(o.N-1)*544;l.setAttribute('x1',X);l.setAttribute('x2',X);l.style.display=''});
+rd.textContent=`${Math.round((j+.5)/o.N*o.len).toLocaleString()} m · speed A ${f1(o.vA[j])}, B ${f1(o.vB[j])} km/h`+(o.bA?` · brake A ${f1(o.bA[j])}, B ${f1(o.bB[j])}`:'')+` · gap ${o.d[j]>0?'B behind by ':'B ahead by '}${Math.abs(o.d[j]).toFixed(2)} s`};
+ovl.onpointerleave=hide}
 const dl=$('#dl');if(dl)dl.onclick=()=>download(s);
 const rm=$('#rm');if(rm)rm.onclick=()=>{if(armed!=='rm'){armed='rm';render();return}DB.del(s.id);sessions.splice(cur,1);cur=Math.max(0,cur-1);A=0;B=Math.min(1,sessions.length-1);cmpSt={A:null,B:null};armed=false;if(sessions.length<2&&tab==='compare')tab='call';render()};
 if(s&&view==='single'){const ex=$('#aiExplain');if(ex)ex.onclick=()=>aiRun(s,AI_EXPLAIN,'Explain this session');
@@ -754,11 +807,12 @@ const s=sessions[cur],base=tab==='compare'?'Pacely comparison':`Pacely ${tab==='
 await dl.save({filename:(base.replace(/[^\w -]+/g,'').replace(/\s+/g,' ').trim()||'Pacely report')+'.pdf',data:pdfFromCanvas(cv,cuts)});toast('PDF saved')}
 catch(e){const c=e&&e.code;if(c!=='declined')toast(c==='rate_limited'?'A download is already waiting for your answer.':!c&&e&&e.message?e.message:'Could not make the PDF.')}
 finally{pdfBusy=false;if(printing!==was){printing=was;render()}}}
-function pdfClone(d){const r=d.documentElement,w=d.defaultView;r.classList.add('pdf');r.dataset.theme='light';const o=d.getElementById('out'),top=o.getBoundingClientRect().top,cuts=[];
-o.querySelectorAll('.f,.card,.call,.tile,.verdict,.cr,.cc,tr,.printhead,.foot,.tiles,.empty,section').forEach(e=>{const b=e.getBoundingClientRect();if(b.height)cuts.push(b.bottom-top)});
-o.querySelectorAll('h2').forEach(e=>{const b=e.getBoundingClientRect();if(b.height)cuts.push(b.top-top-4)});
-o.querySelectorAll('svg').forEach(sv=>{const b=sv.getBoundingClientRect();sv.setAttribute('width',b.width);sv.setAttribute('height',b.height);
+function pdfClone(d){const r=d.documentElement,w=d.defaultView;r.classList.add('pdf');r.dataset.theme='light';const o=d.getElementById('out'),cuts=[];
+o.querySelectorAll('svg').forEach(sv=>{const pe=sv.parentElement,pc=w.getComputedStyle(pe),vb=sv.viewBox&&sv.viewBox.baseVal,b=sv.getBoundingClientRect(),bw=vb&&vb.width?Math.min(b.width,pe.clientWidth-parseFloat(pc.paddingLeft)-parseFloat(pc.paddingRight)):b.width,h=vb&&vb.width?bw*vb.height/vb.width:b.height;sv.setAttribute('width',bw);sv.setAttribute('height',h);sv.style.width=bw+'px';sv.style.height=h+'px';
 [sv,...sv.querySelectorAll('*')].forEach(el=>{const cs=w.getComputedStyle(el);['color','fill','stroke','stroke-width','stroke-dasharray','opacity','font-size','font-family','font-weight'].forEach(p=>el.style.setProperty(p,cs.getPropertyValue(p)))})});
+const top=o.getBoundingClientRect().top;
+o.querySelectorAll('.f,.card,.call,.tile,.verdict,.cr,.cc,tr,li,.ovc,.printhead,.foot,.tiles,.empty,section').forEach(e=>{const b=e.getBoundingClientRect();if(b.height)cuts.push(b.bottom-top)});
+o.querySelectorAll('h2').forEach(e=>{const b=e.getBoundingClientRect();if(b.height)cuts.push(b.top-top-4)});
 return cuts.sort((a,b)=>a-b)}
 function pdfFromCanvas(cv,cuts){const doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'}),M=12,W=210-2*M,H=297-2*M-6,k=cv.width/W,ph=H*k/2,total=cv.height/2,sl=[];let y=0;
 while(y<total-1){let e=Math.min(y+ph,total);if(e<total){const c=cuts.filter(v=>v>y+ph*.4&&v<=y+ph).pop();if(c)e=c}sl.push([y,e]);y=e}
@@ -845,7 +899,7 @@ clearTimeout(to);st.busy=false;if(sessions[cur]===s&&view==='single')render()}
 const AI_EXPLAIN="Write a short engineer's summary of this session for the team: what is happening, the single most important thing to do, and one thing to tell the driver. Under 110 words.";
 
 /* ---------- wiring ---------- */
-$('#demo').onclick=()=>{msgs=[];armed=false;const first=sessions.length;SAMPLES.forEach(x=>{const s=toSession(demo(x.o),x.name,{sample:true});addSession(s)});addSession(raceDemo());addSession(qualiDemo());
+$('#demo').onclick=()=>{msgs=[];armed=false;const first=sessions.length;SAMPLES.forEach(x=>{const s=toSession(demo(x.o),x.name,{sample:true});addSession(s)});addSession(raceDemo());addSession(qualiDemo());addSession(teleDemo('8 Telemetry, driver A',41));addSession(teleDemo('9 Telemetry, driver B',43,{dv:[2,0,-1,0,-5,0],dec:[0,0,9,0,0,0]}));
 A=first;B=first+1;cmpSt={A:null,B:null};cur=first;view='single';tab='call';render()};
 {const ov=$('#dropov');let dc=0;const hasF=e=>e.dataTransfer&&[...e.dataTransfer.types].includes('Files');
 addEventListener('dragenter',e=>{if(hasF(e)){e.preventDefault();dc++;ov.classList.add('on')}});
